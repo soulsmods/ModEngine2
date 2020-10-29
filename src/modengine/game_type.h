@@ -1,6 +1,6 @@
 #pragma once
 
-enum GameType {
+enum GameType : uint32_t {
     DarkSoulsRemastered = 1,
     DarkSoulsIISOTFS = 1 << 1,
     DarkSoulsIII = 1 << 2,
