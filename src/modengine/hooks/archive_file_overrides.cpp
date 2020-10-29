@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <wchar.h>
-#include <Shlwapi.h>
 #include <string>
 #include <string_view>
 #include <optional>
