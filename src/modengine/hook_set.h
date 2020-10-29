@@ -7,6 +7,8 @@
 #include <detours/detours.h>
 #include <memory>
 
+#include "game_type.h"
+
 namespace modengine {
 /**
  * Storing a list of function pointers as void* is undefined behaivor in C++, however, casting between
@@ -28,9 +30,19 @@ struct Hook {
 
 class HookSet {
 private:
+    GameType m_game;
     std::vector<std::shared_ptr<Hook<GenericFunctionPointer>>> hooks;
 
 public:
+    HookSet()
+    {
+    }
+
+    HookSet(GameType game)
+        : m_game(game)
+    {
+    }
+
     template <typename T>
     std::shared_ptr<Hook<T>> install(const std::string& module, const std::string& function, T detour)
     {
@@ -51,6 +63,25 @@ public:
         return hook;
     }
 
+    template <typename T>
+    std::shared_ptr<Hook<T>> install_for_games(const std::string& module, const std::string& function, T detour, uint32_t games)
+    {
+        if (m_game & games)
+        {
+            return install(module, function, detour);
+        }
+        return nullptr;
+    }
+
+    template <typename T>
+    std::shared_ptr<Hook<T>> install_for_games(T original, T detour, uint32_t games)
+    {
+        if (m_game & games)
+        {
+            return install(original, detour);
+        }
+        return nullptr;
+    }
 
     bool hook_all();
     bool unhook_all();

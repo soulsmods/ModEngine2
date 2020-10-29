@@ -4,6 +4,7 @@ add_library(modengine2 SHARED
         main.cpp
         modengine/mod_engine.cpp
         modengine/hook_set.cpp
+        modengine/hooks/archive_file_overrides.cpp
         modengine/hooks/anti_debug.cpp
         modengine/hooks/direct_input.cpp)
 
