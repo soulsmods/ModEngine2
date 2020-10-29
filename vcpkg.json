@@ -1,0 +1,9 @@
+{
+  "name": "modengine2",
+  "version-string": "0.1.0",
+  "homepage": "https://github.com/souulsmods/modengine2",
+  "dependencies": [
+    "detours",
+    "spdlog"
+  ]
+}
