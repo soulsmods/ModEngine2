@@ -66,8 +66,7 @@ public:
     template <typename T>
     std::shared_ptr<Hook<T>> install_for_games(const std::string& module, const std::string& function, T detour, uint32_t games)
     {
-        if (m_game & games)
-        {
+        if (m_game & games) {
             return install(module, function, detour);
         }
         return nullptr;
@@ -76,8 +75,7 @@ public:
     template <typename T>
     std::shared_ptr<Hook<T>> install_for_games(T original, T detour, uint32_t games)
     {
-        if (m_game & games)
-        {
+        if (m_game & games) {
             return install(original, detour);
         }
         return nullptr;

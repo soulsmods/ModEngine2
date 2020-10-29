@@ -16,6 +16,7 @@ public:
 
     void attach();
     void detach();
+
 private:
     GameType m_gametype;
     HookSet m_hooks;

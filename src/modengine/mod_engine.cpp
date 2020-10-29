@@ -16,35 +16,28 @@ ModEngine::ModEngine()
 bool ModEngine::detect_game_type()
 {
     WCHAR exefilename[MAX_PATH];
-	GetModuleFileNameW(NULL, exefilename, MAX_PATH);
-	std::wstring fname = std::wstring(exefilename);
-	auto lastidx = fname.find_last_of(L"\\");
-	auto exename = fname.substr(lastidx + 1);
-	//m_logger->info(L"EXE name is %s", exename.data());
-	if (exename == L"DarkSoulsRemastered.exe")
-	{
-		m_logger->info("Detected game as Dark Souls Remastered");
-		m_gametype = DarkSoulsRemastered;
+    GetModuleFileNameW(NULL, exefilename, MAX_PATH);
+    std::wstring fname = std::wstring(exefilename);
+    auto lastidx = fname.find_last_of(L"\\");
+    auto exename = fname.substr(lastidx + 1);
+    //m_logger->info(L"EXE name is %s", exename.data());
+    if (exename == L"DarkSoulsRemastered.exe") {
+        m_logger->info("Detected game as Dark Souls Remastered");
+        m_gametype = DarkSoulsRemastered;
         return true;
-	}
-	else if (exename == L"DarkSoulsII.exe")
-	{
-		m_logger->info("Detected game as Dark Souls II SOTFS");
-		m_gametype = DarkSoulsIISOTFS;
+    } else if (exename == L"DarkSoulsII.exe") {
+        m_logger->info("Detected game as Dark Souls II SOTFS");
+        m_gametype = DarkSoulsIISOTFS;
         return true;
-	}
-	else if (exename == L"DarkSoulsIII.exe")
-	{
-		m_logger->info("Detected game as Dark Souls III");
-		m_gametype = DarkSoulsIII;
+    } else if (exename == L"DarkSoulsIII.exe") {
+        m_logger->info("Detected game as Dark Souls III");
+        m_gametype = DarkSoulsIII;
         return true;
-	}
-	else if (exename == L"sekiro.exe")
-	{
-		m_logger->info("Detected game as Sekiro");
-		m_gametype = Sekiro;
+    } else if (exename == L"sekiro.exe") {
+        m_logger->info("Detected game as Sekiro");
+        m_gametype = Sekiro;
         return true;
-	}
+    }
     m_logger->error("Fatal Error: Could not detect game. Make sure you are using one of the supported games and that your exe is not renamed.");
     return false;
 }

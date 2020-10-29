@@ -1,0 +1,5 @@
+---
+BasedOnStyle: WebKit
+IndentWidth: 4
+NamespaceIndentation: None
+SortIncludes: false
