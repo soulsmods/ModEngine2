@@ -26,7 +26,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         message(FATAL_ERROR "Clang frontend must be MSVC. Current frontend '${CMAKE_CXX_SIMULATE_ID}' is unsupported")
     endif()
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL  "MSVC")
-    target_compile_options(modengine2 PRIVATE /external:anglebrackets /W4 /WX)
+    target_compile_options(modengine2 PRIVATE /experimental:external /external:anglebrackets /external:W0 /W4 /WX)
 endif()
 
 target_include_directories(modengine2 PRIVATE

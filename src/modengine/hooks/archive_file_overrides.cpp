@@ -20,7 +20,7 @@ inline std::optional<std::wstring> find_override_file(const std::wstring mod_dir
     return {};
 }
 
-bool has_override_file(std::wstring_view path)
+bool has_override_file(std::wstring_view)
 {
     // Stub for now
     return false;

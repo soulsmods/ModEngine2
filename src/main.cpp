@@ -7,7 +7,7 @@ using namespace modengine;
 
 ModEngine global_instance;
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HMODULE, DWORD dwReason, LPVOID)
 {
     switch (dwReason) {
     case DLL_PROCESS_ATTACH:
