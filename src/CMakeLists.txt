@@ -6,7 +6,7 @@ add_library(modengine2 SHARED
         modengine/hook_set.cpp
         modengine/hooks/archive_file_overrides.cpp
         modengine/hooks/anti_debug.cpp
-        modengine/hooks/direct_input.cpp modengine/game_type.cpp)
+        modengine/hooks/direct_input.cpp)
 
 # Detours currently has no CMake manifests: https://github.com/microsoft/Detours/pull/48.
 find_path(VCPKG_INCLUDE_DIR NAMES detours/detver.h)
