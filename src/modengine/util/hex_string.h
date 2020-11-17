@@ -1,5 +1,4 @@
-#ifndef MODENGINE2_HEX_STRING_H
-#define MODENGINE2_HEX_STRING_H
+#pragma once
 
 #include <cstddef>
 #include <algorithm>
@@ -12,18 +11,22 @@ template <std::size_t N>
 struct HexString {
     char data[N];
 
-    constexpr HexString(const char _data[N]) {
+    constexpr HexString(const char _data[N])
+        : data()
+    {
         for (auto i = 0; i < N; i++) {
             data[i] = _data[i];
         }
     }
 
-    std::string_view as_string() const {
-        return {data, N};
+    std::string_view as_string() const
+    {
+        return { data, N };
     }
 };
 
-constexpr bool isxdigit(char ch1) {
+constexpr bool isxdigit(char ch1)
+{
     return (ch1 >= '0' && ch1 <= '9') || (ch1 >= 'a' && ch1 <= 'f');
 }
 
@@ -31,7 +34,7 @@ template <std::size_t N>
 constexpr auto hex_string(const char (&a)[N]) -> HexString<N / 2>
 {
     const auto len = N / 2;
-    char output[len];
+    char output[len] = { 0 };
 
     for (auto index = 0; index < len; index++) {
         const char ch1 = a[index * 2];
@@ -48,5 +51,3 @@ constexpr auto hex_string(const char (&a)[N]) -> HexString<N / 2>
 }
 
 }
-
-#endif //MODENGINE2_HEX_STRING_H
