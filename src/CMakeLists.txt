@@ -1,12 +1,18 @@
 set(CMAKE_CXX_STANDARD 17)
+enable_language(ASM_MASM)
+enable_testing()
 
 add_library(modengine2 SHARED
         main.cpp
+        modengine/extension.cpp
         modengine/mod_engine.cpp
+        modengine/game_info.cpp
         modengine/hook_set.cpp
-        modengine/hooks/archive_file_overrides.cpp
-        modengine/hooks/anti_debug.cpp
-        modengine/hooks/direct_input.cpp)
+        modengine/memory_scanner.cpp
+        modengine/patch.cpp
+        modengine/base/allocator_table.cpp
+        modengine/base/dinput_hook.cpp
+        modengine/hooks/archive_file_overrides.cpp)
 
 # Detours currently has no CMake manifests: https://github.com/microsoft/Detours/pull/48.
 find_path(VCPKG_INCLUDE_DIR NAMES detours/detver.h)
@@ -28,6 +34,9 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL  "MSVC")
     target_compile_options(modengine2 PRIVATE /experimental:external /external:anglebrackets /external:W0 /W4 /WX)
 endif()
+
+target_compile_definitions(modengine2 PRIVATE
+        -DSPDLOG_WCHAR_TO_UTF8_SUPPORT)
 
 target_include_directories(modengine2 PRIVATE
         ${DETOURS_INCLUDE_DIR}

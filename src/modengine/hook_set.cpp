@@ -2,6 +2,11 @@
 
 namespace modengine {
 
+void HookSet::install(std::shared_ptr<Hook<GenericFunctionPointer>> hook)
+{
+    hooks.push_back(hook);
+}
+
 bool HookSet::hook_all()
 {
     auto txn_status = DetourTransactionBegin();
