@@ -12,6 +12,7 @@ add_library(modengine2 SHARED
         modengine/patch.cpp
         modengine/base/allocator_table.cpp
         modengine/base/dinput_hook.cpp
+        modengine/base/winsockets_disable.cpp
         modengine/hooks/archive_file_overrides.cpp)
 
 # Detours currently has no CMake manifests: https://github.com/microsoft/Detours/pull/48.

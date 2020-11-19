@@ -1,6 +1,7 @@
 #include "modengine/mod_engine.h"
 #include "modengine/base/allocator_table.h"
 #include "modengine/base/dinput_hook.h"
+#include "modengine/base/winsockets_disable.h"
 
 #include <fstream>
 
@@ -45,6 +46,7 @@ void ModEngineBaseExtension::on_attach()
 
     register_patch(static_cast<GameType>(DS3 | SEKIRO), allocator_table_aob.as_string(), increase_fmod_allocation_limits);
     hooked_DirectInput8Create = register_hook(ALL, "C:\\windows\\system32\\dinput8.dll", "DirectInput8Create", DirectInput8Create);
+    hooked_WSAStartup = register_hook(static_cast<GameType>(DS_REMASTERED | DS2 | DS3), "C:\\windows\\system32\\ws2_32.dll", "WSAStartup", tWSAStartup);
 }
 
 void ModEngineBaseExtension::on_detach()
