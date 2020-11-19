@@ -17,8 +17,12 @@ public:
     MemoryScannerRegion(const MEMORY_BASIC_INFORMATION& info)
         : m_info(info)
     {
-        if (!VirtualProtect(m_info.BaseAddress, m_info.RegionSize, PAGE_EXECUTE_READWRITE, &m_original_protection)) {
-            throw std::runtime_error("Unable to change process memory protection flags");
+        m_original_protection = m_info.AllocationProtect;
+
+        if ((m_original_protection & (PAGE_EXECUTE_READWRITE | PAGE_READWRITE)) == 0) {
+            if (!VirtualProtect(m_info.BaseAddress, m_info.RegionSize, PAGE_READWRITE, &m_original_protection)) {
+                throw std::runtime_error("Unable to change process memory protection flags");
+            }
         }
     }
 
@@ -36,19 +40,26 @@ public:
 
 MemoryScanner::MemoryScanner()
 {
+    const auto base = NtCurrentPeb()->ImageBaseAddress;
+    const auto image = RtlImageNtHeader(base);
+    const auto start = reinterpret_cast<uintptr_t>(base);
+    const auto end = start + image->OptionalHeader.SizeOfImage;
+
     HANDLE process = GetCurrentProcess();
     MEMORY_BASIC_INFORMATION info;
 
     for (uintptr_t next = 0; VirtualQueryEx(process, (void*)next, &info, sizeof(info)) == sizeof(info); next += info.RegionSize) {
         if (info.State == MEM_COMMIT) {
-            m_memory_regions.push_back(info);
+            info.BaseAddress = (void*)next;
+
+            if (next >= start && next + info.RegionSize <= end) {
+                m_memory_regions.push_back(info);
+            }
         }
     }
-
-    m_base_address = reinterpret_cast<uintptr_t>(NtCurrentPeb()->ImageBaseAddress);
 }
 
-bool MemoryScanner::replace(const std::string_view & pattern, std::function<void(uintptr_t)> replace_callback)
+bool MemoryScanner::replace(const std::string_view& pattern, std::function<void(uintptr_t)> replace_callback)
 {
     for (const auto region_info : m_memory_regions) {
         const auto region = MemoryScannerRegion { region_info };
