@@ -13,7 +13,7 @@ add_library(modengine2 SHARED
         modengine/base/allocator_table.cpp
         modengine/base/entry.cpp
         modengine/base/dinput_hook.cpp
-        modengine/base/scylla_suspend.cpp
+        modengine/base/scyllahide_inject.cpp
         modengine/base/winsockets_disable.cpp
         modengine/hooks/archive_file_overrides.cpp)
 
