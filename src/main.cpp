@@ -23,12 +23,7 @@ static bool attach()
     logger->info("ModEngine initializing for {}, version {}", game_info->description(), game_info->version);
     mod_engine_global.reset(new ModEngine { *game_info, logger });
     mod_engine_global->register_extension(std::make_unique<ModEngineBaseExtension>(mod_engine_global));
-
-    // Don't block the loader, defer hooks and scans to another thread
-    mod_engine_thread = std::thread([] {
-        // This could be racy. We might want to pause all other threads.
-        mod_engine_global->attach();
-    });
+    mod_engine_global->attach();
 
     return true;
 }
