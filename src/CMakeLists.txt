@@ -10,8 +10,8 @@ add_library(modengine2 SHARED
         modengine/hook_set.cpp
         modengine/memory_scanner.cpp
         modengine/patch.cpp
+        modengine/settings.cpp
         modengine/base/allocator_table.cpp
-        modengine/base/entry.cpp
         modengine/base/dinput_hook.cpp
         modengine/base/scyllahide_inject.cpp
         modengine/base/winsockets_disable.cpp

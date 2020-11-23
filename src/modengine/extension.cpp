@@ -21,4 +21,9 @@ void ModEngineExtension::register_hook(GameType type, std::shared_ptr<Hook<Gener
     }
 }
 
+const Settings& ModEngineExtension::settings() const
+{
+    return m_mod_engine->settings();
+}
+
 }
