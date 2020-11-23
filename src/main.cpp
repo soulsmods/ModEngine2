@@ -15,6 +15,8 @@ static bool attach()
     const auto logger = spdlog::basic_logger_mt("modengine", "modengine.log", true);
     const auto game_info = GameInfo::from_current_module();
 
+    spdlog::set_default_logger(logger);
+
     if (!game_info) {
         logger->error("Unable to detect a supported game");
         return false;
