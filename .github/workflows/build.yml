@@ -30,9 +30,3 @@ jobs:
         cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
         useVcpkgToolchainFile: true
         buildDirectory: '${{ runner.workspace }}/build/modengine'
-
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: 'modengine-${{ github.sha }}'
-        path: '${{ runner.workspace }}/build/modengine/src'
