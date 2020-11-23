@@ -22,7 +22,7 @@ jobs:
       uses: lukka/run-vcpkg@v4
       with:
         setupOnly: true
-        vcpkgGitCommitId: "2020.07" 
+        vcpkgGitCommitId: "2020.11-1"
 
     - name: 'Build with CMake'
       uses: lukka/run-cmake@v3
