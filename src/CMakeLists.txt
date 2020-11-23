@@ -11,6 +11,7 @@ add_library(modengine2 SHARED
         modengine/memory_scanner.cpp
         modengine/patch.cpp
         modengine/base/allocator_table.cpp
+        modengine/base/entry.cpp
         modengine/base/dinput_hook.cpp
         modengine/base/scylla_suspend.cpp
         modengine/base/winsockets_disable.cpp

@@ -1,7 +1,9 @@
 #include "modengine/mod_engine.h"
 #include "modengine/base/allocator_table.h"
 #include "modengine/base/dinput_hook.h"
+#include "modengine/base/entry.h"
 
+#include <detours/detours.h>
 #include <fstream>
 
 namespace modengine {
