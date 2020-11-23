@@ -4,6 +4,7 @@
   "homepage": "https://github.com/souulsmods/modengine2",
   "dependencies": [
     "detours",
-    "spdlog"
+    "spdlog",
+    "tomlplusplus"
   ]
 }

@@ -2,10 +2,13 @@
 #include "modengine/base/allocator_table.h"
 #include "modengine/base/dinput_hook.h"
 
+#include <fstream>
+
 namespace modengine {
 
 void ModEngine::attach()
 {
+    m_config = toml::parse_file("modengine.toml");
     m_logger->info("Registering anti-debug and DirectInput hooks");
 
     for (auto& extension : m_extensions) {
