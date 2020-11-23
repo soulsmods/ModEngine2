@@ -20,6 +20,10 @@ find_library(DETOURS_LIBRARY detours)
 find_package(spdlog CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 
+if (NOT MODENGINE_NO_DINPUT8)
+    set_target_properties(modengine2 PROPERTIES OUTPUT_NAME "dinput8")
+endif()
+
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     if (CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")
         target_compile_options(modengine2 PRIVATE
