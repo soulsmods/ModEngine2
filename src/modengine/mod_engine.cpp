@@ -30,6 +30,7 @@ void ModEngine::attach()
 
 void ModEngine::detach()
 {
+    m_logger->flush();
     m_hooks.unhook_all();
 }
 
