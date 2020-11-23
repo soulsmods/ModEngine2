@@ -6,6 +6,7 @@
 #include "modengine/patch.h"
 
 #include <spdlog/spdlog.h>
+#include <toml++/toml.h>
 
 namespace modengine {
 
@@ -42,7 +43,12 @@ public:
         return m_game;
     }
 
+    auto config(const std::string_view category = "modengine") const
+    {
+        return m_config.get(category);
+    }
 private:
+    toml::table m_config;
     GameInfo m_game;
     HookSet m_hooks;
     std::vector<Patch> m_patches;
