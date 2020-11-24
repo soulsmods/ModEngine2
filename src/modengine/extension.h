@@ -1,6 +1,7 @@
 #pragma once
 
 #include "modengine/hook_set.h"
+#include "modengine/settings.h"
 
 #include <memory>
 #include <string>
@@ -50,6 +51,7 @@ protected:
     void register_hook(GameType type, std::shared_ptr<Hook<GenericFunctionPointer>> hook);
     void register_patch(GameType type, const std::string_view& signature, std::function<void(uintptr_t)> replace_callback);
 
+    const Settings& settings() const;
 private:
     std::shared_ptr<ModEngine> m_mod_engine;
 };

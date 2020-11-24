@@ -1,15 +1,22 @@
 #include <stdio.h>
 #include <wchar.h>
+#include <algorithm>
 #include <string>
 #include <string_view>
 #include <optional>
 #include <concurrent_unordered_set.h>
 
 // Cached set of files that have an override file available
-concurrency::concurrent_unordered_set<std::wstring> overrideSet;
+concurrency::concurrent_unordered_set<std::wstring> override_set;
 
 // Cached set of files that don't have an override and should be loaded from archives
-concurrency::concurrent_unordered_set<std::wstring> archiveSet;
+concurrency::concurrent_unordered_set<std::wstring> archive_set;
+
+// TODO: replace these with settings once we have a good settings system
+std::wstring g_mod_dir;
+bool g_load_uxm_files = false;
+bool g_use_mod_override = false;
+bool g_cache_paths = false;
 
 inline std::optional<std::wstring> find_override_file(const std::wstring mod_dir, const std::wstring full_path, const std::wstring game_path)
 {
@@ -20,9 +27,49 @@ inline std::optional<std::wstring> find_override_file(const std::wstring mod_dir
     return {};
 }
 
-bool has_override_file(std::wstring_view)
+bool has_override_file(std::wstring_view path)
 {
-    // Stub for now
+    // TODO: log archive file interception
+
+    bool is_overridden = g_cache_paths ? (override_set.find(path.data()) != override_set.end()) : false;
+    bool is_archived = g_cache_paths ? (archive_set.find(path.data()) != archive_set.end()) : false;
+
+    // Not cached
+    if (!is_overridden && !is_archived) {
+        wchar_t working[_MAX_PATH];
+        GetCurrentDirectoryW(MAX_PATH, working);
+        std::wstring dir = std::wstring(working);
+
+        // If we're using a mod override and not using UXM we need to search inside the specified mod directory
+        if (g_use_mod_override && !g_load_uxm_files) {
+            if (!g_mod_dir.rfind(L"\\", 0)) {
+                dir = dir + L"\\";
+            }
+            dir = dir + g_mod_dir;
+        }
+
+        // Add the game file path and replace the slashes
+        dir += path;
+        std::replace(dir.begin(), dir.end(), L'/', L'\\');
+
+        // TODO: Log first time looking for file
+
+        // Search if an override file exists for the current mod
+        if (GetFileAttributesW(dir.data()) != INVALID_FILE_ATTRIBUTES) {
+            if (g_cache_paths) {
+                override_set.insert(std::wstring(path));
+            }
+            // TODO: Log successful override
+            return true;
+        }
+        else {
+            // If the override file doesn't exist, cache it if caching is enabled
+            if (g_cache_paths) {
+                archive_set.insert(std::wstring(path));
+            }
+        }
+    }
+
     return false;
 }
 

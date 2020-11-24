@@ -4,6 +4,7 @@
 #include "modengine/hook_set.h"
 #include "modengine/game_info.h"
 #include "modengine/patch.h"
+#include "modengine/settings.h"
 
 #include <spdlog/spdlog.h>
 #include <toml++/toml.h>
@@ -26,10 +27,10 @@ class ModEngine {
     friend class ModEngineExtension;
 
 public:
-    ModEngine(GameInfo game, std::shared_ptr<spdlog::logger> logger)
+    ModEngine(GameInfo game, Settings settings)
         : m_game(game)
         , m_hooks()
-        , m_logger(logger)
+        , m_settings(settings)
     {
     }
 
@@ -43,16 +44,15 @@ public:
         return m_game;
     }
 
-    auto config(const std::string_view category = "modengine") const
+    const Settings& settings() const
     {
-        return m_config.get(category);
+        return m_settings;
     }
 private:
-    toml::table m_config;
+    Settings m_settings;
     GameInfo m_game;
     HookSet m_hooks;
     std::vector<Patch> m_patches;
-    std::shared_ptr<spdlog::logger> m_logger;
     std::vector<std::unique_ptr<ModEngineExtension>> m_extensions;
 };
 

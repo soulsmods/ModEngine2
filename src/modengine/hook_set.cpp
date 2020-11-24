@@ -30,6 +30,13 @@ bool HookSet::hook_all()
 
 bool HookSet::unhook_all()
 {
+    DetourTransactionBegin();
+
+    for(const auto& hook : hooks) {
+        DetourDetach((PVOID*)&hook->original, (PVOID)hook->replacement);
+    }
+
+    DetourTransactionCommit();
     return true;
 }
 
