@@ -15,7 +15,12 @@ add_library(modengine2 SHARED
         modengine/base/archive_file_overrides.cpp
         modengine/base/dinput_hook.cpp
         modengine/base/scyllahide_inject.cpp
-        modengine/base/winsockets_disable.cpp)
+        modengine/base/winsockets_disable.cpp
+        modengine/debugmenu/ds3/debug_menu_ds3.cpp
+        modengine/debugmenu/ds3/_DS3BootMenu.asm
+        modengine/debugmenu/ds3/_DS3Debug.asm
+        modengine/debugmenu/ds3/_DS3DebugDash.asm
+        modengine/debugmenu/ds3/_DS3GameProperties.asm)
 
 # Detours currently has no CMake manifests: https://github.com/microsoft/Detours/pull/48.
 find_path(VCPKG_INCLUDE_DIR NAMES detours/detver.h)
