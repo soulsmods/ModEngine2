@@ -15,7 +15,7 @@ BYTE pGestureBytes[1] = { 0x75 };
 BYTE pFreeCamBytes1[5] = { 0xE8, 0xBD, 0xB0, 0xD0, 01 };
 BYTE pFreeCamBytes2[35] = { 0x44, 0x88, 0xA6, 0x98, 0x00, 0x00, 0x00, 0x8B, 0x83, 0xE0, 0x00, 0x00, 0x00, 0xFF, 0xC8, 0x83, 0xF8, 0x01, 0x0F, 0x87, 0x35, 0x01, 0x00, 0x00, 0x44, 0x88, 0xBE, 0x98, 0x00, 0x00, 0x00 };
 BYTE dbgFontPatch[2] = { 0xEB, 0x10 };
-BYTE moveMapListStepPatch[18] = { 0xC7, 0x46, 0x10, 0xFF, 0xFF, 0xFF, 0xFF, 0x48, 0x8B, 0x74, 0x24, 0x38, 0x48, 0x83, 0xC4, 0x20, 0x5F, 0xC3};
+BYTE moveMapListStepPatch[18] = { 0xC7, 0x46, 0x10, 0xFF, 0xFF, 0xFF, 0xFF, 0x48, 0x8B, 0x74, 0x24, 0x38, 0x48, 0x83, 0xC4, 0x20, 0x5F, 0xC3 };
 BYTE sfxGUIPatch1[16] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
 BYTE sfxGUIPatch2[8] = { 0x48, 0x8B, 0x8A, 0x40, 0x03, 0x00, 0x00, 0x90 };
 
@@ -136,17 +136,18 @@ void DebugMenuDS3Extension::ExtraDelayedPatches()
     //Pav patch for sfx GUI menus
     MemcpyProtected(0x140250A5F, 16, sfxGUIPatch1);
     MemcpyProtected(0x140DF3F56, 8, sfxGUIPatch2);
-
 }
 
 void DebugMenuDS3Extension::DelayedPatches()
 {
-    //Boot Menu
-    int size = 0x230;
-    WriteProtected(0x140ED13F1, size);
-    Hook((LPVOID)0x140ED1457, 5, &tInitDebugBootMenuStep, &bInitDebugBootMenuStep);
-    //size = 0x155;
-    //WriteProtected(0x1408FDC4B, size);
+    if (settings().is_debug_menu_boot_enabled()) {
+        //Boot Menu
+        int size = 0x230;
+        WriteProtected(0x140ED13F1, size);
+        Hook((LPVOID)0x140ED1457, 5, &tInitDebugBootMenuStep, &bInitDebugBootMenuStep);
+        //size = 0x155;
+        //WriteProtected(0x1408FDC4B, size);
+    }
 
     MemcpyProtected(0x1408E7E2C, 18, moveMapListStepPatch);
 
@@ -174,7 +175,6 @@ void DebugMenuDS3Extension::DelayedPatches()
 
     MemcpyProtected(0x140022909, 2, nopBytes); //-- Enable Cubemap Generation nodes
 
-
     //MemcpyProtected(0x140EE7C01, 4, &dBypassCheck2); //This check restores this one ^
 
     //Dbg font loading
@@ -201,8 +201,7 @@ void DebugMenuDS3Extension::DelayedPatches()
 
 static void setup_vtables()
 {
-    for (int i = 0; i < 21; i++)
-    {
+    for (int i = 0; i < 21; i++) {
         EzTextlistSelectorVtable[i] = *(DWORD64*)(0x142894A08 + i * 8);
     }
 
@@ -214,16 +213,14 @@ static void setup_vtables()
     EzTextlistSelectorVtable[1] = (DWORD64)&EzTextlistSelectorDtor;
     EzTextlistSelectorVtable[2] = 0x14065AD60;
 
-    for (int i = 0; i < 5; i++)
-    {
+    for (int i = 0; i < 5; i++) {
         MoveMapListStepVtable[i] = *(DWORD64*)(0x142849EC8 + i * 8);
     }
-    
+
     //Make additional modifications
     MoveMapListStepVtable[1] = (DWORD64)&MoveMapListStepDtor;
 
-    for (int i = 0; i < 16; i++)
-    {
+    for (int i = 0; i < 16; i++) {
         debugBootMenuStepVtable[i] = *(DWORD64*)(0x14285F128 + i * 8);
     }
 
@@ -231,23 +228,26 @@ static void setup_vtables()
     debugBootMenuStepVtable[1] = (DWORD64)&debugBootMenuStepDtor;
 }
 
-
 static DWORD WINAPI ExtraDelayedPatchesStart(void* Param)
 {
-    DebugMenuDS3Extension* This = (DebugMenuDS3Extension*) Param;
+    DebugMenuDS3Extension* This = (DebugMenuDS3Extension*)Param;
     This->ExtraDelayedPatches();
     return 0;
 }
 
 static DWORD WINAPI DelayedPatchesStart(void* Param)
 {
-    DebugMenuDS3Extension* This = (DebugMenuDS3Extension*) Param;
+    DebugMenuDS3Extension* This = (DebugMenuDS3Extension*)Param;
     This->DelayedPatches();
     return 0;
 }
 
 void DebugMenuDS3Extension::on_attach()
 {
+    if (!settings().is_debug_menu_enabled()) {
+        return;
+    }
+
     spdlog::info(L"Applying debug menu patches");
 
     MemcpyProtected(0x140ECDCE4, 5, mov1ToAlBytes);
@@ -260,7 +260,6 @@ void DebugMenuDS3Extension::on_attach()
     CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)DelayedPatchesStart, this, NULL, NULL);
     CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)ExtraDelayedPatchesStart, this, NULL, NULL);
 }
-
 
 void DebugMenuDS3Extension::on_detach()
 {
