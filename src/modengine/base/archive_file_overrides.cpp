@@ -45,7 +45,7 @@ concurrency::concurrent_unordered_set<std::wstring> override_set;
 concurrency::concurrent_unordered_set<std::wstring> archive_set;
 
 // TODO: replace these with settings once we have a good settings system
-std::wstring g_mod_dir = std::wstring(L"debug");
+std::wstring g_mod_dir = std::wstring(L"collisiontest");
 bool g_load_uxm_files = false;
 bool g_use_mod_override = true;
 bool g_cache_paths = true;

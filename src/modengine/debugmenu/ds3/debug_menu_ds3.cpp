@@ -106,7 +106,7 @@ void DebugMenuDS3Extension::ExtraDelayedPatches()
     DWORD dBypassCheck1 = 0;
     DWORD dBypassCheck2 = 0;
 
-    Sleep(2000); //Kill me
+    Sleep(4000); //Kill me
 
     //Pav patches
     MemcpyProtected(0x14080A2F0, 2, mov1ToAlBytes); //-- Enable INS
@@ -249,12 +249,13 @@ static DWORD WINAPI DelayedPatchesStart(void* Param)
 void DebugMenuDS3Extension::on_attach()
 {
     spdlog::info(L"Applying debug menu patches");
-    setup_vtables();
 
     MemcpyProtected(0x140ECDCE4, 5, mov1ToAlBytes);
 
     //Boot Menu
     WriteProtected(0x142720800, (long long)&initDebugBootMenuStepFunctions);
+
+    setup_vtables();
 
     CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)DelayedPatchesStart, this, NULL, NULL);
     CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)ExtraDelayedPatchesStart, this, NULL, NULL);
