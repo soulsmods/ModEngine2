@@ -101,6 +101,102 @@ inline void WriteProtected(uint64_t address, long long value)
     VirtualProtect((LPVOID)address, 8, oldProtect, &oldProtect);
 }
 
+void DebugMenuDS3Extension::ExtraDelayedPatches()
+{
+    DWORD dBypassCheck1 = 0;
+    DWORD dBypassCheck2 = 0;
+
+    Sleep(2000); //Kill me
+
+    //Pav patches
+    MemcpyProtected(0x14080A2F0, 2, mov1ToAlBytes); //-- Enable INS
+    MemcpyProtected(0x14080A2E0, 2, mov1ToAlBytes); //-- Enable Event
+    MemcpyProtected(0x140E82DEE, 5, xorRaxBytes); //-- (HeatMap Menu) Crash on load so it's disabled
+
+    //Enable ChrDbgDraw
+    MemcpyProtected(0x1408D8049, 5, mov1ToAlBytes);
+
+    dBypassCheck1 = 0x0030EEA3;
+    //MemcpyProtected(0x1408B1CF1, 4, &dBypassCheck1); //Bypass the check that bricks saves
+    WriteProtected(0x1408B1CF1, (int)dBypassCheck1);
+    dBypassCheck2 = 0xFFE48E31;
+    WriteProtected(0x140EE7C01, (int)dBypassCheck2);
+
+    //Enable system.properties (maybe???)
+    int systemPropertiesValue = 3;
+    WriteProtected(0x140EC365F, systemPropertiesValue);
+
+    //Enable game.properties
+    Hook((LPVOID)0x14080905B, 7, &tLoadGameProperties, &bLoadGameProperties);
+
+    Hook((LPVOID)0x1422ED2FC, 6, &decWindowCounter, &bDecWindowCounter);
+    //Hook((LPVOID)0x14045399C, 6, &incWindowCounter, &bIncWindowCounter);
+    Hook((LPVOID)0x1422F0522, 7, &incWindowCounter, &bIncWindowCounter);
+
+    //Pav patch for sfx GUI menus
+    MemcpyProtected(0x140250A5F, 16, sfxGUIPatch1);
+    MemcpyProtected(0x140DF3F56, 8, sfxGUIPatch2);
+
+}
+
+void DebugMenuDS3Extension::DelayedPatches()
+{
+    //Boot Menu
+    int size = 0x230;
+    WriteProtected(0x140ED13F1, size);
+    Hook((LPVOID)0x140ED1457, 5, &tInitDebugBootMenuStep, &bInitDebugBootMenuStep);
+    //size = 0x155;
+    //WriteProtected(0x1408FDC4B, size);
+
+    MemcpyProtected(0x1408E7E2C, 18, moveMapListStepPatch);
+
+    //Quick and Dirty
+    Hook((LPVOID)0x1408FDC61, 5, &tInitMoveMapListStep, &bInitMoveMapListStep);
+
+    //Proper
+    Hook((LPVOID)0x1408FDC13, 7, &tGameStepSelection, &bGameStepSelection);
+
+    Hook((LPVOID)0x140D4E027, 7, &tLoadDbgFont, &bLoadDbgFont);
+
+    //Fix WindWorld option
+    MemcpyProtected(0x140CDC43F, 2, nopBytes);
+
+    //Features -- Freecam (A + L3)
+    MemcpyProtected(0x14062C3AE, 5, pFreeCamBytes1);
+    MemcpyProtected(0x14062C401, 31, pFreeCamBytes2);
+
+    //Disable Gesture Menu
+    MemcpyProtected(0x140B2D583, 1, pGestureBytes);
+
+    uint64_t DbgDispLoadingAddress = (uint64_t)&fDbgDispLoading;
+    //MemcpyProtected(0x144587EC8, 8, &DbgDispLoadingAddress);
+    WriteProtected(0x144587EC8, (long long)DbgDispLoadingAddress);
+
+    MemcpyProtected(0x140022909, 2, nopBytes); //-- Enable Cubemap Generation nodes
+
+
+    //MemcpyProtected(0x140EE7C01, 4, &dBypassCheck2); //This check restores this one ^
+
+    //Dbg font loading
+    MemcpyProtected(0x142346F45, 2, dbgFontPatch);
+
+    //Temporarily patch anti-tamper
+    DWORD64 lol = 0;
+    Hook((LPVOID)0x1408E7897, 5, &patchMoveMapFinishAntiTamper, &lol);
+
+    MemcpyProtected(0x140B33BCD, 2, jmpBytes);
+
+    Hook((LPVOID)0x1408D475E, 5, &tCheckDebugDashSwitch, &bCheckDebugDashSwitch);
+
+    //why am I calling this twice
+    Hook((LPVOID)0x14080905B, 7, &tLoadGameProperties, &bLoadGameProperties);
+
+    //Sleep(4000);
+
+    //Enable ChrDbgDraw
+    //MemcpyProtected(0x1408D8049, 5, mov1ToAlBytes);
+}
+
 static void setup_vtables()
 {
     for (int i = 0; i < 21; i++)
@@ -131,6 +227,21 @@ static void setup_vtables()
 
     //Make additional modifications
     debugBootMenuStepVtable[1] = (DWORD64)&debugBootMenuStepDtor;
+}
+
+
+static DWORD WINAPI ExtraDelayedPatchesStart(void* Param)
+{
+    DebugMenuDS3Extension* This = (DebugMenuDS3Extension*) Param;
+    This->ExtraDelayedPatches();
+    return 0;
+}
+
+static DWORD WINAPI DelayedPatchesStart(void* Param)
+{
+    DebugMenuDS3Extension* This = (DebugMenuDS3Extension*) Param;
+    This->DelayedPatches();
+    return 0;
 }
 
 void DebugMenuDS3Extension::on_attach()
@@ -185,10 +296,16 @@ void DebugMenuDS3Extension::on_attach()
     MemcpyProtected(0x140B33BCD, 2, jmpBytes);
 
     Hook((LPVOID)0x1408D475E, 5, tCheckDebugDashSwitch, &bCheckDebugDashSwitch);
-
+//140d4dfed
+//    0x00007ff49e71f160
     //why am I calling this twice
     Hook((LPVOID)0x14080905B, 7, tLoadGameProperties, &bLoadGameProperties);
+
+    CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)DelayedPatchesStart, this, NULL, NULL);
+    CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)ExtraDelayedPatchesStart, this, NULL, NULL);
+
 }
+
 
 void DebugMenuDS3Extension::on_detach()
 {

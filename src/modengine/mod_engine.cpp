@@ -14,10 +14,6 @@ void ModEngine::attach()
 {
     info("Registering anti-debug and DirectInput hooks");
 
-    for (auto& extension : m_extensions) {
-        extension->on_attach();
-    }
-
     MemoryScanner memory_scanner;
 
     for (auto& patch : m_patches) {
@@ -28,6 +24,10 @@ void ModEngine::attach()
 
     if (!m_hooks.hook_all()) {
         error("Failed to register all hooks");
+    }
+
+    for (auto& extension : m_extensions) {
+        extension->on_attach();
     }
 }
 

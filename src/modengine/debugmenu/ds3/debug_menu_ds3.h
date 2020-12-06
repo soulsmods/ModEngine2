@@ -42,6 +42,8 @@ public:
     {
     }
 
+    void DelayedPatches();
+    void ExtraDelayedPatches();
 private:
 
     template <typename T>
