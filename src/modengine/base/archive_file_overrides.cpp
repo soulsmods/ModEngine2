@@ -153,12 +153,12 @@ HANDLE WINAPI tCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwSh
     if (g_use_mod_override && lpFileName != nullptr) {
         wchar_t gp[MAX_PATH + 40];
         GetCurrentDirectoryW(MAX_PATH, gp);
-        auto gamepath = std::wstring_view(gp);
-        auto filename = std::wstring_view(lpFileName);
+        auto gamepath = std::wstring(gp);
+        auto filename = std::wstring(lpFileName);
         // Case insensitive compare since DS3 gives lower case file paths for some reason. Hopefully doesn't break
         // on non-English systems. Here we determine if a referenced file is game data by checking if the file is
         // inside the game directory
-        bool game_relative_path = std::equal(gamepath.begin(), gamepath.end(), filename.begin(),
+        bool game_relative_path = std::equal(gamepath.begin(), gamepath.end(), filename.begin(), filename.end(),
             [](wchar_t a, wchar_t b) {
                 return towlower(a) == towlower(b);
             });
