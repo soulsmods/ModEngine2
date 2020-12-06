@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <wchar.h>
 #include <algorithm>
+#include <filesystem>
 #include <string>
 #include <string_view>
 #include <optional>
@@ -44,7 +45,7 @@ concurrency::concurrent_unordered_set<std::wstring> override_set;
 concurrency::concurrent_unordered_set<std::wstring> archive_set;
 
 // TODO: replace these with settings once we have a good settings system
-std::wstring g_mod_dir = std::wstring(L"collisiontest");
+std::wstring g_mod_dir = std::wstring(L"debug");
 bool g_load_uxm_files = false;
 bool g_use_mod_override = true;
 bool g_cache_paths = true;
@@ -57,7 +58,7 @@ std::shared_ptr<Hook<fpVirtualToArchivePathSekiro>> hooked_virtual_to_archive_pa
 
 inline std::optional<std::wstring> find_override_file(const std::wstring mod_dir, const std::wstring full_path, const std::wstring game_path)
 {
-    std::wstring search_path = full_path + L"\\" + mod_dir + game_path;
+    std::wstring search_path = full_path + L"\\" + mod_dir + L"\\" + game_path;
     if (GetFileAttributesW(search_path.data()) != INVALID_FILE_ATTRIBUTES) {
         return search_path;
     }
@@ -146,40 +147,34 @@ void process_archive_path(std::wstring_view archive_path, wchar_t* rawpath)
     }
 }
 
+namespace fs = std::filesystem;
+
 HANDLE WINAPI tCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode,
     LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes,
     HANDLE hTemplateFile)
 {
     if (g_use_mod_override && lpFileName != nullptr) {
-        wchar_t gp[MAX_PATH + 40];
-        GetCurrentDirectoryW(MAX_PATH, gp);
-        auto gamepath = std::wstring(gp);
-        auto filename = std::wstring(lpFileName);
-        // Case insensitive compare since DS3 gives lower case file paths for some reason. Hopefully doesn't break
-        // on non-English systems. Here we determine if a referenced file is game data by checking if the file is
-        // inside the game directory
-        bool game_relative_path = std::equal(gamepath.begin(), gamepath.end(), filename.begin(), filename.end(),
-            [](wchar_t a, wchar_t b) {
-                return towlower(a) == towlower(b);
-            });
+        const auto cwd = fs::current_path().lexically_normal().make_preferred();
+        const auto filename = fs::path(lpFileName).lexically_normal().make_preferred();
+        bool game_relative_path = std::mismatch(cwd.begin(), cwd.end(), filename.begin(), filename.end()).first == cwd.end();
 
-        if (game_relative_path && filename.length() > gamepath.length()) {
-            auto relpath = filename.substr(gamepath.length());
-            if (relpath.find(L"\\") != -1) {
-                // We likely have a game directory path. Attempt to find override files
-                spdlog::info(L"[FileOverrides] Intercepted game file path {}", filename);
-                auto orpath = find_override_file(g_mod_dir, std::wstring(gamepath), std::wstring(relpath));
-                if (orpath.has_value()) {
-                    spdlog::info(L"[FileOverrides] Overriding with {}", orpath.value());
-                    // Do 10 attempts at loading the override file since we know it exists
-                    for (int i = 0; i < 10; i++) {
-                        HANDLE res = hooked_CreateFileW->original(orpath.value().c_str(), dwDesiredAccess, dwShareMode, lpSecurityAttributes,
-                            dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
-                        if (res != INVALID_HANDLE_VALUE) {
-                            return res;
-                        }
-                        spdlog::warn(L"Failed to load file {}", orpath.value());
+        spdlog::info(L"[FileOverrides] checking filename {}", filename.wstring());
+
+        if (game_relative_path) {
+            auto relpath = filename.lexically_relative(cwd);
+            // We likely have a game directory path. Attempt to find override files
+            spdlog::info(L"[FileOverrides] Intercepted game file path {}", filename.wstring());
+            auto orpath = find_override_file(g_mod_dir, cwd.generic_wstring(), relpath.wstring());
+            if (orpath.has_value()) {
+                spdlog::info(L"[FileOverrides] Overriding with {}", orpath.value());
+                // Do 10 attempts at loading the override file since we know it exists
+                for (int i = 0; i < 10; i++) {
+                    HANDLE res = hooked_CreateFileW->original(orpath.value().c_str(), dwDesiredAccess, dwShareMode, lpSecurityAttributes,
+                        dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
+                    if (res != INVALID_HANDLE_VALUE) {
+                        return res;
                     }
+                    spdlog::warn(L"Failed to load file {}", orpath.value());
                 }
             }
         }
