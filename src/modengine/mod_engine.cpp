@@ -16,6 +16,10 @@ void ModEngine::attach()
 
     MemoryScanner memory_scanner;
 
+    for (auto& extension : m_extensions) {
+        extension->on_attach();
+    }
+
     for (auto& patch : m_patches) {
         if (!patch.apply(memory_scanner)) {
             error("Failed to apply a patch");
@@ -24,10 +28,6 @@ void ModEngine::attach()
 
     if (!m_hooks.hook_all()) {
         error("Failed to register all hooks");
-    }
-
-    for (auto& extension : m_extensions) {
-        extension->on_attach();
     }
 }
 

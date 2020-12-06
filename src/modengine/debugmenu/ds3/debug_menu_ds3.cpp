@@ -151,7 +151,7 @@ void DebugMenuDS3Extension::DelayedPatches()
     MemcpyProtected(0x1408E7E2C, 18, moveMapListStepPatch);
 
     //Quick and Dirty
-    Hook((LPVOID)0x1408FDC61, 5, &tInitMoveMapListStep, &bInitMoveMapListStep);
+    //Hook((LPVOID)0x1408FDC61, 5, &tInitMoveMapListStep, &bInitMoveMapListStep);
 
     //Proper
     Hook((LPVOID)0x1408FDC13, 7, &tGameStepSelection, &bGameStepSelection);
@@ -195,6 +195,8 @@ void DebugMenuDS3Extension::DelayedPatches()
 
     //Enable ChrDbgDraw
     //MemcpyProtected(0x1408D8049, 5, mov1ToAlBytes);
+
+    reapply();
 }
 
 static void setup_vtables()
@@ -249,61 +251,13 @@ void DebugMenuDS3Extension::on_attach()
     spdlog::info(L"Applying debug menu patches");
     setup_vtables();
 
-    // Early patches
+    MemcpyProtected(0x140ECDCE4, 5, mov1ToAlBytes);
+
     //Boot Menu
-    int size = 0x230;
-    WriteProtected(0x140ED13F1, size);
-    Hook((LPVOID)0x140ED1457, 5, tInitDebugBootMenuStep, &bInitDebugBootMenuStep);
-    //size = 0x155;
-    //WriteProtected(0x1408FDC4B, size);
-    
-    MemcpyProtected(0x1408E7E2C, 18, moveMapListStepPatch);
-    
-    //Quick and Dirty
-    //Hook((LPVOID)0x1408FDC61, 5, &tInitMoveMapListStep, &bInitMoveMapListStep);
-
-    //Proper
-    Hook((LPVOID)0x1408FDC13, 7, tGameStepSelection, &bGameStepSelection);
-
-    Hook((LPVOID)0x140D4E027, 7, tLoadDbgFont, &bLoadDbgFont);
-
-    //Fix WindWorld option
-    MemcpyProtected(0x140CDC43F, 2, nopBytes);
-
-    //Features -- Freecam (A + L3)
-    MemcpyProtected(0x14062C3AE, 5, pFreeCamBytes1);
-    MemcpyProtected(0x14062C401, 31, pFreeCamBytes2);
-
-    //Disable Gesture Menu
-    MemcpyProtected(0x140B2D583, 1, pGestureBytes);
-
-    uint64_t DbgDispLoadingAddress = (uint64_t)&fDbgDispLoading;
-    //MemcpyProtected(0x144587EC8, 8, &DbgDispLoadingAddress);
-    WriteProtected(0x144587EC8, (long long)DbgDispLoadingAddress);
-
-    MemcpyProtected(0x140022909, 2, nopBytes); //-- Enable Cubemap Generation nodes
-
-    
-    //MemcpyProtected(0x140EE7C01, 4, &dBypassCheck2); //This check restores this one ^
-
-    //Dbg font loading
-    MemcpyProtected(0x142346F45, 2, dbgFontPatch);
-
-    //Temporarily patch anti-tamper
-    DWORD64 lol = 0;
-    Hook((LPVOID)0x1408E7897, 5, patchMoveMapFinishAntiTamper, &lol);
-
-    MemcpyProtected(0x140B33BCD, 2, jmpBytes);
-
-    Hook((LPVOID)0x1408D475E, 5, tCheckDebugDashSwitch, &bCheckDebugDashSwitch);
-//140d4dfed
-//    0x00007ff49e71f160
-    //why am I calling this twice
-    Hook((LPVOID)0x14080905B, 7, tLoadGameProperties, &bLoadGameProperties);
+    WriteProtected(0x142720800, (long long)&initDebugBootMenuStepFunctions);
 
     CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)DelayedPatchesStart, this, NULL, NULL);
     CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)ExtraDelayedPatchesStart, this, NULL, NULL);
-
 }
 
 
