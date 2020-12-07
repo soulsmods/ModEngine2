@@ -28,6 +28,8 @@ public:
     virtual void on_detach() = 0;
 
 protected:
+    void reapply();
+
     template <typename T>
     std::shared_ptr<Hook<T>> register_hook(GameType type, const std::string& module, const std::string& function, T detour)
     {

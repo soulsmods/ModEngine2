@@ -15,7 +15,12 @@ add_library(modengine2 SHARED
         modengine/base/archive_file_overrides.cpp
         modengine/base/dinput_hook.cpp
         modengine/base/scyllahide_inject.cpp
-        modengine/base/winsockets_disable.cpp)
+        modengine/base/winsockets_disable.cpp
+        modengine/debugmenu/ds3/debug_menu_ds3.cpp
+        modengine/debugmenu/ds3/_DS3BootMenu.asm
+        modengine/debugmenu/ds3/_DS3Debug.asm
+        modengine/debugmenu/ds3/_DS3DebugDash.asm
+        modengine/debugmenu/ds3/_DS3GameProperties.asm)
 
 # Detours currently has no CMake manifests: https://github.com/microsoft/Detours/pull/48.
 find_path(VCPKG_INCLUDE_DIR NAMES detours/detver.h)
@@ -29,17 +34,17 @@ endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     if (CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")
-        target_compile_options(modengine2 PRIVATE
+        target_compile_options(modengine2 PRIVATE $<$<COMPILE_LANGUAGE:CXX>:
                 -Wno-microsoft-cast
                 -Wno-c++98-compat -Wno-c++98-compat-pedantic
                 -Wall -Wextra -Wshadow
                 /GX
-                /clang:-isystem${VCPKG_INCLUDE_DIR})
+                /clang:-isystem${VCPKG_INCLUDE_DIR}>)
     else()
         message(FATAL_ERROR "Clang frontend must be MSVC. Current frontend '${CMAKE_CXX_SIMULATE_ID}' is unsupported")
     endif()
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL  "MSVC")
-    target_compile_options(modengine2 PRIVATE /experimental:external /external:anglebrackets /external:W0 /W4 /WX)
+    target_compile_options(modengine2 PRIVATE $<$<COMPILE_LANGUAGE:CXX>:/utf-8 /experimental:external /external:anglebrackets /external:W0 /W4 /WX>)
 endif()
 
 target_compile_definitions(modengine2 PRIVATE

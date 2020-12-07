@@ -1,2 +1,7 @@
 [modengine]
 debug = true
+disable_networking = true
+
+[debugmenu]
+enable = true
+boot_menu = true

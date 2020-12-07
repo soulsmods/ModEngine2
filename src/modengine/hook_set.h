@@ -22,9 +22,11 @@ struct Hook {
     Hook(T _original, T _replacement)
         : original(_original)
         , replacement(_replacement)
+        , applied(false)
     {
     }
 
+    bool applied;
     T original;
     T replacement;
 };

@@ -1,4 +1,5 @@
 #include "modengine/mod_engine.h"
+#include "modengine/debugmenu/ds3/debug_menu_ds3.h"
 
 #include <optional>
 #include <windows.h>
@@ -53,6 +54,7 @@ int WINAPI modengine_entrypoint(void)
 
     mod_engine_global.reset(new ModEngine {*game_info, settings });
     mod_engine_global->register_extension(std::make_unique<ModEngineBaseExtension>(mod_engine_global));
+    mod_engine_global->register_extension(std::make_unique<modengine::debugmenu::ds3::DebugMenuDS3Extension>(mod_engine_global));
     mod_engine_global->attach();
 
     return hooked_entrypoint->original();

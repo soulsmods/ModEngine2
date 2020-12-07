@@ -16,12 +16,18 @@ bool HookSet::hook_all()
     }
 
     for (const auto& hook : hooks) {
+        if (hook->applied) {
+            continue;
+        }
+
         txn_status = DetourAttach((PVOID*)&hook->original, (PVOID)hook->replacement);
 
         if (txn_status != NO_ERROR) {
             (void)DetourTransactionAbort();
             break;
         }
+
+        hook->applied = true;
     }
 
     txn_status = DetourTransactionCommit();
