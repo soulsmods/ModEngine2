@@ -24,9 +24,25 @@ jobs:
         setupOnly: true
         vcpkgGitCommitId: "2020.11-1"
 
+    - name: 'Create installation directory'
+      env:
+        INSTALL_DIR: '${{ github.workspace }}/install'
+      run: |
+        mkdir -p "$INSTALL_DIR"
+      shell: bash
+
     - name: 'Build with CMake'
       uses: lukka/run-cmake@v3
       with:
+        cmakeAppendedArgs: '-DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install'
         cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
         useVcpkgToolchainFile: true
         buildDirectory: '${{ runner.workspace }}/build/modengine'
+        buildWithCMakeArgs: '--target install'
+
+    - name: 'Upload artifacts'
+      uses: actions/upload-artifact@v2
+      with:
+        name: 'modengine-${{ github.sha }}'
+        path: '${{ runner.workspace }}/install'
+
