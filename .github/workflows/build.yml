@@ -31,8 +31,10 @@ jobs:
     - name: 'Build with CMake'
       uses: lukka/run-cmake@v3
       with:
-        cmakeAppendedArgs: '-GNinja -DMODENGINE_DIST_SCYLLA=1 '
+        cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
         cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
+        cmakeAppendedArgs: '-GNinja
+        -DMODENGINE_DIST_SCYLLA=1'
         useVcpkgToolchainFile: true
         buildDirectory: '${{ runner.workspace }}/build/modengine'
         buildWithCMakeArgs: '--target install'
