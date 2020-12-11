@@ -37,7 +37,7 @@ jobs:
         -DMODENGINE_DIST_SCYLLA=1'
         useVcpkgToolchainFile: true
         buildDirectory: '${{ runner.workspace }}/build/modengine'
-        buildWithCMakeArgs: '--target install'
+        buildWithCMakeArgs: '--target install -- -v'
 
     - name: 'Upload artifacts'
       uses: actions/upload-artifact@v2
