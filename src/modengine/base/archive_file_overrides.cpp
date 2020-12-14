@@ -5,7 +5,9 @@
 #include <string>
 #include <string_view>
 #include <optional>
+#include <regex>
 #include <concurrent_unordered_set.h>
+#include <concurrent_unordered_map.h>
 
 #include <spdlog/spdlog.h>
 
@@ -38,157 +40,137 @@ namespace modengine::base {
 // the easiest and most robust way to do this. It also has the bonus of allowing files that don't go through the asset system
 // (like the data archives and some of the sounds) to be overridable.
 
-// Cached set of files that have an override file available
-concurrency::concurrent_unordered_set<std::wstring> override_set;
+concurrency::concurrent_unordered_map<std::wstring_view, std::optional<std::filesystem::path>> override_paths;
 
-// Cached set of files that don't have an override and should be loaded from archives
-concurrency::concurrent_unordered_set<std::wstring> archive_set;
-
-// TODO: replace these with settings once we have a good settings system
-std::wstring g_mod_dir = std::wstring(L"collisiontest");
-bool g_load_uxm_files = false;
-bool g_use_mod_override = true;
-bool g_cache_paths = true;
-
-// Hooked functions
 std::shared_ptr<Hook<fpCreateFileW>> hooked_CreateFileW;
 std::shared_ptr<Hook<fpVirtualToArchivePathDS3>> hooked_virtual_to_archive_path_ds3;
 std::shared_ptr<Hook<fpVirtualToArchivePathDS2>> hooked_virtual_to_archive_path_ds2;
 std::shared_ptr<Hook<fpVirtualToArchivePathSekiro>> hooked_virtual_to_archive_path_sekiro;
+std::vector<std::wstring> hooked_file_roots;
 
-inline std::optional<std::wstring> find_override_file(const std::wstring mod_dir, const std::wstring full_path, const std::wstring game_path)
+using namespace spdlog;
+
+namespace fs = std::filesystem;
+
+std::optional<fs::path> find_override_file(const fs::path& game_path)
 {
-    std::wstring search_path = full_path + L"\\" + mod_dir + L"\\" + game_path;
-    if (GetFileAttributesW(search_path.data()) != INVALID_FILE_ATTRIBUTES) {
-        return search_path;
+    for (const auto& root : hooked_file_roots) {
+        auto file_path = root / fs::path(game_path);
+
+        if (fs::exists(file_path)) {
+            return file_path;
+        }
     }
+
     return {};
 }
 
-bool has_override_file(std::wstring_view path)
+/* Check if the given path is an archive reference and replaces
+ i.e. "data1:/some/path" with ".//////some/path" which has the
+ effect of causing the game to load a file from the local file
+ system instead of an archive.*/
+void process_archive_path(wchar_t* raw_path, size_t raw_path_len)
 {
-    spdlog::info(L"[ArchiveOverrides] Intercepted archive path {}", path);
+    /* clang-format off */
+    static auto archive_file_pattern = std::wregex(
+        L"("
+            "data.:\\/"   // References to main data archives (data1:/ etc)
+            "|gamedata."  // References to DS2 data archives
+            "|game_....." // References to DS3 DLC archives
+        ").+");
+    /* clang-format on */
 
-    bool is_overridden = g_cache_paths ? (override_set.find(std::wstring(path)) != override_set.end()) : false;
-    bool is_archived = g_cache_paths ? (archive_set.find(std::wstring(path)) != archive_set.end()) : false;
+    std::wstring path(raw_path, raw_path_len);
+    info(L"Checking archive path {}", path);
 
-    // Not cached
-    if (!is_overridden && !is_archived) {
-        wchar_t working[_MAX_PATH];
-        GetCurrentDirectoryW(MAX_PATH, working);
-        std::wstring dir = std::wstring(working);
+    std::wsmatch matches;
+    std::regex_match(path, matches, archive_file_pattern);
 
-        // If we're using a mod override and not using UXM we need to search inside the specified mod directory
-        if (g_use_mod_override && !g_load_uxm_files) {
-            dir = dir + L"\\" + g_mod_dir;
-        }
-        // If we're not using mod overrides and not loading UXM files then don't override at all
-        else if (!g_load_uxm_files) {
-            return false;
-        }
-
-        // Add the game file path and replace the slashes
-        dir += path;
-        std::replace(dir.begin(), dir.end(), L'/', L'\\');
-
-        spdlog::info(L"[ArchiveOverrides] Looking for override file {}", dir);
-
-        // Search if an override file exists for the current mod
-        if (GetFileAttributesW(dir.data()) != INVALID_FILE_ATTRIBUTES) {
-            if (g_cache_paths) {
-                override_set.insert(std::wstring(path));
-            }
-            spdlog::info(L"[ArchiveOverrides] Adding override for {}", dir);
-            return true;
-        } else {
-            // If the override file doesn't exist, cache it if caching is enabled
-            if (g_cache_paths) {
-                archive_set.insert(std::wstring(path));
-            }
-        }
+    if (matches.empty()) {
+        return;
     }
 
-    return is_overridden;
-}
+    const auto prefix_len = matches[1].length();
+    const auto archive_file = L"./" + path.substr(prefix_len);
+    const auto archive_file_path = fs::path(archive_file).lexically_normal();
 
-// Replaces i.e. "data1:/some/path" with ".//////some/path" which has the effect of causing the game to load a file from the file system instead
-// of an archive
-inline void archive_to_file_path(wchar_t* archive_path, int count)
-{
-    archive_path[0] = L'.';
-    for (int i = 1; i < count; i++) {
-        archive_path[i] = L'/';
-    }
-}
+    debug(L"Path matched to {}", archive_file_path.native());
 
-void process_archive_path(std::wstring_view archive_path, wchar_t* rawpath)
-{
-    bool override = false;
-    // References to main data archives (data1:/ etc)
-    if (archive_path.rfind(L"data", 0) == 0 && archive_path.size() >= 6) {
-        override = has_override_file(archive_path.substr(6));
-        if (override) {
-            archive_to_file_path(rawpath, 6);
+    const auto& local_file_key = std::wstring_view(archive_file_path.native());
+    const auto& local_override = override_paths.find(local_file_key);
+
+    fs::path override_path;
+
+    if (local_override != override_paths.end() && !local_override->second.has_value()) {
+        return;
+    } else if (local_override == override_paths.end()) {
+        auto override = find_override_file(archive_file_path);
+
+        if (!override.has_value()) {
+            return;
         }
+
+        override_path = override.value();
+        override_paths[archive_file_path.native()] = override_path;
+
+        debug(L"Found override in {}", override_path.native());
     }
-    // References to DS2 data archives
-    if (archive_path.rfind(L"gamedata", 0) == 0 && archive_path.size() >= 9) {
-        override = has_override_file(archive_path.substr(9));
-        if (override) {
-            archive_to_file_path(rawpath, 9);
-        }
-    }
-    // References to DS3 DLC archives
-    if (archive_path.rfind(L"game_", 10) == 0 && archive_path.size() >= 10) {
-        override = has_override_file(archive_path.substr(10));
-        if (override) {
-            archive_to_file_path(rawpath, 10);
-        }
+
+    raw_path[0] = L'.';
+
+    for (auto i = 1; i < prefix_len && i < raw_path_len; i++) {
+        raw_path[i] = '/';
     }
 }
-
-namespace fs = std::filesystem;
 
 HANDLE WINAPI tCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode,
     LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes,
     HANDLE hTemplateFile)
 {
-    if (g_use_mod_override && lpFileName != nullptr) {
-        const auto cwd = fs::current_path().lexically_normal().make_preferred();
-        const auto filename = fs::path(lpFileName).lexically_normal().make_preferred();
-        bool game_relative_path = std::mismatch(cwd.begin(), cwd.end(), filename.begin(), filename.end()).first == cwd.end();
+    if (lpFileName != nullptr) {
+        const auto key = std::wstring_view(lpFileName);
+        const auto& override = override_paths.find(key);
 
-        spdlog::info(L"[FileOverrides] checking filename {}", filename.wstring());
+        if (override != override_paths.end() && override->second.has_value()) {
+            const auto override_path = override->second->native().c_str();
 
-        if (game_relative_path) {
-            auto relpath = filename.lexically_relative(cwd);
-            // We likely have a game directory path. Attempt to find override files
-            spdlog::info(L"[FileOverrides] Intercepted game file path {}", filename.wstring());
-            auto orpath = find_override_file(g_mod_dir, cwd.generic_wstring(), relpath.wstring());
-            if (orpath.has_value()) {
-                spdlog::info(L"[FileOverrides] Overriding with {}", orpath.value());
-                // Do 10 attempts at loading the override file since we know it exists
-                for (int i = 0; i < 10; i++) {
-                    HANDLE res = hooked_CreateFileW->original(orpath.value().c_str(), dwDesiredAccess, dwShareMode, lpSecurityAttributes,
-                        dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
-                    if (res != INVALID_HANDLE_VALUE) {
-                        return res;
-                    }
-                    spdlog::warn(L"Failed to load file {}", orpath.value());
+            for (int i = 0; i < 10; i++) {
+                HANDLE res = hooked_CreateFileW->original(
+                    override_path,
+                    dwDesiredAccess,
+                    dwShareMode,
+                    lpSecurityAttributes,
+                    dwCreationDisposition,
+                    dwFlagsAndAttributes,
+                    hTemplateFile);
+
+                if (res != INVALID_HANDLE_VALUE) {
+                    return res;
                 }
+
+                warn(L"Failed to load file {}", *override_path);
             }
         }
     }
-    return hooked_CreateFileW->original(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition,
-        dwFlagsAndAttributes, hTemplateFile);
+
+    return hooked_CreateFileW->original(
+        lpFileName,
+        dwDesiredAccess,
+        dwShareMode,
+        lpSecurityAttributes,
+        dwCreationDisposition,
+        dwFlagsAndAttributes,
+        hTemplateFile);
 }
 
 void* __cdecl virtual_to_archive_path_ds3(dlstring_t* path, UINT64 p2, UINT64 p3, dlstring_t* p4, UINT64 p5, UINT64 p6)
 {
     dlstring_t* res = static_cast<dlstring_t*>(hooked_virtual_to_archive_path_ds3->original(path, p2, p3, p4, p5, p6));
-    if (res != nullptr && res->capacity > 7) {
-        process_archive_path(std::wstring_view(res->string, res->length), res->string);
+
+    if (res != nullptr) {
+        process_archive_path(res->string, res->length);
     }
+
     return static_cast<void*>(res);
 }
 

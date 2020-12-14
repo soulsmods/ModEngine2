@@ -5,3 +5,6 @@ disable_networking = true
 [debugmenu]
 enable = true
 boot_menu = true
+
+[mod.debug]
+path = "debug/"

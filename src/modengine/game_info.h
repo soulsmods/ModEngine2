@@ -14,6 +14,8 @@ enum GameType : std::uint32_t {
     ALL = 0xFFFFFFFF
 };
 
+GameType operator |(GameType lhs, GameType rhs);
+
 struct GameInfo {
 public:
     GameInfo(GameType _type, std::string _version)

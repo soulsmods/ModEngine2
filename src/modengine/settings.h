@@ -1,8 +1,30 @@
 #pragma once
 
+#include <spdlog/spdlog.h>
 #include <toml++/toml.h>
 
+#include <locale>
+#include <codecvt>
+#include <string>
+
 namespace modengine {
+
+using namespace spdlog;
+
+struct ModInfo {
+public:
+    std::wstring name;
+    bool enabled;
+    std::wstring location;
+};
+
+static std::wstring utf8_to_wide(const std::string& str)
+{
+    auto count = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int) str.length(), NULL, 0);
+    std::wstring wstr(count, 0);
+    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int) str.length(), &wstr[0], count);
+    return wstr;
+}
 
 class Settings {
 public:
@@ -22,6 +44,31 @@ public:
     {
         // Default to always disabling networking unless explicitely opting in
         return m_config["modengine"]["disable_networking"].value_or(true);
+    }
+
+    const std::vector<ModInfo> mods() const
+    {
+        auto mod_info = std::vector<ModInfo>();
+        auto mod_config = m_config["mod"].as_table();
+
+        if (!mod_config) {
+            return mod_info;
+        }
+
+        for (auto&& [k, v] : *mod_config) {
+            const auto mod = *v.as_table();
+            const auto path = mod["path"].as_string();
+            const auto enabled = mod["enabled"].value_or(false);
+
+            if (!path) {
+                warn("Mod {} has no path set, skipping.");
+                continue;
+            }
+
+            mod_info.push_back(ModInfo { utf8_to_wide(k), enabled, utf8_to_wide(path->get()) });
+        }
+
+        return mod_info;
     }
 
     // Debug menu
