@@ -22,7 +22,7 @@ void ModEngine::attach()
     }
 
     for (auto& patch : m_patches) {
-        if (!patch.apply(memory_scanner)) {
+        if (!patch->apply(memory_scanner)) {
             error("Failed to apply a patch");
         }
     }
