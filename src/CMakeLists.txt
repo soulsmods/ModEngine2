@@ -20,13 +20,17 @@ add_library(modengine2 SHARED
         modengine/debugmenu/ds3/_DS3BootMenu.asm
         modengine/debugmenu/ds3/_DS3Debug.asm
         modengine/debugmenu/ds3/_DS3DebugDash.asm
-        modengine/debugmenu/ds3/_DS3GameProperties.asm)
+        modengine/debugmenu/ds3/_DS3GameProperties.asm
+        modengine/ext/crash_handler_extension.cpp)
 
 # Detours currently has no CMake manifests: https://github.com/microsoft/Detours/pull/48.
 find_path(VCPKG_INCLUDE_DIR NAMES detours/detver.h)
+find_path(VCPKG_TOOLS NAMES tools/crashpad_handler.exe)
+
 find_library(DETOURS_LIBRARY detours)
 find_package(spdlog CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
+find_package(crashpad CONFIG REQUIRED)
 
 if (NOT MODENGINE_NO_DINPUT8)
     set_target_properties(modengine2 PROPERTIES OUTPUT_NAME "dinput8")
@@ -57,7 +61,13 @@ target_include_directories(modengine2 PRIVATE
 target_link_libraries(modengine2 PRIVATE
         ${DETOURS_LIBRARY}
         fmt::fmt-header-only
-        spdlog::spdlog_header_only)
+        spdlog::spdlog_header_only
+        crashpad)
 
 target_precompile_headers(modengine2 PRIVATE
         "$<$<COMPILE_LANGUAGE:CXX>:<MINT.h$<ANGLE-R>>")
+
+install(FILES
+        "${VCPKG_TOOLS}/tools/crashpad_handler.exe"
+        "${VCPKG_TOOLS}/bin/zlibd1.dll"
+        DESTINATION .)
