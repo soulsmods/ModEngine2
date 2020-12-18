@@ -2,6 +2,8 @@
 #include "modengine/debugmenu/ds3/debug_menu_ds3.h"
 #include "modengine/ext/crash_handler_extension.h"
 
+#include "modengine/version.h"
+
 #include <optional>
 #include <windows.h>
 
@@ -50,6 +52,8 @@ int WINAPI modengine_entrypoint(void)
     bool settings_found = settings.load_from(L"modengine.toml");
 
     spdlog::set_default_logger(configure_logger(settings));
+
+    info("ModEngine version {}", g_version);
 
     if (!settings_found) {
         warn("Unable to find modengine configuration file");
