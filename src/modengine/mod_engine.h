@@ -52,7 +52,7 @@ private:
     Settings m_settings;
     GameInfo m_game;
     HookSet m_hooks;
-    std::vector<Patch> m_patches;
+    std::vector<std::unique_ptr<Patch>> m_patches;
     std::vector<std::unique_ptr<ModEngineExtension>> m_extensions;
 };
 

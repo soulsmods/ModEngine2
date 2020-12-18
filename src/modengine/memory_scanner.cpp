@@ -59,6 +59,20 @@ MemoryScanner::MemoryScanner()
     }
 }
 
+bool MemoryScanner::replace_at(uintptr_t location, std::function<void(uintptr_t)> replace_callback)
+{
+    DWORD original_protection;
+
+    if (!VirtualProtect((void*)location, 0x1000 /* PAGE_SIZE */, PAGE_EXECUTE_READWRITE, &original_protection)) {
+        throw std::runtime_error("Unable to change process memory protection flags");
+    }
+
+    replace_callback(location);
+    VirtualProtect((void*)location, 0x1000, original_protection, &original_protection);
+
+    return true;
+}
+
 bool MemoryScanner::replace(const std::string_view& pattern, std::function<void(uintptr_t)> replace_callback)
 {
     for (const auto region_info : m_memory_regions) {

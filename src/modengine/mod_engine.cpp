@@ -22,7 +22,7 @@ void ModEngine::attach()
     }
 
     for (auto& patch : m_patches) {
-        if (!patch.apply(memory_scanner)) {
+        if (!patch->apply(memory_scanner)) {
             error("Failed to apply a patch");
         }
     }
@@ -54,16 +54,23 @@ void ModEngineBaseExtension::on_attach()
         }
     }
 
-    register_patch(static_cast<GameType>(DS3 | SEKIRO), allocator_table_aob.as_string(), increase_fmod_allocation_limits);
+    register_patch(DS3 | SEKIRO, allocator_table_aob.as_string(), increase_fmod_allocation_limits);
+
     hooked_DirectInput8Create = register_hook(ALL, "C:\\windows\\system32\\dinput8.dll", "DirectInput8Create", DirectInput8Create);
 
     // TODO: AOB scan this?
     hooked_CreateFileW = register_hook(ALL, "C:\\windows\\system32\\kernel32.dll", "CreateFileW", tCreateFileW);
-    hooked_virtual_to_archive_path_ds3 = register_hook(DS3, static_cast<uintptr_t>(0x14007d5e0), virtual_to_archive_path_ds3);
+    hooked_virtual_to_archive_path_ds3 = register_hook(DS3, 0x14007d5e0, virtual_to_archive_path_ds3);
+
+    for (const auto& mod : settings().mods()) {
+        info(L"Installing mod location {}", mod.location);
+        hooked_file_roots.push_back(mod.location);
+    }
 
     if (settings().is_disable_networking()) {
-        hooked_WSAStartup = register_hook(static_cast<GameType>(DS_REMASTERED | DS2 | DS3), "C:\\windows\\system32\\ws2_32.dll", "WSAStartup", tWSAStartup);
+        hooked_WSAStartup = register_hook(DS_REMASTERED | DS2 | DS3, "C:\\windows\\system32\\ws2_32.dll", "WSAStartup", tWSAStartup);
     }
+
 }
 
 void ModEngineBaseExtension::on_detach()

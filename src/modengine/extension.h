@@ -52,6 +52,7 @@ protected:
 
     void register_hook(GameType type, std::shared_ptr<Hook<GenericFunctionPointer>> hook);
     void register_patch(GameType type, const std::string_view& signature, std::function<void(uintptr_t)> replace_callback);
+    void register_patch(GameType type, uint64_t addr, std::function<void(uintptr_t)> replace_callback);
 
     const Settings& settings() const;
 private:
