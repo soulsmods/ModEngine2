@@ -40,7 +40,8 @@ namespace modengine::base {
 // the easiest and most robust way to do this. It also has the bonus of allowing files that don't go through the asset system
 // (like the data archives and some of the sounds) to be overridable.
 
-concurrency::concurrent_unordered_map<std::wstring_view, std::optional<std::filesystem::path>> override_paths;
+concurrency::concurrent_unordered_map<std::wstring_view, std::optional<std::filesystem::path>> archive_override_paths;
+concurrency::concurrent_unordered_map<std::wstring_view, std::optional<std::filesystem::path>> file_override_paths;
 
 std::shared_ptr<Hook<fpCreateFileW>> hooked_CreateFileW;
 std::shared_ptr<Hook<fpVirtualToArchivePathDS3>> hooked_virtual_to_archive_path_ds3;
@@ -55,8 +56,7 @@ namespace fs = std::filesystem;
 std::optional<fs::path> find_override_file(const fs::path& game_path)
 {
     for (const auto& root : hooked_file_roots) {
-        auto file_path = root / fs::path(game_path);
-
+        auto file_path = fs::current_path() / root / fs::path(game_path);
         if (fs::exists(file_path)) {
             return file_path;
         }
@@ -97,13 +97,13 @@ void process_archive_path(wchar_t* raw_path, size_t raw_path_len)
     debug(L"Path matched to {}", archive_file_path.native());
 
     const auto& local_file_key = std::wstring_view(archive_file_path.native());
-    const auto& local_override = override_paths.find(local_file_key);
+    const auto& local_override = archive_override_paths.find(local_file_key);
 
     fs::path override_path;
 
-    if (local_override != override_paths.end() && !local_override->second.has_value()) {
+    if (local_override != archive_override_paths.end() && !local_override->second.has_value()) {
         return;
-    } else if (local_override == override_paths.end()) {
+    } else if (local_override == archive_override_paths.end()) {
         auto override = find_override_file(archive_file_path);
 
         if (!override.has_value()) {
@@ -111,7 +111,7 @@ void process_archive_path(wchar_t* raw_path, size_t raw_path_len)
         }
 
         override_path = override.value();
-        override_paths[archive_file_path.native()] = override_path;
+        archive_override_paths[archive_file_path.native()] = override_path;
 
         debug(L"Found override in {}", override_path.native());
     }
@@ -128,12 +128,23 @@ HANDLE WINAPI tCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwSh
     HANDLE hTemplateFile)
 {
     if (lpFileName != nullptr) {
-        const auto key = std::wstring_view(lpFileName);
-        const auto& override = override_paths.find(key);
+        auto override_file_opt = file_override_paths.find(std::wstring_view(lpFileName));
+        std::optional<fs::path> overridepath = {};
+        if (override_file_opt != file_override_paths.end()) {
+            overridepath = override_file_opt->second;
+        } else {
+            auto filepath = fs::path(lpFileName);
+            auto basepath = fs::current_path();
+            if (std::search(filepath.begin(), filepath.end(), basepath.begin(), basepath.end()) != filepath.end()) {
+                auto relpath = fs::path(filepath.wstring().substr(basepath.wstring().length() + 1));
+                overridepath = find_override_file(relpath);
+            }
+            file_override_paths[std::wstring_view(lpFileName)] = overridepath;
+        }
 
-        if (override != override_paths.end() && override->second.has_value()) {
-            const auto override_path = override->second->native().c_str();
-
+        if (overridepath.has_value()) {
+            const auto override_path = overridepath.value().native().c_str();
+            info(L"Loading overriden path {}", override_path);
             for (int i = 0; i < 10; i++) {
                 HANDLE res = hooked_CreateFileW->original(
                     override_path,
@@ -147,7 +158,6 @@ HANDLE WINAPI tCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwSh
                 if (res != INVALID_HANDLE_VALUE) {
                     return res;
                 }
-
                 warn(L"Failed to load file {}", *override_path);
             }
         }
