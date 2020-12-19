@@ -2,8 +2,11 @@ set(CMAKE_CXX_STANDARD 17)
 enable_language(ASM_MASM)
 enable_testing()
 
+configure_file("modengine/version.cpp" "${CMAKE_CURRENT_BINARY_DIR}/version.cpp" @ONLY)
+
 add_library(modengine2 SHARED
         main.cpp
+        ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
         modengine/extension.cpp
         modengine/mod_engine.cpp
         modengine/game_info.cpp
