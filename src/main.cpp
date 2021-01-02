@@ -1,11 +1,13 @@
 #include "modengine/mod_engine.h"
 #include "modengine/debugmenu/ds3/debug_menu_ds3.h"
 #include "modengine/ext/crash_handler_extension.h"
+#include "modengine/ext/profiling_extension.h"
 
 #include "modengine/version.h"
 
 #include <optional>
 #include <windows.h>
+#include <iostream>
 
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -37,7 +39,6 @@ static std::shared_ptr<spdlog::logger> configure_logger(const Settings& settings
         logger->sinks().push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
         logger->set_level(spdlog::level::debug);
     }
-
 
     return logger;
 }

@@ -24,7 +24,9 @@ add_library(modengine2 SHARED
         modengine/debugmenu/ds3/_DS3Debug.asm
         modengine/debugmenu/ds3/_DS3DebugDash.asm
         modengine/debugmenu/ds3/_DS3GameProperties.asm
-        modengine/ext/crash_handler_extension.cpp)
+        modengine/ext/crash_handler_extension.cpp
+        modengine/ext/profiling_extension.cpp
+        modengine/ext/profiling/profiler_trampoline.asm)
 
 # Detours currently has no CMake manifests: https://github.com/microsoft/Detours/pull/48.
 find_path(VCPKG_INCLUDE_DIR NAMES detours/detver.h)
