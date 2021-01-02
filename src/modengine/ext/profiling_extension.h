@@ -1,0 +1,28 @@
+#pragma once
+
+#include "modengine/mod_engine.h"
+#include "modengine/extension.h"
+
+extern "C" void* __profiler_begin(const char *zone_name);
+extern "C" void __profiler_end(void *);
+
+extern "C" void profiler_zone();
+extern "C" void profiler_zone_exit();
+
+namespace modengine::ext {
+
+class ProfilingExtension : public ModEngineExtension {
+public:
+    ProfilingExtension(const std::shared_ptr<ModEngine>& instance)
+        : ModEngineExtension(instance)
+    {
+
+    }
+
+private:
+    void on_attach() override;
+    void on_detach() override;
+    void install_profiler_zone(uintptr_t function_address, const char* zone);
+};
+
+}
