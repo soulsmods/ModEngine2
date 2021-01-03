@@ -23,7 +23,10 @@ void ProfilingExtension::on_attach()
     hooked_MainLoop = register_hook(DS3, 0x140eccb30, tMainLoop);
     hooked_DLThreadHandler = register_hook(DS3, 0x1417ef4b0, tDLThreadHandler);
     install_profiler_zone(0x140ee4d10, "fun_140ee4d10");
-    install_profiler_zone(0x140f01cc0, "Tasks?");
+    install_profiler_zone(0x140e95b35, "fun_140e95b35");
+    install_profiler_zone(0x140f01cc0, "fun_140f01cc0");
+    install_profiler_zone(0x140e96260, "fun_140e96260");
+    install_profiler_zone(0x141779af0, "fun_141779af0");
     //install_profiler_zone(0x14007d5e0, "test_zone");
 
     // Test SprjGraphicsStep (don't these are actually called though?)
@@ -91,13 +94,16 @@ void ProfilingExtension::install_profiler_zone(uintptr_t function_address, const
 }
 
 }
+
 extern "C" void __profiler_end(void*)
 {
+    OPTICK_POP();
 }
 
 extern "C" void* __profiler_begin(const char* name)
 {
     //spdlog::info("called");
-    OPTICK_EVENT(name);
+    //OPTICK_EVENT(name);
+    OPTICK_PUSH_DYNAMIC(name);
     return nullptr;
 }
