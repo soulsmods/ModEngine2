@@ -4,6 +4,9 @@ enable_testing()
 
 configure_file("modengine/version.cpp" "${CMAKE_CURRENT_BINARY_DIR}/version.cpp" @ONLY)
 
+# Optick source
+file(GLOB OPTICK_SRC "../dependencies/optick/*.cpp")
+
 add_library(modengine2 SHARED
         main.cpp
         ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
@@ -26,7 +29,9 @@ add_library(modengine2 SHARED
         modengine/debugmenu/ds3/_DS3GameProperties.asm
         modengine/ext/crash_handler_extension.cpp
         modengine/ext/profiling_extension.cpp
-        modengine/ext/profiling/profiler_trampoline.asm)
+        modengine/ext/profiling/profiler_trampoline.asm
+        modengine/ext/profiling/thread_hooks.cpp
+        ${OPTICK_SRC})
 
 # Detours currently has no CMake manifests: https://github.com/microsoft/Detours/pull/48.
 find_path(VCPKG_INCLUDE_DIR NAMES detours/detver.h)
@@ -54,14 +59,19 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     endif()
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL  "MSVC")
     target_compile_options(modengine2 PRIVATE $<$<COMPILE_LANGUAGE:CXX>:/utf-8 /experimental:external /external:anglebrackets /external:W0 /W4 /WX>)
+    target_compile_definitions(modengine2 PRIVATE _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS _CRT_SECURE_NO_WARNINGS)
 endif()
 
 target_compile_definitions(modengine2 PRIVATE
         -DSPDLOG_WCHAR_TO_UTF8_SUPPORT)
 
+# Disable optick GPU for now until D3D11 backend
+target_compile_definitions(modengine2 PRIVATE OPTICK_ENABLE_GPU=0)
+
 target_include_directories(modengine2 PRIVATE
         ${DETOURS_INCLUDE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR})
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        "../dependencies/optick")
 
 target_link_libraries(modengine2 PRIVATE
         ${DETOURS_LIBRARY}

@@ -1,4 +1,5 @@
 #include "modengine/ext/profiling_extension.h"
+#include "modengine/ext/profiling/thread_hooks.h"
 
 namespace modengine::ext {
 
@@ -15,6 +16,9 @@ struct ProfilerPreludeData {
 
 void ProfilingExtension::on_attach()
 {
+    info("Setting up profiler");
+
+    hooked_DLThreadHandler = register_hook(DS3, 0x1417ef4b0, tDLThreadHandler);
     install_profiler_zone(0x14007d5e0, "test_zone");
 }
 
