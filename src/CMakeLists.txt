@@ -30,6 +30,7 @@ add_library(modengine2 SHARED
         modengine/ext/crash_handler_extension.cpp
         modengine/ext/profiling_extension.cpp
         modengine/ext/profiling/profiler_trampoline.asm
+        modengine/ext/profiling/main_loop.cpp
         modengine/ext/profiling/thread_hooks.cpp
         ${OPTICK_SRC})
 

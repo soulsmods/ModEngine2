@@ -68,7 +68,7 @@ void ModEngineBaseExtension::on_attach()
     }
 
     if (settings().is_disable_networking()) {
-        hooked_WSAStartup = register_hook(DS_REMASTERED | DS2, "C:\\windows\\system32\\ws2_32.dll", "WSAStartup", tWSAStartup);
+        //hooked_WSAStartup = register_hook(DS_REMASTERED | DS2, "C:\\windows\\system32\\ws2_32.dll", "WSAStartup", tWSAStartup);
         hooked_IPv4AddrFunction = register_hook(DS3, 0x1418c0e60, tIPv4AddrFunction);
     }
 

@@ -67,6 +67,8 @@ int WINAPI modengine_entrypoint(void)
         return false;
     }
 
+    info("Main thread ID: {}", GetCurrentThreadId());
+
     info("ModEngine initializing for {}, version {}", game_info->description(), game_info->version);
 
     mod_engine_global.reset(new ModEngine { *game_info, settings });
