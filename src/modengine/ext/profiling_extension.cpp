@@ -47,6 +47,22 @@ void ProfilingExtension::on_attach()
     install_profiler_zone(0x140d4e770, "SprjGraphicsStep::STEP_Update");
     install_profiler_zone(0x140d4e800, "SprjGraphicsStep::STEP_WaitFinishDrawStep");
     install_profiler_zone(0x140d4ca20, "SprjGraphicsStep::STEP_Finish");
+
+    install_profiler_zone(0x140d485b0, "SprjDrawStep::STEP_Update");
+    install_profiler_zone(0x140d0f9d0, "SprjFD4LocationStep::STEP_Update");
+    install_profiler_zone(0x140980de0, "SprjCameraStep::STEP_Update");
+    //install_profiler_zone(0x1409577f0, "SprjWorldScopeStep::STEP_Update");
+    install_profiler_zone(0x1404a1820, "SprjLuaEventUpdateTask::_STEP_Update");
+    install_profiler_zone(0x14045cd10, "prjEmkSystemUpdateTask::_STEP_Update");
+    install_profiler_zone(0x1404b8650, "SprjObjActUpdateTask::_STEP_Update");
+    install_profiler_zone(0x140508b10, "SprjFileStep::STEP_Update");
+    install_profiler_zone(0x140df18b0, "RendManStep::STEP_Update");
+    install_profiler_zone(0x140e3df40, "SprjResStep::STEP_Update");
+    install_profiler_zone(0x140e74c10, "SprjSoundStep::STEP_Update");
+    install_profiler_zone(0x140e42280, "SprjScaleformStep::STEP_UpdateB");
+
+    install_profiler_zone(0x1400d1cb0, "ForTaskRunner?(fun_1400d1cb0)");
+    //install_profiler_zone(0x1400b5e80, "GXInternalForTask::Entry?(fun_1400b5e80)");
 }
 
 void ProfilingExtension::on_detach()
@@ -95,14 +111,14 @@ void ProfilingExtension::install_profiler_zone(uintptr_t function_address, const
 
 }
 
-extern "C" void __profiler_end(void*)
+extern "C" void __cdecl __profiler_end(void*)
 {
     OPTICK_POP();
 }
 
-extern "C" void* __profiler_begin(const char* name)
+extern "C" void* __cdecl __profiler_begin(const char* name, void /**ctx*/)
 {
-    //spdlog::info("called");
+    //spdlog::info("t:{}  {}", GetCurrentThreadId(), ((modengine::ext::ProfilerPreludeData*)ctx)->original_return_address);
     //OPTICK_EVENT(name);
     OPTICK_PUSH_DYNAMIC(name);
     return nullptr;

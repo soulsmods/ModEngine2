@@ -23,10 +23,83 @@ profiler_zone PROC
 
     ; notify the profiler that we're in the prelude of a marked zone
     push rbx
-    sub rsp, 28h
+
+    push rdi
+    push rsi
+    push r12
+    push r13
+    push r14
+    push r15
+    sub rsp, 16
+    movdqu  [rsp], xmm0
+    sub rsp, 16
+    movdqu  [rsp], xmm1
+    sub rsp, 16
+    movdqu  [rsp], xmm2
+    sub rsp, 16
+    movdqu  [rsp], xmm3
+    sub rsp, 16
+    movdqu  [rsp], xmm6
+    sub rsp, 16
+    movdqu  [rsp], xmm7
+    sub rsp, 16
+    movdqu  [rsp], xmm8
+    sub rsp, 16
+    movdqu  [rsp], xmm9
+    sub rsp, 16
+    movdqu  [rsp], xmm10
+    sub rsp, 16
+    movdqu  [rsp], xmm11
+    sub rsp, 16
+    movdqu  [rsp], xmm12
+    sub rsp, 16
+    movdqu  [rsp], xmm13
+    sub rsp, 16
+    movdqu  [rsp], xmm14
+    sub rsp, 16
+    movdqu  [rsp], xmm15
+
+    sub rsp, 30h
     mov rcx, [rbx+8h]
+    mov rdx, rcx
     call __profiler_begin
-    add rsp, 28h
+    add rsp, 30h
+
+    movdqu  xmm15, [rsp]
+    add rsp, 16
+    movdqu  xmm14, [rsp]
+    add rsp, 16
+    movdqu  xmm13, [rsp]
+    add rsp, 16
+    movdqu  xmm12, [rsp]
+    add rsp, 16
+    movdqu  xmm11, [rsp]
+    add rsp, 16
+    movdqu  xmm10, [rsp]
+    add rsp, 16
+    movdqu  xmm9, [rsp]
+    add rsp, 16
+    movdqu  xmm8, [rsp]
+    add rsp, 16
+    movdqu  xmm7, [rsp]
+    add rsp, 16
+    movdqu  xmm6, [rsp]
+    add rsp, 16
+    movdqu  xmm3, [rsp]
+    add rsp, 16
+    movdqu  xmm2, [rsp]
+    add rsp, 16
+    movdqu  xmm1, [rsp]
+    add rsp, 16
+    movdqu  xmm0, [rsp]
+    add rsp, 16
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rsi
+    pop rdi
+
     pop rbx
 
     ; store the "context" of the profiled zone if required
@@ -48,10 +121,80 @@ profiler_zone_exit PROC
     push rax
     push rbx
 
+    push rdi
+    push rsi
+    push r12
+    push r13
+    push r14
+    push r15
+    sub rsp, 16
+    movdqu  [rsp], xmm0
+    sub rsp, 16
+    movdqu  [rsp], xmm1
+    sub rsp, 16
+    movdqu  [rsp], xmm2
+    sub rsp, 16
+    movdqu  [rsp], xmm3
+    sub rsp, 16
+    movdqu  [rsp], xmm6
+    sub rsp, 16
+    movdqu  [rsp], xmm7
+    sub rsp, 16
+    movdqu  [rsp], xmm8
+    sub rsp, 16
+    movdqu  [rsp], xmm9
+    sub rsp, 16
+    movdqu  [rsp], xmm10
+    sub rsp, 16
+    movdqu  [rsp], xmm11
+    sub rsp, 16
+    movdqu  [rsp], xmm12
+    sub rsp, 16
+    movdqu  [rsp], xmm13
+    sub rsp, 16
+    movdqu  [rsp], xmm14
+    sub rsp, 16
+    movdqu  [rsp], xmm15
+
     ; notify the profiler about the end of the zone
-    sub rsp, 28h
+    sub rsp, 30h
     call __profiler_end
-    add rsp, 28h
+    add rsp, 30h
+
+    movdqu  xmm15, [rsp]
+    add rsp, 16
+    movdqu  xmm14, [rsp]
+    add rsp, 16
+    movdqu  xmm13, [rsp]
+    add rsp, 16
+    movdqu  xmm12, [rsp]
+    add rsp, 16
+    movdqu  xmm11, [rsp]
+    add rsp, 16
+    movdqu  xmm10, [rsp]
+    add rsp, 16
+    movdqu  xmm9, [rsp]
+    add rsp, 16
+    movdqu  xmm8, [rsp]
+    add rsp, 16
+    movdqu  xmm7, [rsp]
+    add rsp, 16
+    movdqu  xmm6, [rsp]
+    add rsp, 16
+    movdqu  xmm3, [rsp]
+    add rsp, 16
+    movdqu  xmm2, [rsp]
+    add rsp, 16
+    movdqu  xmm1, [rsp]
+    add rsp, 16
+    movdqu  xmm0, [rsp]
+    add rsp, 16
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rsi
+    pop rdi
 
     ; restore our saved register and original return value
     pop rbx
