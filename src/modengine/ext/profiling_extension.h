@@ -16,10 +16,11 @@ public:
     ProfilingExtension(const std::shared_ptr<ModEngine>& instance)
         : ModEngineExtension(instance)
     {
-
     }
 
 private:
+    DWORD m_tls_idx;
+
     void on_attach() override;
     void on_detach() override;
     void install_profiler_zone(uintptr_t function_address, const char* zone);

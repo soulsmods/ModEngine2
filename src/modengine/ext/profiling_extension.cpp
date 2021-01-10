@@ -5,23 +5,42 @@
 
 namespace modengine::ext {
 
+// Prelude struct that stores constant data associated with a hook
 struct ProfilerPreludeData {
-    void* ctx;
-    const char* zone;
-    uintptr_t original_address;
-    uintptr_t original_return_address;
-    uintptr_t profiler_entry_address;
-    uintptr_t profiler_exit_address;
-    uintptr_t profiler_prologue_address;
-    void* rbx;
-};
+    const char* zone; // 0x00
+    uintptr_t original_address; // 0x08
+    uintptr_t profiler_entry_address; // 0x10
+    uintptr_t profiler_exit_address; // 0x18
+    uintptr_t profiler_epilogue_address; // 0x20
+    DWORD tls_index; // 0x28
+    DWORD _pad; // 0x2C
+}; // Total size: 0x30
+
+// Runtime context data associated with a call to a hook
+struct ProfilerContextData {
+    uintptr_t return_address; // 0x00
+    uint64_t rbx; // 0x08
+    uint64_t r12; // 0x10
+}; // Total size: 0x18
 
 void ProfilingExtension::on_attach()
 {
     info("Setting up profiler");
 
+    // Thread local storage to allocate per-thread context stacks
+    m_tls_idx = TlsAlloc();
+    if (m_tls_idx == TLS_OUT_OF_INDEXES) {
+        error("Could not allocate TLS index for profiler");
+        return;
+    }
+
+    // Hooks main loop to install Optick main loop event
     hooked_MainLoop = register_hook(DS3, 0x140eccb30, tMainLoop);
+
+    // Registers engine created DLThreads with Optick
     hooked_DLThreadHandler = register_hook(DS3, 0x1417ef4b0, tDLThreadHandler);
+
+    // Zones for functions called by the main loop tick
     install_profiler_zone(0x140ee4d10, "fun_140ee4d10");
     install_profiler_zone(0x140e95b35, "fun_140e95b35");
     install_profiler_zone(0x140f01cc0, "fun_140f01cc0");
@@ -62,7 +81,7 @@ void ProfilingExtension::on_attach()
     install_profiler_zone(0x140e42280, "SprjScaleformStep::STEP_UpdateB");
 
     install_profiler_zone(0x1400d1cb0, "ForTaskRunner?(fun_1400d1cb0)");
-    //install_profiler_zone(0x1400b5e80, "GXInternalForTask::Entry?(fun_1400b5e80)");
+    install_profiler_zone(0x1400b5e80, "GXInternalForTask::Entry?(fun_1400b5e80)");
 }
 
 void ProfilingExtension::on_detach()
@@ -72,14 +91,14 @@ void ProfilingExtension::on_detach()
 void ProfilingExtension::install_profiler_zone(uintptr_t function_address, const char* zone)
 {
     unsigned char prelude_code[] = {
-        0x48, 0x89, 0x1d, 0xf1, 0xff, 0xff, 0xff, // mov qword ptr [rip-15], rbx
-        0x48, 0x8D, 0x1D, 0xB2, 0xFF, 0xFF, 0xFF, // lea rbx, [rip-70]
-        0xFF, 0x63, 0x20,                         // jmp [rbx+24]
+        0x53,                                     // push rbx
+        0x48, 0x8D, 0x1D, 0xC8, 0xFF, 0xFF, 0xFF, // lea rbx, [rip-56]
+        0xFF, 0x63, 0x10,                         // jmp [rbx+16]
     };
 
     unsigned char prologue_code[] = {
-        0x48, 0x8D, 0x1D, 0xA8, 0xFF, 0xFF, 0xFF, // lea rbx, [rip-80]
-        0xFF, 0x63, 0x28                          // jmp [rbx+48]
+        0x48, 0x8D, 0x1D, 0xBE, 0xFF, 0xFF, 0xFF, // lea rbx, [rip-66]
+        0xFF, 0x63, 0x18                          // jmp [rbx+24]
     };
 
     const auto prelude_data_len = sizeof(struct ProfilerPreludeData);
@@ -94,14 +113,15 @@ void ProfilingExtension::install_profiler_zone(uintptr_t function_address, const
     reapply();
 
     struct ProfilerPreludeData prelude_data = {
-        nullptr,
+        //nullptr,
         zone,
         (uintptr_t)hook->original,
-        0,
+        //0,
         (uintptr_t)&profiler_zone,
         (uintptr_t)&profiler_zone_exit,
         (uintptr_t)prologue_trampoline,
-        0x0,
+        m_tls_idx,
+        0
     };
 
     memcpy(prologue_trampoline, prologue_code, prologue_code_len);
@@ -116,7 +136,7 @@ extern "C" void __cdecl __profiler_end(void*)
     OPTICK_POP();
 }
 
-extern "C" void* __cdecl __profiler_begin(const char* name, void /**ctx*/)
+extern "C" void* __cdecl __profiler_begin(const char* name, void * /*ctx*/)
 {
     //spdlog::info("t:{}  {}", GetCurrentThreadId(), ((modengine::ext::ProfilerPreludeData*)ctx)->original_return_address);
     //OPTICK_EVENT(name);
