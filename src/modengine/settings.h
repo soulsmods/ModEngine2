@@ -82,6 +82,12 @@ public:
         return m_config["debugmenu"]["boot_menu"].value_or(false);
     }
 
+    // Profiler
+    const boolean is_profiler_enabled() const
+    {
+        return m_config["profiler"]["enable"].value_or(false);
+    }
+
 private:
     toml::table m_config;
 };

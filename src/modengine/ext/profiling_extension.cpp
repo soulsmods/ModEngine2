@@ -25,6 +25,10 @@ struct ProfilerContextData {
 
 void ProfilingExtension::on_attach()
 {
+    if (!settings().is_profiler_enabled()) {
+        return;
+    }
+
     info("Setting up profiler");
 
     // Thread local storage to allocate per-thread context stacks
@@ -82,6 +86,9 @@ void ProfilingExtension::on_attach()
 
     install_profiler_zone(0x1400d1cb0, "ForTaskRunner?(fun_1400d1cb0)");
     install_profiler_zone(0x1400b5e80, "GXInternalForTask::Entry?(fun_1400b5e80)");
+
+    // Sync stuff?
+    install_profiler_zone(0x1417edb00, "DLKR::DLPlainReadWriteLock::BeginRead");
 }
 
 void ProfilingExtension::on_detach()
