@@ -3,7 +3,7 @@
 #include "modengine/mod_engine.h"
 #include "modengine/extension.h"
 
-extern "C" void* __profiler_begin(const char *zone_name);
+extern "C" void* __profiler_begin(const char *zone_name, void *ctx);
 extern "C" void __profiler_end(void *);
 
 extern "C" void profiler_zone();
@@ -16,10 +16,11 @@ public:
     ProfilingExtension(const std::shared_ptr<ModEngine>& instance)
         : ModEngineExtension(instance)
     {
-
     }
 
 private:
+    DWORD m_tls_idx;
+
     void on_attach() override;
     void on_detach() override;
     void install_profiler_zone(uintptr_t function_address, const char* zone);

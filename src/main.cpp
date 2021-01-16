@@ -67,11 +67,14 @@ int WINAPI modengine_entrypoint(void)
         return false;
     }
 
+    info("Main thread ID: {}", GetCurrentThreadId());
+
     info("ModEngine initializing for {}, version {}", game_info->description(), game_info->version);
 
     mod_engine_global.reset(new ModEngine { *game_info, settings });
     mod_engine_global->register_extension(std::make_unique<ModEngineBaseExtension>(mod_engine_global));
     mod_engine_global->register_extension(std::make_unique<ext::CrashHandlerExtension>(mod_engine_global));
+    mod_engine_global->register_extension(std::make_unique<ext::ProfilingExtension>(mod_engine_global));
     mod_engine_global->register_extension(std::make_unique<debugmenu::ds3::DebugMenuDS3Extension>(mod_engine_global));
     mod_engine_global->attach();
 
