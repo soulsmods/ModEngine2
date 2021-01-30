@@ -33,7 +33,7 @@ extern "C" DWORD64* debugBootMenuStepVtable;
 extern "C" DWORD64* EzTextlistSelectorVtable;
 extern "C" DWORD64* MoveMapListStepVtable;
 
-namespace modengine::debugmenu::ds3 {
+namespace modengine::ext {
 
 class DebugMenuDS3Extension : public ModEngineExtension {
 public:
@@ -44,8 +44,8 @@ public:
 
     void DelayedPatches();
     void ExtraDelayedPatches();
-private:
 
+private:
     template <typename T>
     void Hook(LPVOID address, int numBytes, T pFunction, DWORD64* returnPoint)
     {
@@ -55,6 +55,11 @@ private:
 
     void on_attach() override;
     void on_detach() override;
+
+    std::string id() override
+    {
+        return "debug_menu";
+    }
 };
 
 }

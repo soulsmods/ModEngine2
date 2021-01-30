@@ -2,7 +2,7 @@
 
 #include "modengine/hook_set.h"
 
-namespace modengine::base {
+namespace modengine::ext {
 
 // String type used in DS2/DS3
 typedef struct

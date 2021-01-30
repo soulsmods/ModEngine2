@@ -7,21 +7,9 @@
 #include "modengine/settings.h"
 
 #include <spdlog/spdlog.h>
-#include <toml++/toml.h>
+#include <map>
 
 namespace modengine {
-
-class ModEngineBaseExtension : public ModEngineExtension {
-public:
-    ModEngineBaseExtension(const std::shared_ptr<ModEngine>& instance)
-        : ModEngineExtension(instance)
-    {
-    }
-
-private:
-    void on_attach() override;
-    void on_detach() override;
-};
 
 class ModEngine {
     friend class ModEngineExtension;
@@ -54,6 +42,7 @@ private:
     HookSet m_hooks;
     std::vector<std::unique_ptr<Patch>> m_patches;
     std::vector<std::unique_ptr<ModEngineExtension>> m_extensions;
+    std::map<std::string, ExtensionInfo> m_extension_info;
 };
 
 extern std::shared_ptr<ModEngine> mod_engine_global;

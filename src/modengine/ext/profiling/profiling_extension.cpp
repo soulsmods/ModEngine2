@@ -1,5 +1,5 @@
 #include "optick.h"
-#include "modengine/ext/profiling_extension.h"
+#include "modengine/ext/profiling/profiling_extension.h"
 #include "modengine/ext/profiling/main_loop.h"
 #include "modengine/ext/profiling/thread_hooks.h"
 
@@ -25,10 +25,6 @@ struct ProfilerContextData {
 
 void ProfilingExtension::on_attach()
 {
-    if (!settings().is_profiler_enabled()) {
-        return;
-    }
-
     info("Setting up profiler");
 
     // Thread local storage to allocate per-thread context stacks

@@ -4,11 +4,11 @@
 
 namespace modengine {
 
-bool Settings::load_from(const std::wstring_view& path)
+bool Settings::load_from(const std::string& path)
 {
     try {
-        m_config = toml::parse_file(path);
-    } catch (const toml::parse_error&) {
+        m_config = toml::parse(path);
+    } catch (const toml::exception&) {
         return false;
     }
 

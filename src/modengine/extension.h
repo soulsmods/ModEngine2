@@ -18,7 +18,7 @@ public:
     {
     }
 
-    ModEngineExtension(const ModEngineExtension &) = delete;
+    ModEngineExtension(const ModEngineExtension&) = delete;
 
     virtual ~ModEngineExtension()
     {
@@ -26,6 +26,7 @@ public:
 
     virtual void on_attach() = 0;
     virtual void on_detach() = 0;
+    virtual std::string id() = 0;
 
 protected:
     void reapply();
@@ -55,6 +56,7 @@ protected:
     void register_patch(GameType type, uint64_t addr, std::function<void(uintptr_t)> replace_callback);
 
     const Settings& settings() const;
+
 private:
     std::shared_ptr<ModEngine> m_mod_engine;
 };

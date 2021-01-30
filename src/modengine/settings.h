@@ -1,7 +1,7 @@
 #pragma once
 
 #include <spdlog/spdlog.h>
-#include <toml++/toml.h>
+#include <toml.hpp>
 
 #include <locale>
 #include <codecvt>
@@ -11,20 +11,40 @@ namespace modengine {
 
 using namespace spdlog;
 
+static std::wstring utf8_to_wide(const std::string& str)
+{
+    auto count = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.length(), NULL, 0);
+    std::wstring wstr(count, 0);
+    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.length(), &wstr[0], count);
+    return wstr;
+}
+
+struct ExtensionInfo {
+    std::string name;
+    bool enabled;
+    toml::value other;
+
+    void from_toml(const toml::value& v)
+    {
+        this->name = toml::find<std::string>(v, "name");
+        this->enabled = toml::find_or<bool>(v, "enabled", false);
+        this->other = v;
+    }
+};
+
 struct ModInfo {
 public:
     std::wstring name;
-    bool enabled;
     std::wstring location;
-};
+    bool enabled;
 
-static std::wstring utf8_to_wide(const std::string& str)
-{
-    auto count = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int) str.length(), NULL, 0);
-    std::wstring wstr(count, 0);
-    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int) str.length(), &wstr[0], count);
-    return wstr;
-}
+    void from_toml(const toml::value& v)
+    {
+        this->name = utf8_to_wide(toml::find<std::string>(v, "name"));
+        this->location = utf8_to_wide(toml::find<std::string>(v, "path"));
+        this->enabled = toml::find_or<bool>(v, "enabled", false);
+    }
+};
 
 class Settings {
 public:
@@ -33,63 +53,27 @@ public:
     {
     }
 
-    bool load_from(const std::wstring_view& path);
+    bool load_from(const std::string& path);
 
     const boolean is_debug_enabled() const
     {
-        return m_config["modengine"]["debug"].value_or(false);
+        auto modengine = toml::find(m_config, "modengine");
+        auto debug = toml::find_or(modengine, "modengine", false);
+
+        return debug;
     }
 
-    const boolean is_disable_networking() const
+    const ExtensionInfo extension(const std::string& name)
     {
-        // Default to always disabling networking unless explicitely opting in
-        return m_config["modengine"]["disable_networking"].value_or(true);
+        return toml::find_or<ExtensionInfo>(m_config, name, ExtensionInfo { name, false, toml::value() });
     }
 
     const std::vector<ModInfo> mods() const
     {
-        auto mod_info = std::vector<ModInfo>();
-        auto mod_config = m_config["mod"].as_table();
-
-        if (!mod_config) {
-            return mod_info;
-        }
-
-        for (auto&& [k, v] : *mod_config) {
-            const auto mod = *v.as_table();
-            const auto path = mod["path"].as_string();
-            const auto enabled = mod["enabled"].value_or(false);
-
-            if (!path) {
-                warn("Mod {} has no path set, skipping.");
-                continue;
-            }
-
-            mod_info.push_back(ModInfo { utf8_to_wide(k), enabled, utf8_to_wide(path->get()) });
-        }
-
-        return mod_info;
+        return toml::find<std::vector<ModInfo>>(m_config, "mod_loader", "mods");
     }
-
-    // Debug menu
-    const boolean is_debug_menu_enabled() const
-    {
-        return m_config["debugmenu"]["enable"].value_or(false);
-    }
-
-    const boolean is_debug_menu_boot_enabled() const
-    {
-        return m_config["debugmenu"]["boot_menu"].value_or(false);
-    }
-
-    // Profiler
-    const boolean is_profiler_enabled() const
-    {
-        return m_config["profiler"]["enable"].value_or(false);
-    }
-
 private:
-    toml::table m_config;
+    toml::value m_config;
 };
 
 }

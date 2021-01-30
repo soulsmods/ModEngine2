@@ -17,21 +17,21 @@ add_library(modengine2 SHARED
         modengine/memory_scanner.cpp
         modengine/patch.cpp
         modengine/settings.cpp
-        modengine/base/allocator_table.cpp
-        modengine/base/archive_file_overrides.cpp
-        modengine/base/dinput_hook.cpp
-        modengine/base/scyllahide_inject.cpp
-        modengine/base/winsockets_disable.cpp
-        modengine/debugmenu/ds3/debug_menu_ds3.cpp
-        modengine/debugmenu/ds3/_DS3BootMenu.asm
-        modengine/debugmenu/ds3/_DS3Debug.asm
-        modengine/debugmenu/ds3/_DS3DebugDash.asm
-        modengine/debugmenu/ds3/_DS3GameProperties.asm
-        modengine/ext/crash_handler_extension.cpp
-        modengine/ext/profiling_extension.cpp
+        modengine/ext/base/base_extension.cpp
+        modengine/ext/debug_menu/ds3/debug_menu_ds3.cpp
+        modengine/ext/debug_menu/ds3/_DS3BootMenu.asm
+        modengine/ext/debug_menu/ds3/_DS3Debug.asm
+        modengine/ext/debug_menu/ds3/_DS3DebugDash.asm
+        modengine/ext/debug_menu/ds3/_DS3GameProperties.asm
+        modengine/ext/crash_handler/crash_handler_extension.cpp
+        modengine/ext/mod_loader/archive_file_overrides.cpp
+        modengine/ext/mod_loader/mod_loader_extension.cpp
+        modengine/ext/profiling/profiling_extension.cpp
         modengine/ext/profiling/profiler_trampoline.asm
         modengine/ext/profiling/main_loop.cpp
         modengine/ext/profiling/thread_hooks.cpp
+        modengine/ext/scylla/scyllahide_extension.cpp
+        modengine/util/hex_string.cpp
         ${OPTICK_SRC})
 
 # Detours currently has no CMake manifests: https://github.com/microsoft/Detours/pull/48.

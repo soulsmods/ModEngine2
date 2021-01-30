@@ -5,7 +5,7 @@
   "dependencies": [
     "detours",
     "spdlog",
-    "tomlplusplus",
+    "toml11",
     "crashpad"
   ]
 }

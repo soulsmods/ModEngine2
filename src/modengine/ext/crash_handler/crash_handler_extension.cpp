@@ -1,12 +1,10 @@
-//
-// Created by Gary Tierney on 13/12/2020.
-//
-
 #include "crash_handler_extension.h"
+#include "modengine/version.h"
 
 #include <client/crash_report_database.h>
 #include <client/settings.h>
 #include <client/crashpad_client.h>
+#include <memory>
 
 namespace modengine::ext {
 
@@ -17,7 +15,6 @@ void CrashHandlerExtension::on_attach()
 
     // change panic mode to RAISE_EXCEPTION_ON_PANIC
     register_patch(DS3, 0x1446418c8, replace_with<uint32_t>({ 0x02 }));
-
 
     base::FilePath db_path(L"crashpad");
     base::FilePath handler_path(L"crashpad_handler.exe");
@@ -38,7 +35,9 @@ void CrashHandlerExtension::on_attach()
             db_path,
             metrics_path,
             "http://localhost/",
-            {},
+            {
+                {"version", modengine::g_version}
+            },
             {},
             false,
             false)) {
