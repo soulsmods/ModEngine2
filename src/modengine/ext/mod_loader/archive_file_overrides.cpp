@@ -11,9 +11,9 @@
 
 #include <spdlog/spdlog.h>
 
-#include "modengine/base/archive_file_overrides.h"
+#include "archive_file_overrides.h"
 
-namespace modengine::base {
+namespace modengine::ext {
 
 // This hook is designed to enable file mods by intercepting internal file load requests from archives,
 // detecting if there's a modded version of that file, and telling the game to load the on-disk modded file

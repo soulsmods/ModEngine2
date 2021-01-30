@@ -1,7 +1,10 @@
 #include "modengine/mod_engine.h"
-#include "modengine/debugmenu/ds3/debug_menu_ds3.h"
-#include "modengine/ext/crash_handler_extension.h"
-#include "modengine/ext/profiling_extension.h"
+#include "modengine/ext/base/base_extension.h"
+#include "modengine/ext/debug_menu/ds3/debug_menu_ds3.h"
+#include "modengine/ext/crash_handler/crash_handler_extension.h"
+#include "modengine/ext/mod_loader/mod_loader_extension.h"
+#include "modengine/ext/profiling/profiling_extension.h"
+#include "modengine/ext/scylla/scyllahide_extension.h"
 
 #include "modengine/version.h"
 
@@ -50,7 +53,7 @@ int WINAPI modengine_entrypoint(void)
     entry_hook_set.unhook_all();
 
     Settings settings;
-    bool settings_found = settings.load_from(L"modengine.toml");
+    bool settings_found = settings.load_from("modengine.toml");
 
     spdlog::set_default_logger(configure_logger(settings));
 
@@ -72,10 +75,12 @@ int WINAPI modengine_entrypoint(void)
     info("ModEngine initializing for {}, version {}", game_info->description(), game_info->version);
 
     mod_engine_global.reset(new ModEngine { *game_info, settings });
-    mod_engine_global->register_extension(std::make_unique<ModEngineBaseExtension>(mod_engine_global));
+    mod_engine_global->register_extension(std::make_unique<ext::ModEngineBaseExtension>(mod_engine_global));
     mod_engine_global->register_extension(std::make_unique<ext::CrashHandlerExtension>(mod_engine_global));
+    mod_engine_global->register_extension(std::make_unique<ext::DebugMenuDS3Extension>(mod_engine_global));
+    mod_engine_global->register_extension(std::make_unique<ext::ModLoaderExtension>(mod_engine_global));
     mod_engine_global->register_extension(std::make_unique<ext::ProfilingExtension>(mod_engine_global));
-    mod_engine_global->register_extension(std::make_unique<debugmenu::ds3::DebugMenuDS3Extension>(mod_engine_global));
+    mod_engine_global->register_extension(std::make_unique<ext::ScyllaHideExtension>(mod_engine_global));
     mod_engine_global->attach();
 
     return hooked_entrypoint->original();

@@ -3,12 +3,11 @@
 #include "modengine/mod_engine.h"
 #include "modengine/extension.h"
 
-namespace modengine {
-namespace ext {
+namespace modengine::ext {
 
-class CrashHandlerExtension : public ModEngineExtension {
+class ModLoaderExtension : public ModEngineExtension {
 public:
-    CrashHandlerExtension(const std::shared_ptr<ModEngine>& instance)
+    ModLoaderExtension(const std::shared_ptr<ModEngine>& instance)
         : ModEngineExtension(instance)
     {
     }
@@ -16,7 +15,10 @@ public:
 private:
     void on_attach() override;
     void on_detach() override;
+
+    std::string id() override {
+        return "mod_loader";
+    }
 };
 
-}
 }

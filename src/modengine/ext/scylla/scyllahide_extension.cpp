@@ -1,15 +1,11 @@
-#include "modengine/base/scyllahide_inject.h"
+#include "scyllahide_extension.h"
 
 #include <filesystem>
-#include <optional>
-#include <windows.h>
-#include <spdlog/spdlog.h>
 
-namespace modengine::base {
+namespace modengine::ext {
 
 using namespace spdlog;
 
-// Use external scyllahide process to inject if available
 bool inject_scyllahide_external()
 {
     using std::filesystem::exists;
@@ -60,6 +56,19 @@ bool inject_scyllahide_external()
     }
 
     return false;
+}
+
+void ScyllaHideExtension::on_attach()
+{
+    if (inject_scyllahide_external()) {
+        info("ScyllaHide successfully injected");
+    } else {
+        warn("Unable to inject ScyllaHide hook");
+    }
+}
+
+void ScyllaHideExtension::on_detach()
+{
 }
 
 }

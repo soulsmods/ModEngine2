@@ -1,4 +1,4 @@
-#include "modengine/debugmenu/ds3/debug_menu_ds3.h"
+#include "debug_menu_ds3.h"
 
 // Outside namespace since they link agains the ASM patches
 DWORD64 bLoadDbgFont = 0;
@@ -54,7 +54,7 @@ extern "C" wchar_t debugBootMenuStringSfxViewer[] = L"SFX_VIEWER";
 extern "C" wchar_t debugBootMenuTextlistPath[] = L"testdata:/debugBootMenu.textlist";
 extern "C" wchar_t debugBootMenuString[] = L"DEBUG BOOT MENU <デバッグ起動メニュー>";
 
-namespace modengine::debugmenu::ds3 {
+namespace modengine::ext {
 
 inline void MemcpyProtected(uint64_t address, int length, void* bytes)
 {
@@ -140,14 +140,12 @@ void DebugMenuDS3Extension::ExtraDelayedPatches()
 
 void DebugMenuDS3Extension::DelayedPatches()
 {
-    if (settings().is_debug_menu_boot_enabled()) {
-        //Boot Menu
-        int size = 0x230;
-        WriteProtected(0x140ED13F1, size);
-        Hook((LPVOID)0x140ED1457, 5, &tInitDebugBootMenuStep, &bInitDebugBootMenuStep);
-        //size = 0x155;
-        //WriteProtected(0x1408FDC4B, size);
-    }
+    //Boot Menu
+    int size = 0x230;
+    WriteProtected(0x140ED13F1, size);
+    Hook((LPVOID)0x140ED1457, 5, &tInitDebugBootMenuStep, &bInitDebugBootMenuStep);
+    //size = 0x155;
+    //WriteProtected(0x1408FDC4B, size);
 
     MemcpyProtected(0x1408E7E2C, 18, moveMapListStepPatch);
 
@@ -244,10 +242,6 @@ static DWORD WINAPI DelayedPatchesStart(void* Param)
 
 void DebugMenuDS3Extension::on_attach()
 {
-    if (!settings().is_debug_menu_enabled()) {
-        return;
-    }
-
     spdlog::info(L"Applying debug menu patches");
 
     MemcpyProtected(0x140ECDCE4, 5, mov1ToAlBytes);

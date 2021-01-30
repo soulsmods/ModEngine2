@@ -23,6 +23,11 @@ private:
 
     void on_attach() override;
     void on_detach() override;
+
+    std::string id() override {
+        return "profiling";
+    }
+
     void install_profiler_zone(uintptr_t function_address, const char* zone);
 };
 
