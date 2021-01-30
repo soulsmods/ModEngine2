@@ -9,7 +9,7 @@ add_subdirectory(src)
 
 include(CPack)
 
-if (MODENGINE_DIST_SCYLLA)
+if("${MODENGINE_DIST_SCYLLA}" STREQUAL "1")
     install(FILES tools/scylla/InjectorCLIx64.exe
                   tools/scylla/HookLibraryx64.dll
                   dist/scyllahide/scylla_hide.ini
