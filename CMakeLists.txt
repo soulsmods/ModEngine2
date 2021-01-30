@@ -13,11 +13,13 @@ if("${MODENGINE_DIST_SCYLLA}" STREQUAL "1")
     install(FILES tools/scylla/InjectorCLIx64.exe
                   tools/scylla/HookLibraryx64.dll
                   dist/scyllahide/scylla_hide.ini
-            DESTINATION scyllahide)
+            DESTINATION modengine/tools/scyllahide)
 endif()
 
 install(FILES config/modengine.toml DESTINATION .)
+install(DIRECTORY assets/debug_menu DESTINATION modengine/assets)
+
 install(TARGETS modengine2
         RUNTIME DESTINATION .
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib)
+        LIBRARY DESTINATION modengine/lib
+        ARCHIVE DESTINATION modengine/lib)
