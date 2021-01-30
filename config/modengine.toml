@@ -1,13 +1,20 @@
 [modengine]
 debug = true
-disable_networking = true
 
-[debugmenu]
-enable = true
+[mod_loader]
+enabled = true
+loose_params = true
+
+[[mod_loader.mods]]
+path = "AshesLauncher/_ashes"
+enabled = true
+
+[scylla]
+enabled = true
+
+[debug_menu]
+enabled = true
 boot_menu = true
 
 [profiler]
-enable = true
-
-[mod.debug]
-path = "debug/"
+enabled = true

@@ -1,5 +1,7 @@
 #include "debug_menu_ds3.h"
 
+#include "modengine/ext/mod_loader/archive_file_overrides.h"
+
 // Outside namespace since they link agains the ASM patches
 DWORD64 bLoadDbgFont = 0;
 DWORD64 bInitDebugBootMenuStep = 0;
@@ -242,6 +244,9 @@ static DWORD WINAPI DelayedPatchesStart(void* Param)
 
 void DebugMenuDS3Extension::on_attach()
 {
+    // @todo - debug menu path should be configurable
+    hooked_file_roots.push_back(L"modengine/assets/debug_menu/");
+
     spdlog::info(L"Applying debug menu patches");
 
     MemcpyProtected(0x140ECDCE4, 5, mov1ToAlBytes);
