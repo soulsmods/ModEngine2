@@ -5,10 +5,6 @@ debug = true
 enabled = true
 loose_params = true
 
-[[mod_loader.mods]]
-path = "AshesLauncher/_ashes"
-enabled = true
-
 [scylla]
 enabled = true
 
