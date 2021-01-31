@@ -1,0 +1,38 @@
+/* All messages are as From Soft named them in DkS3 */
+
+syntax = "proto2";
+option optimize_for = LITE_RUNTIME;
+
+package Frpg2RequestMessage;
+
+message RequestQueryLoginServerInfo{
+  required string steamid = 1;
+  optional string unknownfield = 2; // Unknown field. Definetly a string as parsed through the same function as the steamid variable
+  required int64 versionnum = 3;
+}
+
+message RequestQueryLoginServerInfoResponse{
+  required int64 port = 1;
+  required string serverip = 2;
+}
+
+message RequestHandshake{
+  required string aescwckey = 1;
+}
+
+message RequestHandshakeResponse{
+}
+
+message GetServiceStatus{
+  required int64 id = 1;
+  required string steamid = 2;
+  optional string unknownfield = 3; // Definetly a string as parsed through the same function as the steamid variable
+  required int64 versionnum = 4;
+}
+
+message GetServiceStatusResponse{
+  required int64 id = 1;
+  required string steamid = 2;
+  required int64 unknownfield = 3;
+  required int64 versionnum = 4;
+}

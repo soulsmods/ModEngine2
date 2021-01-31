@@ -6,6 +6,7 @@
     "detours",
     "spdlog",
     "toml11",
-    "crashpad"
+    "crashpad",
+    "protobuf"
   ]
 }

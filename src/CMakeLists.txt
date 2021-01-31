@@ -4,10 +4,26 @@ enable_testing()
 
 configure_file("modengine/version.cpp" "${CMAKE_CURRENT_BINARY_DIR}/version.cpp" @ONLY)
 
+# Detours currently has no CMake manifests: https://github.com/microsoft/Detours/pull/48.
+find_path(VCPKG_INCLUDE_DIR NAMES detours/detver.h)
+find_path(VCPKG_TOOLS NAMES tools/crashpad_handler.exe)
+
+find_library(DETOURS_LIBRARY detours)
+find_package(spdlog CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
+find_package(crashpad CONFIG REQUIRED)
+find_package(Protobuf REQUIRED)
+
+
+include_directories(${Protobuf_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS proto/Frpg2RequestMessage.proto)
+
 # Optick source
 file(GLOB OPTICK_SRC "../dependencies/optick/*.cpp")
 
 add_library(modengine2 SHARED
+        ${PROTO_SRCS} ${PROTO_HDRS}
         main.cpp
         ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
         modengine/extension.cpp
@@ -24,6 +40,7 @@ add_library(modengine2 SHARED
         modengine/ext/debug_menu/ds3/_DS3DebugDash.asm
         modengine/ext/debug_menu/ds3/_DS3GameProperties.asm
         modengine/ext/crash_handler/crash_handler_extension.cpp
+        modengine/ext/matchmaking/matchmaking_extension.cpp
         modengine/ext/mod_loader/archive_file_overrides.cpp
         modengine/ext/mod_loader/mod_loader_extension.cpp
         modengine/ext/profiling/profiling_extension.cpp
@@ -33,15 +50,6 @@ add_library(modengine2 SHARED
         modengine/ext/scylla/scyllahide_extension.cpp
         modengine/util/hex_string.cpp
         ${OPTICK_SRC})
-
-# Detours currently has no CMake manifests: https://github.com/microsoft/Detours/pull/48.
-find_path(VCPKG_INCLUDE_DIR NAMES detours/detver.h)
-find_path(VCPKG_TOOLS NAMES tools/crashpad_handler.exe)
-
-find_library(DETOURS_LIBRARY detours)
-find_package(spdlog CONFIG REQUIRED)
-find_package(fmt CONFIG REQUIRED)
-find_package(crashpad CONFIG REQUIRED)
 
 if (NOT MODENGINE_NO_DINPUT8)
     set_target_properties(modengine2 PROPERTIES OUTPUT_NAME "dinput8")
@@ -72,13 +80,15 @@ target_compile_definitions(modengine2 PRIVATE OPTICK_ENABLE_GPU=0)
 target_include_directories(modengine2 PRIVATE
         ${DETOURS_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
+        ${protobuf_INCLUDE_DIRS}
         "../dependencies/optick")
 
 target_link_libraries(modengine2 PRIVATE
         ${DETOURS_LIBRARY}
         fmt::fmt-header-only
         spdlog::spdlog_header_only
-        crashpad)
+        crashpad
+        protobuf::libprotobuf-lite)
 
 target_precompile_headers(modengine2 PRIVATE
         "$<$<COMPILE_LANGUAGE:CXX>:<MINT.h$<ANGLE-R>>")
