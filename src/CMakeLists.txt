@@ -12,12 +12,10 @@ find_library(DETOURS_LIBRARY detours)
 find_package(spdlog CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(crashpad CONFIG REQUIRED)
-find_package(Protobuf REQUIRED)
 
-
-include_directories(${Protobuf_INCLUDE_DIRS})
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS proto/Frpg2RequestMessage.proto)
+set (Protobuf_USE_STATIC_LIBS ON)
+set (protobuf_MODULE_COMPATIBLE ON)
+find_package(Protobuf CONFIG REQUIRED)
 
 # Optick source
 file(GLOB OPTICK_SRC "../dependencies/optick/*.cpp")
@@ -50,6 +48,10 @@ add_library(modengine2 SHARED
         modengine/ext/scylla/scyllahide_extension.cpp
         modengine/util/hex_string.cpp
         ${OPTICK_SRC})
+
+include_directories(${Protobuf_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+protobuf_generate(LANGUAGE cpp TARGET modengine2 PROTOS proto/Frpg2RequestMessage.proto)
 
 if (NOT MODENGINE_NO_DINPUT8)
     set_target_properties(modengine2 PROPERTIES OUTPUT_NAME "dinput8")
@@ -97,3 +99,7 @@ install(FILES
         "${VCPKG_TOOLS}/tools/crashpad_handler.exe"
         "${VCPKG_TOOLS}/bin/zlibd1.dll"
         DESTINATION modengine/crashpad)
+
+install(FILES
+        "${VCPKG_TOOLS}/bin/libprotobuf-lited.dll"
+        DESTINATION .)

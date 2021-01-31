@@ -2,6 +2,7 @@
 #include "modengine/ext/base/base_extension.h"
 #include "modengine/ext/debug_menu/ds3/debug_menu_ds3.h"
 #include "modengine/ext/crash_handler/crash_handler_extension.h"
+#include "modengine/ext/matchmaking/matchmaking_extension.h"
 #include "modengine/ext/mod_loader/mod_loader_extension.h"
 #include "modengine/ext/profiling/profiling_extension.h"
 #include "modengine/ext/scylla/scyllahide_extension.h"
@@ -75,12 +76,13 @@ int WINAPI modengine_entrypoint(void)
     info("ModEngine initializing for {}, version {}", game_info->description(), game_info->version);
 
     mod_engine_global.reset(new ModEngine { *game_info, settings });
-    mod_engine_global->register_extension(std::make_unique<ext::ModEngineBaseExtension>(mod_engine_global));
-    mod_engine_global->register_extension(std::make_unique<ext::CrashHandlerExtension>(mod_engine_global));
-    mod_engine_global->register_extension(std::make_unique<ext::DebugMenuDS3Extension>(mod_engine_global));
-    mod_engine_global->register_extension(std::make_unique<ext::ModLoaderExtension>(mod_engine_global));
-    mod_engine_global->register_extension(std::make_unique<ext::ProfilingExtension>(mod_engine_global));
     mod_engine_global->register_extension(std::make_unique<ext::ScyllaHideExtension>(mod_engine_global));
+    mod_engine_global->register_extension(std::make_unique<ext::ModEngineBaseExtension>(mod_engine_global));
+    mod_engine_global->register_extension(std::make_unique<ext::ProfilingExtension>(mod_engine_global));
+    mod_engine_global->register_extension(std::make_unique<ext::DebugMenuDS3Extension>(mod_engine_global));
+    mod_engine_global->register_extension(std::make_unique<ext::CrashHandlerExtension>(mod_engine_global));
+    mod_engine_global->register_extension(std::make_unique<ext::ModLoaderExtension>(mod_engine_global));
+    mod_engine_global->register_extension(std::make_unique<ext::MatchmakingExtension>(mod_engine_global));
     mod_engine_global->attach();
 
     return hooked_entrypoint->original();

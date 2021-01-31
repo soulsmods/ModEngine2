@@ -36,3 +36,30 @@ message GetServiceStatusResponse{
   required int64 unknownfield = 3;
   required int64 versionnum = 4;
 }
+
+message DateTime {
+  required uint32 year = 1;
+  required uint32 month = 2;
+  required uint32 day = 3;
+  required uint32 hours = 4;
+  required uint32 minutes = 5;
+  required uint32 seconds = 6;
+  required uint32 tzdiff = 7; // offset from UTC?
+}
+
+message RequestGetAnnounceMessageListResponse {
+  required AnnounceMessageDataList data_list = 1;
+}
+
+message AnnounceMessageDataList {
+  repeated AnnounceMessageData items = 1;
+}
+
+message AnnounceMessageData {
+  required uint32 unk01 = 1;
+  required uint32 unk02 = 2;
+  required uint32 unk03 = 3;
+  required string header = 4;
+  required string message = 5;
+  required DateTime date_time = 6;
+}

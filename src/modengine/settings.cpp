@@ -33,7 +33,9 @@ const ExtensionInfo Settings::extension(const std::string& name)
 
 const std::vector<ModInfo> Settings::mods() const
 {
-    return toml::find<std::vector<ModInfo>>(m_config, "mod_loader", "mods");
+    auto modengine = toml::find(m_config, "mod_loader");
+
+    return toml::find_or<std::vector<ModInfo>>(modengine, "mods", std::vector<ModInfo>());
 }
 
 }
