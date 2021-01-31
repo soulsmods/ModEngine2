@@ -1,6 +1,19 @@
 #include "modengine/util/hex_string.h"
 
+#include <spdlog/spdlog.h>
+
+
 namespace modengine::util {
+
+using namespace spdlog;
+
+char hex2bin(char c)
+{
+    if ('0' <= c && c <= '9') return (c - '0');
+    if ('A' <= c && c <= 'F') return (c - 'A' + 10);
+    if ('a' <= c && c <= 'f') return (c - 'a' + 10);
+    return -1;
+}
 
 std::string hex_string(const char* input)
 {
@@ -14,7 +27,11 @@ std::string hex_string(const char* input)
         input_stream >> lo;
         input_stream >> hi;
 
-        output << (char)(16 * (tolower(lo) - '0') + (tolower(hi) - '0'));
+        if (input_stream.eof()) {
+            break;
+        }
+
+        output << (char) (16 * (hex2bin(lo)) + (hex2bin(hi)));
     }
 
     return output.str();

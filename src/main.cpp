@@ -24,7 +24,7 @@ std::shared_ptr<ModEngine> modengine::mod_engine_global;
 std::shared_ptr<Hook<fnEntry>> hooked_entrypoint;
 HookSet entry_hook_set;
 
-static std::shared_ptr<spdlog::logger> configure_logger(const Settings& settings)
+static std::shared_ptr<spdlog::logger> configure_logger(const Settings& settings, bool error_in_settings)
 {
     auto logger = std::make_shared<spdlog::logger>("modengine");
 
@@ -32,7 +32,7 @@ static std::shared_ptr<spdlog::logger> configure_logger(const Settings& settings
     logger->set_level(spdlog::level::info);
     logger->flush_on(spdlog::level::info);
 
-    if (settings.is_debug_enabled()) {
+    if (settings.is_debug_enabled() || error_in_settings) {
         // Create debug console
         AllocConsole();
         FILE* stream;
@@ -55,7 +55,7 @@ int WINAPI modengine_entrypoint(void)
     Settings settings;
     bool settings_found = settings.load_from("modengine.toml");
 
-    spdlog::set_default_logger(configure_logger(settings));
+    spdlog::set_default_logger(configure_logger(settings, !settings_found));
 
     info("ModEngine version {}", g_version);
 

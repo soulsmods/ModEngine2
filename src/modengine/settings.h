@@ -20,13 +20,11 @@ static std::wstring utf8_to_wide(const std::string& str)
 }
 
 struct ExtensionInfo {
-    std::string name;
     bool enabled;
     toml::value other;
 
     void from_toml(const toml::value& v)
     {
-        this->name = toml::find<std::string>(v, "name");
         this->enabled = toml::find_or<bool>(v, "enabled", false);
         this->other = v;
     }
@@ -40,7 +38,7 @@ public:
 
     void from_toml(const toml::value& v)
     {
-        this->name = utf8_to_wide(toml::find<std::string>(v, "name"));
+        this->name = utf8_to_wide(toml::find_or<std::string>(v, "name", "Unknown"));
         this->location = utf8_to_wide(toml::find<std::string>(v, "path"));
         this->enabled = toml::find_or<bool>(v, "enabled", false);
     }
@@ -55,23 +53,11 @@ public:
 
     bool load_from(const std::string& path);
 
-    const boolean is_debug_enabled() const
-    {
-        auto modengine = toml::find(m_config, "modengine");
-        auto debug = toml::find_or(modengine, "modengine", false);
+    const boolean is_debug_enabled() const;
 
-        return debug;
-    }
+    const ExtensionInfo extension(const std::string& name);
 
-    const ExtensionInfo extension(const std::string& name)
-    {
-        return toml::find_or<ExtensionInfo>(m_config, name, ExtensionInfo { name, false, toml::value() });
-    }
-
-    const std::vector<ModInfo> mods() const
-    {
-        return toml::find<std::vector<ModInfo>>(m_config, "mod_loader", "mods");
-    }
+    const std::vector<ModInfo> mods() const;
 private:
     toml::value m_config;
 };
