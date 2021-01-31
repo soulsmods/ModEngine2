@@ -16,9 +16,9 @@ void CrashHandlerExtension::on_attach()
     // change panic mode to RAISE_EXCEPTION_ON_PANIC
     register_patch(DS3, 0x1446418c8, replace_with<uint32_t>({ 0x02 }));
 
-    base::FilePath db_path(L"crashpad");
-    base::FilePath handler_path(L"crashpad_handler.exe");
-    base::FilePath metrics_path(L"crash_metrics");
+    base::FilePath db_path(L"modengine/crashpad/db");
+    base::FilePath handler_path(L"modengine/crashpad/crashpad_handler.exe");
+    base::FilePath metrics_path(L"modengine/crashpad/crash_metrics");
 
     const auto database = crashpad::CrashReportDatabase::Initialize(db_path);
     database->GetSettings()->SetUploadsEnabled(false);

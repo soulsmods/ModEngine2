@@ -86,4 +86,4 @@ target_precompile_headers(modengine2 PRIVATE
 install(FILES
         "${VCPKG_TOOLS}/tools/crashpad_handler.exe"
         "${VCPKG_TOOLS}/bin/zlibd1.dll"
-        DESTINATION .)
+        DESTINATION modengine/crashpad)
