@@ -5,12 +5,19 @@ debug = true
 enabled = true
 loose_params = true
 
-[scylla]
+[[mod_loader.mods]]
+path = "AshesLauncher/Ashes/_ashes"
+enabled = true
+
+[scylla_hide]
 enabled = true
 
 [debug_menu]
 enabled = true
 boot_menu = true
 
-[profiler]
+[profiling]
+enabled = true
+
+[matchmaking]
 enabled = true
