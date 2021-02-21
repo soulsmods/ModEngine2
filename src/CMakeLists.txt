@@ -7,6 +7,11 @@ configure_file("modengine/version.cpp" "${CMAKE_CURRENT_BINARY_DIR}/version.cpp"
 # Optick source
 file(GLOB OPTICK_SRC "../dependencies/optick/*.cpp")
 
+source_group(
+        TREE "${PROJECT_SOURCE_DIR}/include"
+        PREFIX "Header Files"
+        FILES ${HEADER_LIST})
+
 add_library(modengine2 SHARED
         main.cpp
         ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
@@ -38,36 +43,13 @@ add_library(modengine2 SHARED
 find_path(VCPKG_INCLUDE_DIR NAMES detours/detver.h)
 find_path(VCPKG_TOOLS NAMES tools/crashpad_handler.exe)
 
-find_library(DETOURS_LIBRARY detours)
-find_package(spdlog CONFIG REQUIRED)
-find_package(fmt CONFIG REQUIRED)
-find_package(crashpad CONFIG REQUIRED)
-
-if (NOT MODENGINE_NO_DINPUT8)
-    set_target_properties(modengine2 PROPERTIES OUTPUT_NAME "dinput8")
-endif()
-
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    if (CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")
-        target_compile_options(modengine2 PRIVATE $<$<COMPILE_LANGUAGE:CXX>:
-                -Wno-microsoft-cast
-                -Wno-c++98-compat -Wno-c++98-compat-pedantic
-                -Wall -Wextra -Wshadow
-                /GX
-                /clang:-isystem${VCPKG_INCLUDE_DIR}>)
-    else()
-        message(FATAL_ERROR "Clang frontend must be MSVC. Current frontend '${CMAKE_CXX_SIMULATE_ID}' is unsupported")
-    endif()
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL  "MSVC")
-    target_compile_options(modengine2 PRIVATE $<$<COMPILE_LANGUAGE:CXX>:/utf-8 /experimental:external /external:anglebrackets /external:W0 /W4 /WX>)
-    target_compile_definitions(modengine2 PRIVATE _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS _CRT_SECURE_NO_WARNINGS)
-endif()
-
 target_compile_definitions(modengine2 PRIVATE
         -DSPDLOG_WCHAR_TO_UTF8_SUPPORT)
 
 # Disable optick GPU for now until D3D11 backend
 target_compile_definitions(modengine2 PRIVATE OPTICK_ENABLE_GPU=0)
+
+target_include_directories(modengine2 PUBLIC ../include)
 
 target_include_directories(modengine2 PRIVATE
         ${DETOURS_INCLUDE_DIR}

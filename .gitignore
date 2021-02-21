@@ -33,6 +33,7 @@
 
 # CMake artifacts
 build
+cmake-build-*/
 CMakeSettings.json
 
 # Visual Studio

@@ -17,6 +17,7 @@ void ModEngine::attach()
         const auto extension_settings = m_settings.extension(extension_id);
 
         if (extension_settings.enabled || extension_id == "base") {
+            info("Enabling extension {}", extension_id);
             extension->on_attach();
             info("Enabled extension {}", extension_id);
         }
