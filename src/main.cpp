@@ -5,7 +5,6 @@
 #include "modengine/ext/mod_loader/mod_loader_extension.h"
 #include "modengine/ext/profiling/profiling_extension.h"
 #include "modengine/ext/scylla/scyllahide_extension.h"
-
 #include "modengine/version.h"
 
 #include <optional>
@@ -71,7 +70,6 @@ int WINAPI modengine_entrypoint(void)
     }
 
     info("Main thread ID: {}", GetCurrentThreadId());
-
     info("ModEngine initializing for {}, version {}", game_info->description(), game_info->version);
 
     mod_engine_global.reset(new ModEngine { *game_info, settings });
@@ -81,7 +79,12 @@ int WINAPI modengine_entrypoint(void)
     mod_engine_global->register_extension(std::make_unique<ext::ModLoaderExtension>(mod_engine_global));
     mod_engine_global->register_extension(std::make_unique<ext::ProfilingExtension>(mod_engine_global));
     mod_engine_global->register_extension(std::make_unique<ext::ScyllaHideExtension>(mod_engine_global));
-    mod_engine_global->attach();
+
+    try {
+        mod_engine_global->attach();
+    } catch (std::exception &e) {
+        error("Failed to attach modengine {}", e.what());
+    }
 
     return hooked_entrypoint->original();
 }
@@ -106,8 +109,13 @@ static bool detach()
 
 BOOL APIENTRY DllMain(HMODULE, DWORD dwReason, LPVOID)
 {
+    if (DetourIsHelperProcess()) {
+        return TRUE;
+    }
+
     switch (dwReason) {
     case DLL_PROCESS_ATTACH:
+        DetourRestoreAfterWith();
         return attach();
     case DLL_PROCESS_DETACH:
         return detach();

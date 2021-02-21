@@ -1,0 +1,3 @@
+[submodule "third-party/ValveFileVdf"]
+	path = third-party/ValveFileVdf
+	url = https://github.com/TinyTinni/ValveFileVDF

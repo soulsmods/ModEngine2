@@ -6,6 +6,8 @@
     "detours",
     "spdlog",
     "toml11",
-    "crashpad"
+    "crashpad",
+    "winreg",
+    "cli11"
   ]
 }

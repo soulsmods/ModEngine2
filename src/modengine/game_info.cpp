@@ -58,8 +58,9 @@ std::string& GameInfo::description() const
     return game_type_descriptions[type];
 }
 
-GameType operator |(GameType lhs, GameType rhs) {
-    return static_cast<GameType>((uint32_t) lhs | (uint32_t)rhs);
+GameType operator|(GameType lhs, GameType rhs)
+{
+    return static_cast<GameType>((uint32_t)lhs | (uint32_t)rhs);
 }
 
 }
