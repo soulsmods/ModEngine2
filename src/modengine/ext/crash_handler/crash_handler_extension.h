@@ -3,6 +3,10 @@
 #include "modengine/mod_engine.h"
 #include "modengine/extension.h"
 
+#ifndef MODENGINE_CRASH_REPORT_URL
+#define MODENGINE_CRASH_REPORT_URL "http://localhost:3000/"
+#endif
+
 namespace modengine {
 namespace ext {
 

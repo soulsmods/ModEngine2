@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WixLocalization xmlns="http://schemas.microsoft.com/wix/2006/localization" Culture="en-US">
+    <String Id="CrashTelemetryDescription">By default, Mod Engine will send crash reports to an
+external server for analysis. We use these to diagnose
+user bug reports, however if you would prefer to opt-out
+of crash telemetry the option is available below.</String>
+</WixLocalization>

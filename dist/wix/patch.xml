@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<CPackWiXPatch>
+    <CPackWiXFragment Id="#PRODUCT">
+        <WixVariable Id="ConfigWithCrashTelemetry.Path" Value="dist/wix/resources/config-crash-reporting.toml" Overridable="yes" />
+        <WixVariable Id="Config.Path" Value="dist/wix/resources/config.toml" Overridable="yes" />
+
+        <DirectoryRef Id="INSTALL_ROOT">
+            <Component Id="SetSystemPATH" Guid="02b9091e-74b1-11eb-9439-0242ac130002">
+                <CreateFolder/>
+                <Environment Id="SystemPATH" Name="PATH" Value="[INSTALL_ROOT]bin" Permanent="no" Part="last" Action="set" System="yes"/>
+            </Component>
+            <Component Id="CONFIG_WITH_TELEMETRY" Guid="06e77232-74b1-11eb-9439-0242ac130002">
+                <Condition>CRASH_TELEMETRY</Condition>
+                <File Id="ConfigWithCrashTelemetry" Name="config.toml" Source="$(var.ConfigWithCrashTelemetry.Path)" DiskId="1" />
+            </Component>
+            <Component Id="CONFIG_WITHOUT_TELEMETRY" Guid="0d62f6c2-74b1-11eb-9439-0242ac130002">
+                <Condition>NOT CRASH_TELEMETRY</Condition>
+                <File Id="Config" Name="config.toml" Source="$(var.Config.Path)" />
+            </Component>
+        </DirectoryRef>
+    </CPackWiXFragment>
+    <CPackWiXFragment Id="#PRODUCTFEATURE">
+        <ComponentRef Id="SetSystemPATH"/>
+        <ComponentRef Id="CONFIG_WITH_TELEMETRY" />
+        <ComponentRef Id="CONFIG_WITHOUT_TELEMETRY" />
+    </CPackWiXFragment>
+</CPackWiXPatch>

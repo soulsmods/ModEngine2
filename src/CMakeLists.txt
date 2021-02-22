@@ -64,8 +64,3 @@ target_link_libraries(modengine2 PRIVATE
 
 target_precompile_headers(modengine2 PRIVATE
         "$<$<COMPILE_LANGUAGE:CXX>:<MINT.h$<ANGLE-R>>")
-
-install(FILES
-        "${VCPKG_TOOLS}/tools/crashpad_handler.exe"
-        "${VCPKG_TOOLS}/bin/zlibd1.dll"
-        DESTINATION modengine/crashpad)
