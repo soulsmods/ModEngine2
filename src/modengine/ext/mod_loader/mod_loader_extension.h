@@ -19,6 +19,8 @@ private:
     std::string id() override {
         return "mod_loader";
     }
+
+    void install_mod(const ModInfo& mod);
 };
 
 }

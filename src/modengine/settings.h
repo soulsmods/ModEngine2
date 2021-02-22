@@ -6,6 +6,7 @@
 #include <locale>
 #include <codecvt>
 #include <string>
+#include <filesystem>
 
 namespace modengine {
 
@@ -51,15 +52,31 @@ public:
     {
     }
 
-    bool load_from(const std::string& path);
+    bool load_from(const std::filesystem::path& path);
 
     const boolean is_debug_enabled() const;
 
     const ExtensionInfo extension(const std::string& name);
 
     const std::vector<ModInfo> mods() const;
+
+    const std::vector<std::filesystem::path> config_folders() const;
+
+    const std::filesystem::path& modengine_install_path() const;
+    void set_modengine_install_path(const std::filesystem::path& mModengineInstallPath);
+
+    const std::filesystem::path& modengine_local_path() const;
+    void set_modengine_local_path(const std::filesystem::path& mModengineLocalPath);
+
+    const std::filesystem::path& game_path() const;
+    void set_game_path(const std::filesystem::path& mGamePath);
+
 private:
+    std::vector<std::filesystem::path> m_config_parent_paths;
     toml::value m_config;
+    std::filesystem::path m_modengine_install_path;
+    std::filesystem::path m_modengine_local_path;
+    std::filesystem::path m_game_path;
 };
 
 }

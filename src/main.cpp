@@ -17,13 +17,18 @@
 using namespace modengine;
 using namespace spdlog;
 
+namespace fs = std::filesystem;
+
+static fs::path modengine_path;
+static fs::path game_path;
+
 typedef int(WINAPI* fnEntry)(void);
 
 std::shared_ptr<ModEngine> modengine::mod_engine_global;
 std::shared_ptr<Hook<fnEntry>> hooked_entrypoint;
 HookSet entry_hook_set;
 
-static std::shared_ptr<spdlog::logger> configure_logger(const Settings& settings, bool error_in_settings)
+static std::shared_ptr<spdlog::logger> configure_logger(const Settings& settings)
 {
     auto logger = std::make_shared<spdlog::logger>("modengine");
 
@@ -31,7 +36,7 @@ static std::shared_ptr<spdlog::logger> configure_logger(const Settings& settings
     logger->set_level(spdlog::level::info);
     logger->flush_on(spdlog::level::info);
 
-    if (settings.is_debug_enabled() || error_in_settings) {
+    if (settings.is_debug_enabled()) {
         // Create debug console
         AllocConsole();
         FILE* stream;
@@ -52,18 +57,26 @@ int WINAPI modengine_entrypoint(void)
     entry_hook_set.unhook_all();
 
     Settings settings;
-    bool settings_found = settings.load_from("modengine.toml");
+    settings.set_modengine_install_path(modengine_path);
+    settings.set_game_path(game_path);
 
-    spdlog::set_default_logger(configure_logger(settings, !settings_found));
-
-    info("ModEngine version {}", g_version);
-
-    if (!settings_found) {
-        warn("Unable to find modengine configuration file");
+    const auto global_settings_path = modengine_path / "config.toml";
+    if (fs::exists(global_settings_path)) {
+        settings.load_from(global_settings_path);
     }
 
-    const auto game_info = GameInfo::from_current_module();
+    const auto settings_path_env = std::getenv("MODENGINE_CONFIG");
+    if (settings_path_env != nullptr) {
+        auto path = fs::path(settings_path_env);
+        auto local_modengine_path = path.parent_path();
 
+        settings.set_modengine_local_path(local_modengine_path);
+        settings.load_from(path);
+    }
+
+    spdlog::set_default_logger(configure_logger(settings));
+
+    const auto game_info = GameInfo::from_current_module();
     if (!game_info) {
         error("Unable to detect a supported game");
         return false;
@@ -82,15 +95,38 @@ int WINAPI modengine_entrypoint(void)
 
     try {
         mod_engine_global->attach();
-    } catch (std::exception &e) {
+    } catch (std::exception& e) {
         error("Failed to attach modengine {}", e.what());
     }
 
     return hooked_entrypoint->original();
 }
 
-static bool attach()
+static bool attach(HMODULE module)
 {
+    wchar_t dll_filename[MAX_PATH];
+
+    // Grab the path to the modengine2.dll file, so we can locate the global
+    // configuration from here if it exists.
+    if (!GetModuleFileNameW(module, dll_filename, MAX_PATH)) {
+        return false;
+    }
+
+    modengine_path = fs::path(dll_filename).parent_path();
+    if (modengine_path.filename() == "bin") {
+        modengine_path = modengine_path.parent_path();
+    }
+
+    wchar_t game_filename[MAX_PATH];
+
+    // Also get the path to the game executable, to support legacy use-cases of putting
+    // mods in the game folder.
+    if (!GetModuleFileNameW(nullptr, game_filename, MAX_PATH)) {
+        return false;
+    }
+
+    game_path = fs::path(game_filename).parent_path();
+
     hooked_entrypoint = std::make_shared<Hook<fnEntry>>(reinterpret_cast<fnEntry>(DetourGetEntryPoint(nullptr)), modengine_entrypoint);
     entry_hook_set.install(std::reinterpret_pointer_cast<Hook<GenericFunctionPointer>>(hooked_entrypoint));
     entry_hook_set.hook_all();
@@ -107,7 +143,7 @@ static bool detach()
     return true;
 }
 
-BOOL APIENTRY DllMain(HMODULE, DWORD dwReason, LPVOID)
+BOOL APIENTRY DllMain(HMODULE module, DWORD dwReason, LPVOID)
 {
     if (DetourIsHelperProcess()) {
         return TRUE;
@@ -116,7 +152,7 @@ BOOL APIENTRY DllMain(HMODULE, DWORD dwReason, LPVOID)
     switch (dwReason) {
     case DLL_PROCESS_ATTACH:
         DetourRestoreAfterWith();
-        return attach();
+        return attach(module);
     case DLL_PROCESS_DETACH:
         return detach();
     }

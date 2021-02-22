@@ -21,11 +21,12 @@ void CrashHandlerExtension::on_attach()
     base::FilePath metrics_path(L"modengine/crashpad/crash_metrics");
 
     const auto database = crashpad::CrashReportDatabase::Initialize(db_path);
-    database->GetSettings()->SetUploadsEnabled(false);
 
     if (database == nullptr || database->GetSettings() == NULL) {
         return;
     }
+
+    database->GetSettings()->SetUploadsEnabled(true);
 
     info("Setting up crash handler");
 
@@ -34,7 +35,7 @@ void CrashHandlerExtension::on_attach()
             handler_path,
             db_path,
             metrics_path,
-            "http://localhost/",
+            MODENGINE_CRASH_REPORT_URL,
             {
                 {"version", modengine::g_version}
             },
@@ -44,6 +45,7 @@ void CrashHandlerExtension::on_attach()
         warn("Failed to set up crash handler");
     }
 }
+
 void CrashHandlerExtension::on_detach()
 {
 }
