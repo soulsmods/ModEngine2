@@ -1,21 +1,22 @@
 #pragma once
 #include "modengine/game_info.h"
 
-template <modengine::GameType t>
+template <modengine::GameType t, typename T>
 struct DLString;
 
-template<>
-struct DLString<modengine::GameType::DS3> {
-    char *string;
-	void *unk;
-	UINT64 length;
-	UINT64 capacity;
+template <typename T>
+struct DLString<modengine::GameType::DS3, T> {
+    T* string;
+    void* unk;
+    UINT64 length;
+    UINT64 capacity;
 
-    const char* str()
+    T* str()
     {
-        if (capacity > 15) {
+        if (sizeof(T) * capacity >= 15) {
             return string;
         }
-        return (char*)&string;
+
+        return (T*)&string;
     }
 };

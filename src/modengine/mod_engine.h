@@ -32,7 +32,7 @@ public:
         return m_game;
     }
 
-    const Settings& settings() const
+    Settings& settings()
     {
         return m_settings;
     }

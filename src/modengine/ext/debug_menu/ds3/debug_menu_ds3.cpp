@@ -245,7 +245,7 @@ static DWORD WINAPI DelayedPatchesStart(void* Param)
 void DebugMenuDS3Extension::on_attach()
 {
     // @todo - debug menu path should be configurable
-    hooked_file_roots.push_back(L"assets/debug_menu/");
+    hooked_file_roots.insert(L"assets/debug_menu/");
 
     spdlog::info(L"Applying debug menu patches");
 

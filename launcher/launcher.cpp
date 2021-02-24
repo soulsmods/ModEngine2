@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
     app.add_option("--modengine-dll", modengine_dll_path, "ModEngine DLL file path (modengine2.dll)")
         ->default_function([&]() {
             auto launcher_path = fs::path(launcher_filename);
-            auto modengine_dll_path = launcher_path.parent_path() / L"modengine.dll";
+            auto modengine_dll_path = launcher_path.parent_path() / L"modengine2.dll";
 
             return modengine_dll_path.string();
         });
@@ -80,6 +80,7 @@ int main(int argc, char* argv[])
     auto app_path = get_game_path(launch_params.app_id);
 
     if (!app_path) {
+        logger->error("Couldn't find path to game");
         return E_APP_NOT_FOUND;
     }
 
@@ -87,6 +88,7 @@ int main(int argc, char* argv[])
     auto app_cwd = fs::absolute(app_cmd.parent_path());
 
     if (!fs::exists(modengine_dll_path)) {
+        logger->error("Couldn't find path to modengine2.dll at {}", modengine_dll_path.string());
         return E_MODENGINE_NOT_FOUND;
     }
 
@@ -96,13 +98,9 @@ int main(int argc, char* argv[])
     auto kernel32 = LoadLibraryW(L"kernel32.dll");
     auto create_process_addr = GetProcAddress(kernel32, "CreateProcessW");
 
-    if (!app_path.has_value()) {
-        return E_APP_NOT_FOUND;
-    }
-
     // These are inherited by the game process we launch with Detours.
     SetEnvironmentVariable(L"SteamAppId", launch_params.app_id.c_str());
-    SetEnvironmentVariable(L"MODENGINE_CONFIG", config_path.c_str());
+    SetEnvironmentVariable(L"MODENGINE_CONFIG", fs::absolute(config_path).c_str());
 
     wchar_t cmd[MAX_PATH] = {};
     wcscpy_s(cmd, app_cmd.c_str());

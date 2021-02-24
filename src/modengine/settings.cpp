@@ -27,7 +27,7 @@ static void merge_settings(toml::value& base, toml::value& new_value)
     }
 }
 
-bool Settings::load_from(const std::filesystem::path& path)
+bool Settings::load_from(const fs::path& path)
 {
     try {
         auto config = toml::parse(path.string());
@@ -42,12 +42,9 @@ bool Settings::load_from(const std::filesystem::path& path)
     return true;
 }
 
-const boolean Settings::is_debug_enabled() const
+bool Settings::is_debug_enabled()
 {
-    auto modengine = toml::find(m_config, "modengine");
-    auto debug = toml::find_or(modengine, "debug", false);
-
-    return debug;
+    return toml::expect<bool>(m_config["modengine"]["debug"]).unwrap_or(false);
 }
 
 const ExtensionInfo Settings::extension(const std::string& name)
@@ -57,43 +54,54 @@ const ExtensionInfo Settings::extension(const std::string& name)
     return toml::get<ExtensionInfo>(toml::value(tbl));
 }
 
-const std::vector<ModInfo> Settings::mods() const
+std::vector<ModInfo> Settings::mods()
 {
-    return toml::find<std::vector<ModInfo>>(m_config, "mod_loader", "mods");
+    return toml::expect<std::vector<ModInfo>>(m_config["mod_loader"]["mods"]).unwrap_or({});
 }
 
-const std::vector<std::filesystem::path> Settings::config_folders() const
+const std::vector<fs::path> Settings::config_folders() const
 {
     return m_config_parent_paths;
 }
-const std::filesystem::path& Settings::modengine_install_path() const
+
+const fs::path& Settings::modengine_install_path() const
 {
     return m_modengine_install_path;
 }
 
-void Settings::set_modengine_install_path(const std::filesystem::path& mModengineInstallPath)
+void Settings::set_modengine_install_path(const fs::path& install_path)
 {
-    m_modengine_install_path = mModengineInstallPath;
+    m_modengine_install_path = install_path;
 }
 
-const std::filesystem::path& Settings::modengine_local_path() const
+const fs::path& Settings::modengine_local_path() const
 {
     return m_modengine_local_path;
 }
 
-void Settings::set_modengine_local_path(const std::filesystem::path& mModengineLocalPath)
+void Settings::set_modengine_local_path(const fs::path& local_path)
 {
-    m_modengine_local_path = mModengineLocalPath;
+    m_modengine_local_path = local_path;
 }
 
-const std::filesystem::path& Settings::game_path() const
+const fs::path& Settings::game_path() const
 {
     return m_game_path;
 }
 
-void Settings::set_game_path(const std::filesystem::path& mGamePath)
+void Settings::set_game_path(const fs::path& game_path)
 {
-    m_game_path = mGamePath;
+    m_game_path = game_path;
+}
+
+const fs::path& Settings::modengine_data_path() const
+{
+    return m_modengine_data_path;
+}
+
+void Settings::set_modengine_data_path(const fs::path& data_path)
+{
+    m_modengine_data_path = data_path;
 }
 
 }

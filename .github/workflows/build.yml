@@ -26,6 +26,9 @@ jobs:
         setupOnly: true
         vcpkgGitCommitId: "2020.11-1"
 
+    - name: 'Install WiX Toolset'
+      run: choco install wixtoolset -y
+
     - name: 'Download ScyllaHide'
       run: ./tools/setup-scylla.ps1
       shell: pwsh
@@ -36,15 +39,17 @@ jobs:
         cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
         cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
         cmakeAppendedArgs: '-GNinja
-        -DMODENGINE_DIST_SCYLLA=1'
+        -DMODENGINE_DIST_SCYLLA=1
+        -DMODENGINE_CRASH_REPORT_URL="${{ secrets.MODENGINE_CRASH_REPORT_URL }}"
+        -DCPACK_GENERATOR=WIX'
         useVcpkgToolchainFile: true
         buildDirectory: '${{ runner.workspace }}/build/modengine'
-        buildWithCMakeArgs: '--target install -- -v'
+        buildWithCMakeArgs: '--target package -- -v'
 
     - name: 'Upload artifacts'
       uses: actions/upload-artifact@v2
       with:
         name: 'modengine-${{ github.sha }}'
-        path: 'C:/Program Files (x86)/modengine2/' # FIXME gtierney: run-cmake isn't respecting CMAKE_INSTALL_PREFIX
+        path: '${{ runner.workspace }}/build/modengine/ModEngine-2.0.0.1-win64.msi' # FIXME gtierney: run-cmake isn't respecting CMAKE_INSTALL_PREFIX
 
 

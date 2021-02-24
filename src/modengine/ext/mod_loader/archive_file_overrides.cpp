@@ -8,9 +8,11 @@
 #include <regex>
 #include <concurrent_unordered_set.h>
 #include <concurrent_unordered_map.h>
+#include <concurrent_vector.h>
 
 #include <spdlog/spdlog.h>
 
+#include "gametypes/dantelion/dlstring.h"
 #include "archive_file_overrides.h"
 
 namespace modengine::ext {
@@ -40,14 +42,15 @@ namespace modengine::ext {
 // the easiest and most robust way to do this. It also has the bonus of allowing files that don't go through the asset system
 // (like the data archives and some of the sounds) to be overridable.
 
-concurrency::concurrent_unordered_map<std::wstring_view, std::optional<std::filesystem::path>> archive_override_paths;
+concurrency::concurrent_unordered_map<std::wstring, std::optional<std::filesystem::path>> archive_override_paths;
 concurrency::concurrent_unordered_map<std::wstring_view, std::optional<std::filesystem::path>> file_override_paths;
 
 std::shared_ptr<Hook<fpCreateFileW>> hooked_CreateFileW;
-std::shared_ptr<Hook<fpVirtualToArchivePathDS3>> hooked_virtual_to_archive_path_ds3;
-std::shared_ptr<Hook<fpVirtualToArchivePathDS2>> hooked_virtual_to_archive_path_ds2;
-std::shared_ptr<Hook<fpVirtualToArchivePathSekiro>> hooked_virtual_to_archive_path_sekiro;
-std::vector<std::wstring> hooked_file_roots;
+
+std::shared_ptr<Hook<decltype(&virtual_to_archive_path_ds3)>> hooked_virtual_to_archive_path_ds3;
+std::shared_ptr<Hook<decltype(&virtual_to_archive_path_ds2)>> hooked_virtual_to_archive_path_ds2;
+std::shared_ptr<Hook<decltype(&virtual_to_archive_path_sekiro)>> hooked_virtual_to_archive_path_sekiro;
+concurrency::concurrent_unordered_set<std::wstring> hooked_file_roots;
 
 using namespace spdlog;
 
@@ -56,7 +59,9 @@ namespace fs = std::filesystem;
 std::optional<fs::path> find_override_file(const fs::path& game_path)
 {
     for (const auto& root : hooked_file_roots) {
-        auto file_path = fs::current_path() / root / fs::path(game_path);
+        debug(L"Searching for {} in {}", game_path.wstring(), root);
+
+        auto file_path = root / fs::path(game_path);
         if (fs::exists(file_path)) {
             return file_path;
         }
@@ -94,9 +99,7 @@ void process_archive_path(wchar_t* raw_path, size_t raw_path_len)
     const auto archive_file = L"./" + path.substr(prefix_len);
     const auto archive_file_path = fs::path(archive_file).lexically_normal();
 
-    debug(L"Path matched to {}", archive_file_path.native());
-
-    const auto& local_file_key = std::wstring_view(archive_file_path.native());
+    const auto& local_file_key = std::wstring(archive_file_path.native());
     const auto& local_override = archive_override_paths.find(local_file_key);
 
     fs::path override_path;
@@ -111,7 +114,7 @@ void process_archive_path(wchar_t* raw_path, size_t raw_path_len)
         }
 
         override_path = override.value();
-        archive_override_paths[archive_file_path.native()] = override_path;
+        archive_override_paths[local_file_key] = override_path;
 
         debug(L"Found override in {}", override_path.native());
     }
@@ -123,31 +126,50 @@ void process_archive_path(wchar_t* raw_path, size_t raw_path_len)
     }
 }
 
+bool path_contains(const fs::path& root, const fs::path& filepath)
+{
+    auto dir_len = std::distance(root.begin(), root.end());
+    auto file_len = std::distance(filepath.begin(), filepath.end());
+
+    if (dir_len >= file_len) {
+        return false;
+    }
+
+    return std::equal(root.begin(), root.end(), filepath.begin(), [](fs::path a, fs::path b) {
+        return a.native().length() == b.native().length() && _wcsicmp(a.native().c_str(), b.native().c_str()) == 0;
+    });
+}
+
 HANDLE WINAPI tCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode,
     LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes,
     HANDLE hTemplateFile)
 {
     if (lpFileName != nullptr) {
+        debug(L"Looking for {}", std::wstring(lpFileName));
+
         auto override_file_opt = file_override_paths.find(std::wstring_view(lpFileName));
-        std::optional<fs::path> overridepath = {};
+        std::optional<fs::path> override_path = {};
         if (override_file_opt != file_override_paths.end()) {
-            overridepath = override_file_opt->second;
+            override_path = override_file_opt->second;
         } else {
+            auto root = fs::current_path();
             auto filepath = fs::path(lpFileName);
-            auto basepath = fs::current_path();
-            if (std::search(filepath.begin(), filepath.end(), basepath.begin(), basepath.end()) != filepath.end()) {
-                auto relpath = fs::path(filepath.wstring().substr(basepath.wstring().length() + 1));
-                overridepath = find_override_file(relpath);
+
+            if (path_contains(root, filepath)) {
+                auto relpath = fs::path(filepath.wstring().substr(root.wstring().length() + 1));
+                override_path = find_override_file(relpath);
             }
-            file_override_paths[std::wstring_view(lpFileName)] = overridepath;
+
+            file_override_paths[std::wstring_view(lpFileName)] = override_path;
         }
 
-        if (overridepath.has_value()) {
-            const auto override_path = overridepath.value().native().c_str();
-            info(L"Loading overriden path {}", override_path);
+        if (override_path) {
+            const auto override = override_path->native().c_str();
+            debug(L"Loading overriden path {}", override);
+
             for (int i = 0; i < 10; i++) {
                 HANDLE res = hooked_CreateFileW->original(
-                    override_path,
+                    override,
                     dwDesiredAccess,
                     dwShareMode,
                     lpSecurityAttributes,
@@ -158,7 +180,8 @@ HANDLE WINAPI tCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwSh
                 if (res != INVALID_HANDLE_VALUE) {
                     return res;
                 }
-                warn(L"Failed to load file {}", *override_path);
+
+                warn(L"Failed to load file {}", override);
             }
         }
     }
@@ -173,12 +196,12 @@ HANDLE WINAPI tCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwSh
         hTemplateFile);
 }
 
-void* __cdecl virtual_to_archive_path_ds3(dlstring_t* path, UINT64 p2, UINT64 p3, dlstring_t* p4, UINT64 p5, UINT64 p6)
+void* __cdecl virtual_to_archive_path_ds3(DLString<modengine::GameType::DS3, wchar_t>* path, UINT64 p2, UINT64 p3, DLString<modengine::GameType::DS3, wchar_t>* p4, UINT64 p5, UINT64 p6)
 {
-    dlstring_t* res = static_cast<dlstring_t*>(hooked_virtual_to_archive_path_ds3->original(path, p2, p3, p4, p5, p6));
+    auto res = static_cast<DLString<modengine::GameType::DS3, wchar_t>*>(hooked_virtual_to_archive_path_ds3->original(path, p2, p3, p4, p5, p6));
 
     if (res != nullptr) {
-        process_archive_path(res->string, res->length);
+        process_archive_path(res->str(), res->length);
     }
 
     return static_cast<void*>(res);

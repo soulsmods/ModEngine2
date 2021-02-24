@@ -28,7 +28,7 @@ std::shared_ptr<ModEngine> modengine::mod_engine_global;
 std::shared_ptr<Hook<fnEntry>> hooked_entrypoint;
 HookSet entry_hook_set;
 
-static std::shared_ptr<spdlog::logger> configure_logger(const Settings& settings)
+static std::shared_ptr<spdlog::logger> configure_logger(Settings& settings)
 {
     auto logger = std::make_shared<spdlog::logger>("modengine");
 
@@ -56,22 +56,28 @@ int WINAPI modengine_entrypoint(void)
      * Steam checks the signature of this */
     entry_hook_set.unhook_all();
 
+    fs::path appdata_path(getenv("APPDATA"));
+
     Settings settings;
+    settings.set_modengine_data_path(appdata_path / "modengine");
     settings.set_modengine_install_path(modengine_path);
     settings.set_game_path(game_path);
 
     const auto global_settings_path = modengine_path / "config.toml";
+    auto global_settings_found = false;
+
     if (fs::exists(global_settings_path)) {
-        settings.load_from(global_settings_path);
+        global_settings_found = settings.load_from(global_settings_path);
     }
 
     const auto settings_path_env = std::getenv("MODENGINE_CONFIG");
+    auto settings_found = false;
     if (settings_path_env != nullptr) {
         auto path = fs::path(settings_path_env);
         auto local_modengine_path = path.parent_path();
 
         settings.set_modengine_local_path(local_modengine_path);
-        settings.load_from(path);
+        settings_found = settings.load_from(path);
     }
 
     spdlog::set_default_logger(configure_logger(settings));
@@ -84,7 +90,7 @@ int WINAPI modengine_entrypoint(void)
 
     info("Main thread ID: {}", GetCurrentThreadId());
     info("ModEngine initializing for {}, version {}", game_info->description(), game_info->version);
-
+    info("Local settings: {} (loaded: {}), Global settings: {} (loaded: {})", std::string(settings_path_env), settings_found, global_settings_path.string(), global_settings_found);
     mod_engine_global.reset(new ModEngine { *game_info, settings });
     mod_engine_global->register_extension(std::make_unique<ext::ModEngineBaseExtension>(mod_engine_global));
     mod_engine_global->register_extension(std::make_unique<ext::CrashHandlerExtension>(mod_engine_global));

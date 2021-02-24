@@ -21,6 +21,7 @@ private:
     {
         return "scylla_hide";
     }
+    bool inject_scyllahide_external();
 };
 
 }

@@ -11,6 +11,7 @@
 namespace modengine {
 
 using namespace spdlog;
+namespace fs = std::filesystem;
 
 static std::wstring utf8_to_wide(const std::string& str)
 {
@@ -52,31 +53,35 @@ public:
     {
     }
 
-    bool load_from(const std::filesystem::path& path);
+    bool load_from(const fs::path& path);
 
-    const boolean is_debug_enabled() const;
+    bool is_debug_enabled();
 
     const ExtensionInfo extension(const std::string& name);
 
-    const std::vector<ModInfo> mods() const;
+    std::vector<ModInfo> mods();
 
-    const std::vector<std::filesystem::path> config_folders() const;
+    const std::vector<fs::path> config_folders() const;
 
-    const std::filesystem::path& modengine_install_path() const;
-    void set_modengine_install_path(const std::filesystem::path& mModengineInstallPath);
+    const fs::path& modengine_install_path() const;
+    void set_modengine_install_path(const fs::path& install_path);
 
-    const std::filesystem::path& modengine_local_path() const;
-    void set_modengine_local_path(const std::filesystem::path& mModengineLocalPath);
+    const fs::path& modengine_local_path() const;
+    void set_modengine_local_path(const fs::path& local_path);
 
-    const std::filesystem::path& game_path() const;
-    void set_game_path(const std::filesystem::path& mGamePath);
+    const fs::path& game_path() const;
+    void set_game_path(const fs::path& game_path);
+
+    const fs::path& modengine_data_path() const;
+    void set_modengine_data_path(const fs::path& data_path);
 
 private:
-    std::vector<std::filesystem::path> m_config_parent_paths;
+    std::vector<fs::path> m_config_parent_paths;
     toml::value m_config;
-    std::filesystem::path m_modengine_install_path;
-    std::filesystem::path m_modengine_local_path;
-    std::filesystem::path m_game_path;
+    fs::path m_modengine_data_path;
+    fs::path m_modengine_install_path;
+    fs::path m_modengine_local_path;
+    fs::path m_game_path;
 };
 
 }

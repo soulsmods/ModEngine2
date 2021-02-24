@@ -3,6 +3,8 @@
 #include "modengine/mod_engine.h"
 #include "modengine/extension.h"
 
+#include <filesystem>
+
 namespace modengine::ext {
 
 class ModLoaderExtension : public ModEngineExtension {
@@ -20,7 +22,7 @@ private:
         return "mod_loader";
     }
 
-    void install_mod(const ModInfo& mod);
+    std::optional<std::filesystem::path> resolve_mod_path(const ModInfo& mod);
 };
 
 }
