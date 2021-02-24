@@ -7,11 +7,13 @@ namespace modengine::ext {
 using namespace spdlog;
 
 
-bool inject_scyllahide_external()
+bool ScyllaHideExtension::inject_scyllahide_external()
 {
     using std::filesystem::exists;
 
-    const auto injector_path = L"./modengine/tools/scyllahide/InjectorCLIx64.exe";
+    const auto installation_path = settings().modengine_install_path();
+    const auto scylla_path = installation_path / "tools" / "scyllahide";
+    const auto injector_path = scylla_path / "InjectorCLIx64.exe";
 
     if (!exists(injector_path)) {
         return false;
@@ -22,7 +24,7 @@ bool inject_scyllahide_external()
     const auto pid = GetCurrentProcessId();
 
     WCHAR command_line[MAX_PATH];
-    if (swprintf_s(command_line, MAX_PATH, L"%s pid:%d ./HookLibraryx64.dll nowait", injector_path, pid) < 0) {
+    if (swprintf_s(command_line, MAX_PATH, L"%s pid:%d ./HookLibraryx64.dll nowait", injector_path.native().c_str(), pid) < 0) {
         return false;
     }
 
@@ -32,14 +34,14 @@ bool inject_scyllahide_external()
     PROCESS_INFORMATION pi = {};
 
     bool result = CreateProcessW(
-        injector_path,
+        nullptr,
         command_line,
         nullptr,
         nullptr,
         false,
         0,
         nullptr,
-        L"./modengine/tools/scyllahide",
+        scylla_path.native().c_str(),
         &si,
         &pi);
 

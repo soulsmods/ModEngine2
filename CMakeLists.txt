@@ -10,6 +10,9 @@ find_package(spdlog CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(crashpad CONFIG REQUIRED)
 
+set(MODENGINE_CRASH_REPORT_URL "http://localhost/" CACHE STRING "URL that minidump crash records are uploaded to")
+add_compile_definitions(MODENGINE_CRASH_REPORT_URL="${MODENGINE_CRASH_REPORT_URL}")
+
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     if (CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")
         add_compile_options($<$<COMPILE_LANGUAGE:CXX>:

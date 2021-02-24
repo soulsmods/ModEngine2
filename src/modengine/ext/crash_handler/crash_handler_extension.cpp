@@ -16,9 +16,20 @@ void CrashHandlerExtension::on_attach()
     // change panic mode to RAISE_EXCEPTION_ON_PANIC
     register_patch(DS3, 0x1446418c8, replace_with<uint32_t>({ 0x02 }));
 
-    base::FilePath db_path(L"modengine/crashpad/db");
-    base::FilePath handler_path(L"modengine/crashpad/crashpad_handler.exe");
-    base::FilePath metrics_path(L"modengine/crashpad/crash_metrics");
+    const auto data_path = settings().modengine_data_path();
+    const auto install_path = settings().modengine_install_path();
+    const auto crashpad_path = install_path / "crashpad";
+    const auto crashdump_path = data_path / "crashdumps";
+
+    info(L"Saving crash dumps to {}", crashdump_path.native());
+
+    if (!fs::create_directories(crashdump_path)) {
+        warn(L"Couldn't create crash dump folder, crash dumps may not be saved to disk");
+    }
+
+    base::FilePath db_path(crashdump_path);
+    base::FilePath handler_path(crashpad_path / "crashpad_handler.exe");
+    base::FilePath metrics_path(crashpad_path / "crash_metrics");
 
     const auto database = crashpad::CrashReportDatabase::Initialize(db_path);
 
@@ -36,9 +47,7 @@ void CrashHandlerExtension::on_attach()
             db_path,
             metrics_path,
             MODENGINE_CRASH_REPORT_URL,
-            {
-                {"version", modengine::g_version}
-            },
+            { { "version", modengine::g_version } },
             {},
             false,
             false)) {

@@ -11,36 +11,43 @@ auto loose_params_aob_1 = util::hex_string("74 68 48 8b cf 48 89 5c 24 30 e8 1c 
 auto loose_params_aob_2 = util::hex_string("0F 85 C5 00 00 00 48 8D 4C 24 28 E8 17 F4");
 auto loose_params_aob_3 = util::hex_string("E8 78 08 F8 FF 90 E9 0E E9 08 05 53 E9 EF");
 
-static std::vector<fs::path> mod_base_paths(const Settings& settings)
+static fs::path primary_mod_path(const Settings& settings)
+{
+    return settings.modengine_local_path();
+}
+
+static std::vector<fs::path> secondary_mod_paths(const Settings& settings)
 {
     return {
         settings.game_path(),
         settings.modengine_install_path(),
-        settings.modengine_local_path()
     };
 }
 
-void ModLoaderExtension::install_mod(const ModInfo& mod)
+std::optional<fs::path> ModLoaderExtension::resolve_mod_path(const ModInfo& mod)
 {
-    info(L"Installing mod location {}", mod.location);
-
     auto mod_path = fs::path(mod.location);
     if (mod_path.is_absolute()) {
-        hooked_file_roots.push_back(mod.location);
-        return;
+        return mod_path;
     }
 
-    const auto base_paths = mod_base_paths(settings());
-    for (const auto& base_path : base_paths) {
-        auto new_path = base_path / mod_path;
+    const auto primary_search_path = primary_mod_path(settings());
+    const auto primary_mod_path = primary_search_path / mod_path;
 
-        if (fs::exists(new_path)) {
-            info(L"Resolved mod to {}", new_path.wstring());
+    if (fs::exists(primary_search_path / mod_path)) {
+        return primary_mod_path;
+    }
 
-            hooked_file_roots.push_back(new_path.wstring());
-            return;
+    const auto secondary_base_paths = secondary_mod_paths(settings());
+    for (const auto& base_path : secondary_base_paths) {
+        auto secondary_mod_path = base_path / mod_path;
+
+        if (fs::exists(secondary_mod_path)) {
+            return secondary_mod_path;
         }
     }
+
+    return std::nullopt;
 }
 
 void ModLoaderExtension::on_attach()
@@ -54,7 +61,15 @@ void ModLoaderExtension::on_attach()
     hooked_virtual_to_archive_path_ds3 = register_hook(DS3, 0x14007d5e0, virtual_to_archive_path_ds3);
 
     for (const auto& mod : settings().mods()) {
-        install_mod(mod);
+        info(L"Installing mod location {}", mod.location);
+
+        auto mod_path = resolve_mod_path(mod);
+        if (mod_path) {
+            info(L"Resolved mod path to {}", mod_path->wstring());
+            hooked_file_roots.insert(mod_path->wstring());
+        } else {
+            warn(L"Unable to resolve mod path");
+        }
     }
 }
 
