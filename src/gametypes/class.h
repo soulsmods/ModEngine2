@@ -1,7 +1,6 @@
 #pragma once
 
-#define CLASS_MEMBER(name, type, offset) \
-    inline type & ##name () \
-    { \
-        return *((type *)(((char *)this) + offset)); \
-    } \
+#include <stdint.h>
+
+#define class_offset(type, offset) \
+    *((type*)(((uintptr_t)this) + offset))
