@@ -61,7 +61,7 @@ install(TARGETS modengine2
 install(TARGETS modengine2_launcher
         RUNTIME DESTINATION bin)
 
-install(DIRECTORY dist/assets/debug_menu DESTINATION dist/assets)
+install(DIRECTORY dist/assets/debug_menu DESTINATION assets)
 
 install(FILES
         "${VCPKG_TOOLS}/tools/crashpad_handler.exe"
