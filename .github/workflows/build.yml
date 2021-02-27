@@ -40,8 +40,9 @@ jobs:
         cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
         cmakeAppendedArgs: '-GNinja
         -DMODENGINE_DIST_SCYLLA=1
-        -DMODENGINE_CRASH_REPORT_URL="${{ secrets.MODENGINE_CRASH_REPORT_URL }}"
-        -DCPACK_GENERATOR=WIX'
+        -DMODENGINE_CRASH_REPORT_URL=${{ secrets.MODENGINE_CRASH_REPORT_URL }}
+        -DCPACK_GENERATOR=WIX
+        -DVCPKG_OVERLAY_PORTS=${{ github.workspace }}/third-party/vcpkg-overlays'
         useVcpkgToolchainFile: true
         buildDirectory: '${{ runner.workspace }}/build/modengine'
         buildWithCMakeArgs: '--target package -- -v'
