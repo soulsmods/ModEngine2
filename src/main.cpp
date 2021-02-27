@@ -13,6 +13,7 @@
 
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/sinks/daily_file_sink.h>
 
 using namespace modengine;
 using namespace spdlog;
@@ -31,8 +32,10 @@ HookSet entry_hook_set;
 static std::shared_ptr<spdlog::logger> configure_logger(Settings& settings)
 {
     auto logger = std::make_shared<spdlog::logger>("modengine");
+    auto log_file_path = settings.modengine_local_path() / "modengine.log";
+    auto log_file_sink = new spdlog::sinks::daily_file_sink_mt(log_file_path.string(), 0, 30, false, 5);
 
-    logger->sinks().push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("modengine.log"));
+    logger->sinks().push_back(std::shared_ptr<spdlog::sinks::daily_file_sink_mt>(log_file_sink));
     logger->set_level(spdlog::level::info);
     logger->flush_on(spdlog::level::info);
 

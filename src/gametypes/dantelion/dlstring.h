@@ -20,3 +20,5 @@ struct DLString<modengine::GameType::DS3, T> {
         return (T*)&string;
     }
 };
+
+using DLBasicString = DLString<modengine::GameType::DS3, char>;
