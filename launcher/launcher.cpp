@@ -61,14 +61,10 @@ int main(int argc, char* argv[])
         ->required()
         ->transform(CLI::ExistingFile);
 
-    fs::path modengine_dll_path;
-    app.add_option("--modengine-dll", modengine_dll_path, "ModEngine DLL file path (modengine2.dll)")
-        ->default_function([&]() {
-            auto launcher_path = fs::path(launcher_filename);
-            auto modengine_dll_path = launcher_path.parent_path() / L"modengine2.dll";
+    auto launcher_path = fs::path(launcher_filename);
+    auto modengine_dll_path = launcher_path.parent_path() / L"modengine2.dll";
 
-            return modengine_dll_path.string();
-        });
+    app.add_option("--modengine-dll", modengine_dll_path, "ModEngine DLL file path (modengine2.dll)");
 
     try {
         app.parse(argc, argv);
