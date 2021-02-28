@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>ModEngine2</AssemblyName>
+    <RootNamespace>ModEngine2</RootNamespace>
+  </PropertyGroup>
+
+</Project>
