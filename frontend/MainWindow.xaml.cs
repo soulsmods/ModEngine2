@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace frontend
+namespace ModEngine2
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -23,6 +23,11 @@ namespace frontend
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void LaunchGame(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

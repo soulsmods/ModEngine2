@@ -1,22 +1,60 @@
-﻿<Window x:Class="frontend.MainWindow"
+﻿<Window x:Class="ModEngine2.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:frontend"
+        xmlns:local="clr-namespace:ModEngine2"
         mc:Ignorable="d"
         Title="Mod Engine 2" Height="450" Width="800">
+    <Window.Resources>
+        <DataTemplate x:Key="GameBoxTemplate">
+            <TextBlock Text="{Binding Path=Name}"/>
+        </DataTemplate>
+
+        <CollectionViewSource
+            Source="{Binding Source={x:Static Application.Current}, Path=Games}"
+            x:Key="GamesDataView" />
+    </Window.Resources>
     <Grid>
-        <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="5" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <TextBlock FontSize="55" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap">Left side</TextBlock>
-            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
-            <TextBlock Grid.Column="2" FontSize="55" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap">Right side</TextBlock>
-        </Grid>
+            <ListBox Name="GamesListBox"
+                     ItemsSource="{Binding Source={StaticResource GamesDataView}}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Path=Name}"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
 
+            </ListBox>
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
+                <ListBox Name="ModsListBox">
+                    <TextBlock>Cinders</TextBlock>
+                    <TextBlock>Champion's Ashes</TextBlock>
+                </ListBox>
+                <Button Grid.Row="1">Add Mod</Button>
+            </Grid>
+        </Grid>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="{Binding Source={StaticResource GamesDataView}, Path=Path}" />
+            <Button Grid.Column="1" Click="LaunchGame">Start Game</Button>
+        </Grid>
     </Grid>
 </Window>
