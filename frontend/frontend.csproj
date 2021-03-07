@@ -6,13 +6,11 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>ModEngine2</AssemblyName>
     <RootNamespace>ModEngine2</RootNamespace>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="MahApps.Metro" Version="2.4.4" />
     <PackageReference Include="MahApps.Metro.IconPacks.FontAwesome" Version="4.8.0" />
     <PackageReference Include="MahApps.Metro.IconPacks.Modern" Version="4.8.0" />
-    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="1.1.3" />
   </ItemGroup>
 </Project>
