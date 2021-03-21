@@ -61,6 +61,9 @@ int main(int argc, char* argv[])
         ->required()
         ->transform(CLI::ExistingFile);
 
+    bool suspend = false;
+    app.add_option("-s,--suspend", suspend, "Start the game in a suspended state");
+
     auto launcher_path = fs::path(launcher_filename);
     auto modengine_dll_path = launcher_path.parent_path() / L"modengine2.dll";
 
@@ -101,13 +104,18 @@ int main(int argc, char* argv[])
     wchar_t cmd[MAX_PATH] = {};
     wcscpy_s(cmd, app_cmd.c_str());
 
+    auto proc_flags = CREATE_NEW_PROCESS_GROUP;
+    if (suspend) {
+        proc_flags |= CREATE_SUSPENDED;
+    }
+
     bool success = DetourCreateProcessWithDllW(
         cmd,
         nullptr,
         nullptr,
         nullptr,
         false,
-        CREATE_NEW_PROCESS_GROUP,
+        proc_flags,
         nullptr,
         app_cwd.c_str(),
         &si,
