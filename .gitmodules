@@ -1,3 +1,16 @@
 [submodule "third-party/ValveFileVdf"]
 	path = third-party/ValveFileVdf
 	url = https://github.com/TinyTinni/ValveFileVDF
+[submodule "third-party/imgui"]
+	path = third-party/imgui
+	url = https://github.com/ocornut/imgui.git
+    branch = docking
+[submodule "third-party/kiero"]
+	path = third-party/kiero
+	url = https://github.com/garyttierney/kiero.git
+[submodule "third-party/ImTerm"]
+	path = third-party/ImTerm
+	url = https://github.com/Organic-Code/ImTerm
+[submodule "third-party/sol2_ImGui_Bindings"]
+	path = third-party/sol2_ImGui_Bindings
+	url = https://github.com/MSeys/sol2_ImGui_Bindings

@@ -244,7 +244,7 @@ static DWORD WINAPI DelayedPatchesStart(void* Param)
 
 void DebugMenuDS3Extension::on_attach()
 {
-    auto debug_menu_assets_path = settings().modengine_install_path() / "assets" / "debug_menu";
+    auto debug_menu_assets_path = m_mod_engine->get_settings().modengine_install_path() / "assets" / "debug_menu";
     hooked_file_roots.insert(debug_menu_assets_path.native());
 
     spdlog::info(L"Applying debug menu patches");

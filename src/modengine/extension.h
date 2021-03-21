@@ -55,9 +55,6 @@ protected:
     void register_patch(GameType type, const std::string_view& signature, std::function<void(uintptr_t)> replace_callback);
     void register_patch(GameType type, uint64_t addr, std::function<void(uintptr_t)> replace_callback);
 
-    Settings& settings();
-
-private:
     std::shared_ptr<ModEngine> m_mod_engine;
 };
 

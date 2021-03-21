@@ -12,23 +12,45 @@ source_group(
         PREFIX "Header Files"
         FILES ${HEADER_LIST})
 
+set(IMGUI_SRC
+        "../third-party/imgui/imgui.cpp"
+        "../third-party/imgui/imgui_draw.cpp"
+        "../third-party/imgui/imgui_widgets.cpp"
+        "../third-party/imgui/imgui_tables.cpp"
+        "../third-party/imgui/backends/imgui_impl_dx11.cpp"
+        "../third-party/imgui/backends/imgui_impl_win32.cpp"
+)
+
+set(KIERO_SRC "../third-party/kiero/kiero.cpp")
+
+set_source_files_properties(
+        ${KIERO_SRC}
+        ${IMGUI_SRC}
+        ${OPTICK_SRC}
+        PROPERTIES
+        COMPILE_FLAGS "-w"
+)
+
 add_library(modengine2 SHARED
         main.cpp
         ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
+        modengine/crash_handler.cpp
         modengine/extension.cpp
         modengine/mod_engine.cpp
         modengine/game_info.cpp
         modengine/hook_set.cpp
         modengine/memory_scanner.cpp
+        modengine/overlay.cpp
         modengine/patch.cpp
+        modengine/script_host.cpp
         modengine/settings.cpp
+        modengine/lifecycle/render.cpp
         modengine/ext/base/base_extension.cpp
         modengine/ext/debug_menu/ds3/debug_menu_ds3.cpp
         modengine/ext/debug_menu/ds3/_DS3BootMenu.asm
         modengine/ext/debug_menu/ds3/_DS3Debug.asm
         modengine/ext/debug_menu/ds3/_DS3DebugDash.asm
         modengine/ext/debug_menu/ds3/_DS3GameProperties.asm
-        modengine/ext/crash_handler/crash_handler_extension.cpp
         modengine/ext/mod_loader/archive_file_overrides.cpp
         modengine/ext/mod_loader/mod_loader_extension.cpp
         modengine/ext/profiling/profiling_extension.cpp
@@ -37,14 +59,18 @@ add_library(modengine2 SHARED
         modengine/ext/profiling/thread_hooks.cpp
         modengine/ext/scylla/scyllahide_extension.cpp
         modengine/util/hex_string.cpp
-        ${OPTICK_SRC})
+        ${OPTICK_SRC}
+        ${IMGUI_SRC}
+        ${KIERO_SRC})
 
 # Detours currently has no CMake manifests: https://github.com/microsoft/Detours/pull/48.
 find_path(VCPKG_INCLUDE_DIR NAMES detours/detver.h)
 find_path(VCPKG_TOOLS NAMES tools/crashpad_handler.exe)
 
 target_compile_definitions(modengine2 PRIVATE
-        -DSPDLOG_WCHAR_TO_UTF8_SUPPORT)
+        -DSPDLOG_WCHAR_TO_UTF8_SUPPORT
+        -DKIERO_USE_DETOURS=1
+        -DKIERO_INCLUDE_D3D11=1)
 
 # Disable optick GPU for now until D3D11 backend
 target_compile_definitions(modengine2 PRIVATE OPTICK_ENABLE_GPU=0)
@@ -52,14 +78,24 @@ target_compile_definitions(modengine2 PRIVATE OPTICK_ENABLE_GPU=0)
 target_include_directories(modengine2 PUBLIC ../include)
 
 target_include_directories(modengine2 PRIVATE
+        "${VCPKG_INCLUDE_DIR}/luajit"
         ${DETOURS_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
+        "../third-party/kiero"
+        "../third-party/imgui"
+        "../third-party/imgui/backends"
+        "../third-party/ImTerm/include"
+        "../third-party/sol2_ImGui_Bindings"
         "../dependencies/optick")
 
+find_library(LUAJIT_LIBRARY lua51 REQUIRED)
 target_link_libraries(modengine2 PRIVATE
         ${DETOURS_LIBRARY}
         fmt::fmt-header-only
+        ${LUAJIT_LIBRARY}
         spdlog::spdlog_header_only
+        ImTerm
+        sol2::sol2
         crashpad)
 
 target_precompile_headers(modengine2 PRIVATE

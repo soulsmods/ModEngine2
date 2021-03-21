@@ -59,7 +59,7 @@ namespace fs = std::filesystem;
 std::optional<fs::path> find_override_file(const fs::path& game_path)
 {
     for (const auto& root : hooked_file_roots) {
-        debug(L"Searching for {} in {}", game_path.wstring(), root);
+        trace(L"Searching for {} in {}", game_path.wstring(), root);
 
         auto file_path = root / fs::path(game_path);
         if (fs::exists(file_path)) {
@@ -86,7 +86,7 @@ void process_archive_path(wchar_t* raw_path, size_t raw_path_len)
     /* clang-format on */
 
     std::wstring path(raw_path, raw_path_len);
-    info(L"Checking archive path {}", path);
+    debug(L"Checking archive path {}", path);
 
     std::wsmatch matches;
     std::regex_match(path, matches, archive_file_pattern);
@@ -145,7 +145,7 @@ HANDLE WINAPI tCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwSh
     HANDLE hTemplateFile)
 {
     if (lpFileName != nullptr) {
-        debug(L"Looking for {}", std::wstring(lpFileName));
+        trace(L"Looking for {}", std::wstring(lpFileName));
 
         auto override_file_opt = file_override_paths.find(std::wstring_view(lpFileName));
         std::optional<fs::path> override_path = {};
@@ -165,7 +165,7 @@ HANDLE WINAPI tCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwSh
 
         if (override_path) {
             const auto override = override_path->native().c_str();
-            debug(L"Loading overriden path {}", override);
+            trace(L"Loading overriden path {}", override);
 
             for (int i = 0; i < 10; i++) {
                 HANDLE res = hooked_CreateFileW->original(

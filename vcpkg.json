@@ -8,6 +8,9 @@
     "toml11",
     "crashpad",
     "winreg",
-    "cli11"
+    "cli11",
+    "luajit",
+    "sol2",
+    "nano-signal-slot"
   ]
 }

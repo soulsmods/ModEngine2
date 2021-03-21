@@ -47,6 +47,11 @@ bool Settings::is_debug_enabled()
     return toml::expect<bool>(m_config["modengine"]["debug"]).unwrap_or(false);
 }
 
+bool Settings::is_crash_reporting_enabled()
+{
+    return toml::expect<bool>(m_config["modengine"]["crash_reporting"]).unwrap_or(false);
+}
+
 const ExtensionInfo Settings::extension(const std::string& name)
 {
     toml::table tbl = toml::find_or<toml::table>(m_config, name, toml::table());
@@ -102,6 +107,11 @@ const fs::path& Settings::modengine_data_path() const
 void Settings::set_modengine_data_path(const fs::path& data_path)
 {
     m_modengine_data_path = data_path;
+}
+
+std::vector<std::string> Settings::script_roots()
+{
+    return toml::expect<std::vector<std::string>>(m_config["modengine"]["script_roots"]).unwrap_or({});
 }
 
 }

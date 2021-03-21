@@ -1,7 +1,6 @@
 #include "modengine/mod_engine.h"
 #include "modengine/ext/base/base_extension.h"
 #include "modengine/ext/debug_menu/ds3/debug_menu_ds3.h"
-#include "modengine/ext/crash_handler/crash_handler_extension.h"
 #include "modengine/ext/mod_loader/mod_loader_extension.h"
 #include "modengine/ext/profiling/profiling_extension.h"
 #include "modengine/ext/scylla/scyllahide_extension.h"
@@ -29,7 +28,7 @@ std::shared_ptr<ModEngine> modengine::mod_engine_global;
 std::shared_ptr<Hook<fnEntry>> hooked_entrypoint;
 HookSet entry_hook_set;
 
-static std::shared_ptr<spdlog::logger> configure_logger(Settings& settings)
+static std::shared_ptr<spdlog::logger> configure_file_logger(Settings& settings)
 {
     auto logger = std::make_shared<spdlog::logger>("modengine");
     auto log_file_path = settings.modengine_local_path() / "modengine.log";
@@ -83,7 +82,8 @@ int WINAPI modengine_entrypoint(void)
         settings_found = settings.load_from(path);
     }
 
-    spdlog::set_default_logger(configure_logger(settings));
+    const auto& logger = configure_file_logger(settings);
+    spdlog::set_default_logger(logger);
 
     const auto game_info = GameInfo::from_current_module();
     if (!game_info) {
@@ -92,11 +92,15 @@ int WINAPI modengine_entrypoint(void)
     }
 
     info("Main thread ID: {}", GetCurrentThreadId());
-    info("ModEngine initializing for {}, version {}", game_info->description(), game_info->version);
-    info("Local settings: {} (loaded: {}), Global settings: {} (loaded: {})", std::string(settings_path_env), settings_found, global_settings_path.string(), global_settings_found);
+    info("ModEngine version initializing for {} {}", modengine::g_version, game_info->description(), game_info->version);
+    info("Local settings: {} (loaded: {}), Global get_settings: {} (loaded: {})",
+        std::string(settings_path_env),
+        settings_found,
+        global_settings_path.string(),
+        global_settings_found);
+
     mod_engine_global.reset(new ModEngine { *game_info, settings });
     mod_engine_global->register_extension(std::make_unique<ext::ModEngineBaseExtension>(mod_engine_global));
-    mod_engine_global->register_extension(std::make_unique<ext::CrashHandlerExtension>(mod_engine_global));
     mod_engine_global->register_extension(std::make_unique<ext::DebugMenuDS3Extension>(mod_engine_global));
     mod_engine_global->register_extension(std::make_unique<ext::ModLoaderExtension>(mod_engine_global));
     mod_engine_global->register_extension(std::make_unique<ext::ProfilingExtension>(mod_engine_global));

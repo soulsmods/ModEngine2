@@ -35,9 +35,4 @@ void ModEngineExtension::reapply()
     m_mod_engine->m_hooks.hook_all();
 }
 
-Settings& ModEngineExtension::settings()
-{
-    return m_mod_engine->settings();
-}
-
 }

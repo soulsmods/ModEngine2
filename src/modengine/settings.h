@@ -57,7 +57,11 @@ public:
 
     bool is_debug_enabled();
 
+    bool is_crash_reporting_enabled();
+
     const ExtensionInfo extension(const std::string& name);
+
+    std::vector<std::string> script_roots();
 
     std::vector<ModInfo> mods();
 
