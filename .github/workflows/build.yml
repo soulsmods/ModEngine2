@@ -51,6 +51,6 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: 'modengine-${{ github.sha }}'
-        path: '${{ runner.workspace }}/build/modengine/ModEngine-2.0.0.1-win64.' # FIXME gtierney: run-cmake isn't respecting CMAKE_INSTALL_PREFIX
+        path: '${{ runner.workspace }}/build/modengine/ModEngine-*-win64.*' # FIXME gtierney: run-cmake isn't respecting CMAKE_INSTALL_PREFIX
 
 
