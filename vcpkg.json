@@ -5,7 +5,7 @@
   "dependencies": [
     "detours",
     "spdlog",
-    "toml11",
+    "tomlplusplus",
     "crashpad",
     "winreg",
     "cli11",

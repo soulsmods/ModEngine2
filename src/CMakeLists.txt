@@ -1,4 +1,4 @@
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 enable_language(ASM_MASM)
 enable_testing()
 
@@ -61,21 +61,24 @@ add_library(modengine2 SHARED
         modengine/util/hex_string.cpp
         ${OPTICK_SRC}
         ${IMGUI_SRC}
-        ${KIERO_SRC})
+        ${KIERO_SRC} modengine/extension_set.cpp modengine/extension_set.h)
 
-# Detours currently has no CMake manifests: https://github.com/microsoft/Detours/pull/48.
-find_path(VCPKG_INCLUDE_DIR NAMES detours/detver.h)
 find_path(VCPKG_TOOLS NAMES tools/crashpad_handler.exe)
+find_library(LUAJIT_LIBRARY lua51 REQUIRED)
 
-target_compile_definitions(modengine2 PRIVATE
-        -DSPDLOG_WCHAR_TO_UTF8_SUPPORT
-        -DKIERO_USE_DETOURS=1
-        -DKIERO_INCLUDE_D3D11=1)
+target_compile_features(modengine2 PUBLIC cxx_std_20)
+target_compile_definitions(modengine2 PUBLIC SPDLOG_WCHAR_TO_UTF8_SUPPORT)
+
+target_include_directories(modengine2 PUBLIC
+        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>")
+
+target_link_libraries(modengine2 PUBLIC
+        "$<BUILD_INTERFACE:${LUAJIT_LIBRARY}>"
+        "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/lib/lua51.lib>")
 
 # Disable optick GPU for now until D3D11 backend
-target_compile_definitions(modengine2 PRIVATE OPTICK_ENABLE_GPU=0)
-
-target_include_directories(modengine2 PUBLIC ../include)
+target_compile_definitions(modengine2 PRIVATE OPTICK_ENABLE_GPU=0 KIERO_USE_DETOURS=1 KIERO_INCLUDE_D3D11=1)
 
 target_include_directories(modengine2 PRIVATE
         "${VCPKG_INCLUDE_DIR}/luajit"
@@ -88,11 +91,9 @@ target_include_directories(modengine2 PRIVATE
         "../third-party/sol2_ImGui_Bindings"
         "../dependencies/optick")
 
-find_library(LUAJIT_LIBRARY lua51 REQUIRED)
 target_link_libraries(modengine2 PRIVATE
         ${DETOURS_LIBRARY}
         fmt::fmt-header-only
-        ${LUAJIT_LIBRARY}
         spdlog::spdlog_header_only
         ImTerm
         sol2::sol2

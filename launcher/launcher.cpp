@@ -97,18 +97,24 @@ int main(int argc, char* argv[])
     auto kernel32 = LoadLibraryW(L"kernel32.dll");
     auto create_process_addr = GetProcAddress(kernel32, "CreateProcessW");
 
+    auto exec_path_env = std::getenv("PATH");
+    auto exec_path = std::wstring(exec_path_env, exec_path_env + wcslen(reinterpret_cast<const wchar_t*>(exec_path_env)));
+    exec_path.append(L";");
+    exec_path.append(modengine_dll_path.parent_path().native().c_str());
+
     // These are inherited by the game process we launch with Detours.
     SetEnvironmentVariable(L"SteamAppId", launch_params.app_id.c_str());
     SetEnvironmentVariable(L"MODENGINE_CONFIG", fs::absolute(config_path).c_str());
+    SetEnvironmentVariable(L"PATH", exec_path.c_str());
+
+    if (suspend) {
+        SetEnvironmentVariable(L"MODENGINE_DEBUG_GAME", L"1");
+    }
 
     wchar_t cmd[MAX_PATH] = {};
     wcscpy_s(cmd, app_cmd.c_str());
 
     auto proc_flags = CREATE_NEW_PROCESS_GROUP;
-    if (suspend) {
-        proc_flags |= CREATE_SUSPENDED;
-    }
-
     bool success = DetourCreateProcessWithDllW(
         cmd,
         nullptr,

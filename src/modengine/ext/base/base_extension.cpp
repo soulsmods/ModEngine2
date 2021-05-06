@@ -3,7 +3,9 @@
 
 #include "modengine/util/hex_string.h"
 #include "modengine/lifecycle/render.h"
+#include <spdlog/spdlog.h>
 
+using namespace spdlog;
 namespace modengine::ext {
 
 static std::shared_ptr<Hook<fnDirectInput8Create>> hooked_DirectInput8Create;

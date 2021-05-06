@@ -66,20 +66,7 @@ void Overlay::render(IDXGISwapChain* swap_chain)
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::Begin("Mod Engine");
-    if (ImGui::BeginTabBar("Components", ImGuiTabBarFlags_None)) {
-        if (ImGui::BeginTabItem("Logs")) {
-            ImGui::BeginChild("Logs");
-            m_terminal.show();
-            ImGui::EndChild();
-            ImGui::EndTabItem();
 
-        }
-
-        ImGui::EndTabBar();
-    }
-
-    ImGui::End();
 
     if (m_visible) {
         m_on_render.fire();

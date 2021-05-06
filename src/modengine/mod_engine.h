@@ -1,6 +1,7 @@
 #pragma once
 
 #include "modengine/extension.h"
+#include "modengine/extension_set.h"
 #include "modengine/hook_set.h"
 #include "modengine/game_info.h"
 #include "modengine/patch.h"
@@ -14,20 +15,13 @@
 namespace modengine {
 
 class ModEngine {
-    friend class ModEngineExtension;
+    friend class ModEngineExtensionConnectorV1;
 
 public:
-    ModEngine(GameInfo game, Settings settings)
-        : m_game(game)
-        , m_hooks()
-        , m_settings(settings)
-    {
-    }
+    ModEngine(GameInfo game, Settings settings);
 
     void attach();
     void detach();
-
-    void register_extension(std::unique_ptr<ModEngineExtension> extension);
 
     ScriptHost& script_host()
     {
@@ -58,7 +52,7 @@ private:
     ScriptHost m_script_host;
 
     std::vector<std::unique_ptr<Patch>> m_patches;
-    std::vector<std::unique_ptr<ModEngineExtension>> m_extensions;
+    ExtensionSet m_extensions;
     std::map<std::string, ExtensionInfo> m_extension_info;
     std::thread m_worker;
 };

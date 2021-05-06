@@ -3,7 +3,6 @@
 #include "modengine/mod_engine.h"
 #include "modengine/extension.h"
 
-
 typedef HRESULT (*fnDirectInput8Create)(
     HINSTANCE hinst,
     DWORD dwVersion,
@@ -31,7 +30,7 @@ namespace modengine::ext {
 
 class ModEngineBaseExtension : public ModEngineExtension {
 public:
-    ModEngineBaseExtension(const std::shared_ptr<ModEngine>& instance)
+    ModEngineBaseExtension(ModEngineExtensionConnector* instance)
         : ModEngineExtension(instance)
     {
     }
@@ -46,7 +45,7 @@ private:
     }
 
     std::function<void(IDXGISwapChain* swap_chain, UINT, UINT)> m_render_overlay_cb = [&](IDXGISwapChain* swap_chain, UINT, UINT) {
-        m_mod_engine->get_overlay().render(swap_chain);
+//        m_mod_engine->get_overlay().render(swap_chain);
     };
 };
 

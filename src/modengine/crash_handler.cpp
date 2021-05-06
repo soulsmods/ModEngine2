@@ -6,6 +6,10 @@
 #include <client/crashpad_client.h>
 #include <memory>
 
+#include <spdlog/spdlog.h>
+
+using namespace spdlog;
+
 namespace modengine {
 
 void start_crash_handler(const fs::path &install_root, const fs::path &data_root)

@@ -3,6 +3,9 @@
 
 #include "modengine/util/hex_string.h"
 
+#include <spdlog/spdlog.h>
+
+using namespace spdlog;
 namespace fs = std::filesystem;
 
 namespace modengine::ext {
@@ -31,7 +34,7 @@ std::optional<fs::path> ModLoaderExtension::resolve_mod_path(const ModInfo& mod)
         return mod_path;
     }
 
-    const auto& settings = m_mod_engine->get_settings();
+    const auto& settings = get_settings();
     const auto primary_search_path = primary_mod_path(settings);
     const auto primary_mod_path = primary_search_path / mod_path;
 
@@ -61,7 +64,7 @@ void ModLoaderExtension::on_attach()
     hooked_CreateFileW = register_hook(ALL, "C:\\windows\\system32\\kernel32.dll", "CreateFileW", tCreateFileW);
     hooked_virtual_to_archive_path_ds3 = register_hook(DS3, 0x14007d5e0, virtual_to_archive_path_ds3);
 
-    for (const auto& mod : m_mod_engine->get_settings().mods()) {
+    for (const auto& mod : get_settings().mods()) {
         info(L"Installing mod location {}", mod.location);
 
         auto mod_path = resolve_mod_path(mod);

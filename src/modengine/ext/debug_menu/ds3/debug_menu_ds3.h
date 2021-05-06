@@ -37,7 +37,7 @@ namespace modengine::ext {
 
 class DebugMenuDS3Extension : public ModEngineExtension {
 public:
-    DebugMenuDS3Extension(const std::shared_ptr<ModEngine>& instance)
+    DebugMenuDS3Extension(ModEngineExtensionConnector* instance)
         : ModEngineExtension(instance)
     {
     }

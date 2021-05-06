@@ -30,6 +30,9 @@ std::function<void(uintptr_t)> replace_with(std::initializer_list<T> input)
 class Patch {
 public:
     virtual bool apply(MemoryScanner& scanner) = 0;
+    virtual ~Patch() {
+
+    }
 };
 
 class FixedPatch : public Patch {

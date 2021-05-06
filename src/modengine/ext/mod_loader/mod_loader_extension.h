@@ -9,7 +9,7 @@ namespace modengine::ext {
 
 class ModLoaderExtension : public ModEngineExtension {
 public:
-    ModLoaderExtension(const std::shared_ptr<ModEngine>& instance)
+    ModLoaderExtension(ModEngineExtensionConnector* instance)
         : ModEngineExtension(instance)
     {
     }

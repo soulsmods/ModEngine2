@@ -4,9 +4,12 @@
 #include <d3d11.h>
 #include <mutex>
 #include <nano_signal_slot.hpp>
+
+#pragma warning(push, 0)
 #include <imterm/misc.hpp>
 #include <imterm/terminal.hpp>
 #include <imterm/terminal_helpers.hpp>
+#pragma warning(pop)
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -15,6 +18,7 @@ namespace modengine {
 struct custom_command_struct {
     bool should_close = false;
 };
+#pragma warning(push, 0)
 
 class OverlayTerminalHelpers : public ImTerm::basic_spdlog_terminal_helper<OverlayTerminalHelpers, void, std::mutex> {
 public:
@@ -29,6 +33,7 @@ public:
     OverlayTerminalHelpers() { }
 };
 
+#pragma warning(pop)
 class Overlay {
 public:
     void init(HWND window, ID3D11Device* device, ID3D11DeviceContext* device_context);
@@ -60,7 +65,10 @@ private:
     std::once_flag m_initialized;
     ID3D11RenderTargetView* m_render_target_view;
     ID3D11DeviceContext* m_device_context;
+
+    #pragma warning(push, 0)
     ImTerm::terminal<OverlayTerminalHelpers> m_terminal;
+    #pragma warning(pop)
 };
 
 }

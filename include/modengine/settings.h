@@ -1,8 +1,8 @@
 #pragma once
 
-#include <spdlog/spdlog.h>
-#include <toml.hpp>
+#include <toml++/toml.h>
 
+#include <variant>
 #include <locale>
 #include <codecvt>
 #include <string>
@@ -10,7 +10,6 @@
 
 namespace modengine {
 
-using namespace spdlog;
 namespace fs = std::filesystem;
 
 static std::wstring utf8_to_wide(const std::string& str)
@@ -23,11 +22,11 @@ static std::wstring utf8_to_wide(const std::string& str)
 
 struct ExtensionInfo {
     bool enabled;
-    toml::value other;
+    toml::table other;
 
-    void from_toml(const toml::value& v)
+    void from_toml(const toml::table& v)
     {
-        this->enabled = toml::find_or<bool>(v, "enabled", false);
+        this->enabled = v["enabled]"].value_or(false);
         this->other = v;
     }
 };
@@ -38,12 +37,7 @@ public:
     std::wstring location;
     bool enabled;
 
-    void from_toml(const toml::value& v)
-    {
-        this->name = utf8_to_wide(toml::find_or<std::string>(v, "name", "Unknown"));
-        this->location = utf8_to_wide(toml::find<std::string>(v, "path"));
-        this->enabled = toml::find_or<bool>(v, "enabled", false);
-    }
+    void from_toml(const toml::table& v);
 };
 
 class Settings {
@@ -79,9 +73,13 @@ public:
     const fs::path& modengine_data_path() const;
     void set_modengine_data_path(const fs::path& data_path);
 
+    bool is_external_dll_enumeration_enabled();
+
+    std::vector<fs::path> get_external_dlls();
+
 private:
     std::vector<fs::path> m_config_parent_paths;
-    toml::value m_config;
+    toml::table m_config;
     fs::path m_modengine_data_path;
     fs::path m_modengine_install_path;
     fs::path m_modengine_local_path;

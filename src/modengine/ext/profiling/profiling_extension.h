@@ -13,7 +13,7 @@ namespace modengine::ext {
 
 class ProfilingExtension : public ModEngineExtension {
 public:
-    ProfilingExtension(const std::shared_ptr<ModEngine>& instance)
+    ProfilingExtension(ModEngineExtensionConnector* instance)
         : ModEngineExtension(instance)
     {
     }

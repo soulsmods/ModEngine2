@@ -3,6 +3,10 @@
 #include "modengine/ext/profiling/main_loop.h"
 #include "modengine/ext/profiling/thread_hooks.h"
 
+#include <spdlog/spdlog.h>
+
+using namespace spdlog;
+
 namespace modengine::ext {
 
 // Prelude struct that stores constant data associated with a hook

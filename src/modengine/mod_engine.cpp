@@ -1,14 +1,34 @@
 #include "modengine/mod_engine.h"
-#include "crash_handler.h"
+#include "modengine/crash_handler.h"
+
+#include "modengine/ext/base/base_extension.h"
+#include "modengine/ext/debug_menu/ds3/debug_menu_ds3.h"
+#include "modengine/ext/mod_loader/mod_loader_extension.h"
+#include "modengine/ext/profiling/profiling_extension.h"
+#include "modengine/ext/scylla/scyllahide_extension.h"
 
 #include <sol_ImGui.h>
 #include <fstream>
 #include <chrono>
 
-namespace modengine {
-
 using namespace spdlog;
 using namespace std::literals::chrono_literals;
+using namespace modengine::ext;
+
+namespace modengine {
+
+ModEngine::ModEngine(GameInfo game, Settings settings)
+    : m_game(game)
+    , m_hooks()
+    , m_settings(settings)
+    , m_extensions(new ModEngineExtensionConnectorV1(this))
+{
+    m_extensions.register_builtin_extension<ModEngineBaseExtension>();
+    m_extensions.register_builtin_extension<DebugMenuDS3Extension>();
+    m_extensions.register_builtin_extension<ModLoaderExtension>();
+    m_extensions.register_builtin_extension<ProfilingExtension>();
+    m_extensions.register_builtin_extension<ScyllaHideExtension>();
+}
 
 void ModEngine::attach()
 {
@@ -17,19 +37,8 @@ void ModEngine::attach()
     }
 
     MemoryScanner memory_scanner;
-
-    for (auto& extension : m_extensions) {
-        const auto extension_id = extension->id();
-        const auto extension_settings = m_settings.extension(extension_id);
-
-        if (extension_settings.enabled || extension_id == "base") {
-            info("Enabling extension {}", extension_id);
-            extension->on_attach();
-            info("Enabled extension {}", extension_id);
-        }
-
-        m_extension_info[extension_id] = extension_settings;
-    }
+    m_extensions.load_extensions(m_settings.get_external_dlls(), m_settings.is_external_dll_enumeration_enabled());
+    m_extensions.attach_all(m_settings);
 
     for (auto& patch : m_patches) {
         if (!patch->apply(memory_scanner)) {
@@ -53,24 +62,11 @@ void ModEngine::detach()
     m_hooks.unhook_all();
 }
 
-void ModEngine::register_extension(std::unique_ptr<ModEngineExtension> extension)
-{
-    m_extensions.push_back(std::move(extension));
-}
-
 [[noreturn]] void ModEngine::run_worker()
 {
     info("Starting worker thread");
 
     while (true) {
-        if (GetAsyncKeyState(VK_F2)) {
-            m_overlay.set_visible(!m_overlay.is_visible());
-        }
-
-        if (GetAsyncKeyState(VK_F3)) {
-            m_script_host.reload();
-        }
-
         std::this_thread::yield();
         std::this_thread::sleep_for(16ms);
     }

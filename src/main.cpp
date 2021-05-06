@@ -1,9 +1,4 @@
 #include "modengine/mod_engine.h"
-#include "modengine/ext/base/base_extension.h"
-#include "modengine/ext/debug_menu/ds3/debug_menu_ds3.h"
-#include "modengine/ext/mod_loader/mod_loader_extension.h"
-#include "modengine/ext/profiling/profiling_extension.h"
-#include "modengine/ext/scylla/scyllahide_extension.h"
 #include "modengine/version.h"
 
 #include <optional>
@@ -54,6 +49,15 @@ static std::shared_ptr<spdlog::logger> configure_file_logger(Settings& settings)
 
 int WINAPI modengine_entrypoint(void)
 {
+    auto is_debugger_enabled = std::getenv("MODENGINE_DEBUG_GAME");
+    if (is_debugger_enabled != nullptr) {
+        while (!IsDebuggerPresent()) {
+            Sleep(100);
+        }
+
+        DebugBreak();
+    }
+
     /* We need to restore any changes to entrypoint code.
      * Steam checks the signature of this */
     entry_hook_set.unhook_all();
@@ -100,11 +104,6 @@ int WINAPI modengine_entrypoint(void)
         global_settings_found);
 
     mod_engine_global.reset(new ModEngine { *game_info, settings });
-    mod_engine_global->register_extension(std::make_unique<ext::ModEngineBaseExtension>(mod_engine_global));
-    mod_engine_global->register_extension(std::make_unique<ext::DebugMenuDS3Extension>(mod_engine_global));
-    mod_engine_global->register_extension(std::make_unique<ext::ModLoaderExtension>(mod_engine_global));
-    mod_engine_global->register_extension(std::make_unique<ext::ProfilingExtension>(mod_engine_global));
-    mod_engine_global->register_extension(std::make_unique<ext::ScyllaHideExtension>(mod_engine_global));
 
     try {
         mod_engine_global->attach();

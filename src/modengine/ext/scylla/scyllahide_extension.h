@@ -8,7 +8,7 @@ namespace ext {
 
 class ScyllaHideExtension : public ModEngineExtension {
 public:
-    ScyllaHideExtension(const std::shared_ptr<ModEngine>& instance)
+    ScyllaHideExtension(ModEngineExtensionConnector* instance)
         : ModEngineExtension(instance)
     {
     }
