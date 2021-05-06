@@ -41,7 +41,7 @@ jobs:
         cmakeAppendedArgs: '-GNinja
         -DMODENGINE_DIST_SCYLLA=1
         -DMODENGINE_CRASH_REPORT_URL=${{ secrets.MODENGINE_CRASH_REPORT_URL }}
-        -DCPACK_GENERATOR=WIX
+        -DCPACK_GENERATOR=WIX;ZIP
         -DVCPKG_OVERLAY_PORTS=${{ github.workspace }}/third-party/vcpkg-overlays'
         useVcpkgToolchainFile: true
         buildDirectory: '${{ runner.workspace }}/build/modengine'
@@ -51,6 +51,6 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: 'modengine-${{ github.sha }}'
-        path: '${{ runner.workspace }}/build/modengine/ModEngine-2.0.0.1-win64.msi' # FIXME gtierney: run-cmake isn't respecting CMAKE_INSTALL_PREFIX
+        path: '${{ runner.workspace }}/build/modengine/ModEngine-2.0.0.1-win64.' # FIXME gtierney: run-cmake isn't respecting CMAKE_INSTALL_PREFIX
 
 
