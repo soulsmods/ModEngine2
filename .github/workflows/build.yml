@@ -43,7 +43,7 @@ jobs:
         -DMODENGINE_CRASH_REPORT_URL=${{ secrets.MODENGINE_CRASH_REPORT_URL }}
         -DCPACK_GENERATOR=WIX;ZIP
         -DVCPKG_OVERLAY_PORTS=${{ github.workspace }}/third-party/vcpkg-overlays
-        -C Release'
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo'
         useVcpkgToolchainFile: true
         buildDirectory: '${{ runner.workspace }}/build/modengine'
         buildWithCMakeArgs: '--target package -- -v'
