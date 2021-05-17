@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
     SetEnvironmentVariable(L"MODENGINE_CONFIG", fs::absolute(config_path).c_str());
     SetEnvironmentVariable(L"PATH", exec_path.c_str());
 
-    if (suspend) {
+    if (suspend || IsDebuggerPresent()) {
         SetEnvironmentVariable(L"MODENGINE_DEBUG_GAME", L"1");
     }
 

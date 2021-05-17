@@ -90,7 +90,22 @@ const ExtensionInfo Settings::extension(const std::string& name)
 
 std::vector<ModInfo> Settings::mods()
 {
-    return {};
+    std::vector<ModInfo> mods;
+    // @todo: should be part of the ModLoaderExtension configuration
+    auto node = node_at_path(m_config, { "extension", "mod_loader", "mods" });
+    if (!node || !(*node)->is_array_of_tables()) {
+        return mods;
+    }
+
+    auto array = (*node)->as_array();
+    for (auto& mod : *array) {
+        ModInfo mod_info;
+        mod_info.from_toml(*mod.as_table());
+
+        mods.push_back(mod_info);
+    }
+
+    return mods;
 }
 
 const std::vector<fs::path> Settings::config_folders() const
@@ -147,7 +162,7 @@ std::vector<fs::path> Settings::get_external_dlls()
 {
     std::vector<fs::path> paths;
     auto node = node_at_path(m_config, { "modengine", "external_dlls" });
-    if (!node || (*node)->is_array()) {
+    if (!node || !(*node)->is_array()) {
         return paths;
     }
 
@@ -167,6 +182,8 @@ std::vector<fs::path> Settings::get_external_dlls()
         if (!fs::exists(dll_path)) {
             warn("external DLL '{}' doesn't exist", dll_path.string());
         }
+
+        paths.push_back(dll_path);
     }
 
     return paths;
@@ -174,8 +191,8 @@ std::vector<fs::path> Settings::get_external_dlls()
 
 void ModInfo::from_toml(const toml::table& v)
 {
-    this->name = utf8_to_wide(v["name"].value_or("Unknown"));
-    this->location = utf8_to_wide(v["path"].as_string()->get());
+    this->name = v["name"].value_or(L"Unknown");
+    this->location = v["path"].value_exact<std::wstring>().value();
     this->enabled = v["enabled"].value_or(false);
 }
 }

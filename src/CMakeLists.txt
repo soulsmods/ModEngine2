@@ -39,12 +39,12 @@ add_library(modengine2 SHARED
         modengine/mod_engine.cpp
         modengine/game_info.cpp
         modengine/hook_set.cpp
-        modengine/memory_scanner.cpp
         modengine/overlay.cpp
         modengine/patch.cpp
         modengine/script_host.cpp
         modengine/settings.cpp
         modengine/lifecycle/render.cpp
+        modengine/scripting/api_patch.cpp
         modengine/ext/base/base_extension.cpp
         modengine/ext/debug_menu/ds3/debug_menu_ds3.cpp
         modengine/ext/debug_menu/ds3/_DS3BootMenu.asm
@@ -87,6 +87,7 @@ target_include_directories(modengine2 PRIVATE
         "../third-party/kiero"
         "../third-party/imgui"
         "../third-party/imgui/backends"
+        "../third-party/MINT"
         "../third-party/ImTerm/include"
         "../third-party/sol2_ImGui_Bindings"
         "../dependencies/optick")
@@ -100,4 +101,4 @@ target_link_libraries(modengine2 PRIVATE
         crashpad)
 
 target_precompile_headers(modengine2 PRIVATE
-        "$<$<COMPILE_LANGUAGE:CXX>:<MINT.h$<ANGLE-R>>")
+        "$<$<COMPILE_LANGUAGE:CXX>:<MINT.h$<ANGLE-R>;<modengine/util/memory_scanner.h$<ANGLE-R>>")

@@ -5,9 +5,10 @@
 #include <mutex>
 #include <nano_signal_slot.hpp>
 
-#pragma warning(push, 0)
-#include <imterm/misc.hpp>
+#pragma warning(push, 1)
+#pragma warning(disable: 4267)
 #include <imterm/terminal.hpp>
+#include <imterm/misc.hpp>
 #include <imterm/terminal_helpers.hpp>
 #pragma warning(pop)
 

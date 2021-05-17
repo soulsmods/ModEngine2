@@ -72,6 +72,10 @@ install(DIRECTORY
         DESTINATION include)
 
 install(FILES
+        "${CMAKE_CURRENT_SOURCE_DIR}/third-party/MINT/MINT.h"
+        DESTINATION include)
+
+install(FILES
         "${VCPKG_INCLUDE_DIR}/../lib/lua51.lib"
         DESTINATION lib)
 
@@ -97,7 +101,7 @@ install(EXPORT ModEngineTargets DESTINATION share/cmake/modengine)
 configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
         "${CMAKE_CURRENT_BINARY_DIR}/ModEngineConfig.cmake"
         INSTALL_DESTINATION share/cmake/modengine
-        )
+)
 set_property(TARGET modengine2 PROPERTY VERSION ${version})
 set_property(TARGET modengine2 PROPERTY SOVERSION 3)
 set_property(TARGET modengine2 PROPERTY

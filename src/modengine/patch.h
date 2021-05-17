@@ -1,37 +1,45 @@
 #pragma once
 
-#include "modengine/memory_scanner.h"
+#include "modengine/util/memory_scanner.h"
 
 #include <spdlog/spdlog.h>
 #include <string>
 #include <functional>
+#include <iterator>
 
 namespace modengine {
 
-template <typename T>
-std::function<void(uintptr_t)> replace_with(std::initializer_list<T> input)
+
+template <typename It>
+std::function<void(uintptr_t)> replace_with(It first, It last) requires std::contiguous_iterator<It>
 {
-    const auto input_len = input.size();
+    using T = std::iter_value_t<It>;
 
-    T* input_ptr = new T[input_len];
-    std::copy(input.begin(), input.end(), input_ptr);
+    auto size = std::distance(first, last);
+    auto input_ptr = new T[size];
+    std::copy(first, last, input_ptr);
 
-    return [input_ptr, input_len](auto addr) {
+    return [input_ptr, size](auto addr) {
         T* ptr = (T*)addr;
-
-        for (auto i = 0; i < input_len; i++) {
-            ptr[i] = input_ptr[i];
-        }
+        std::copy(input_ptr, input_ptr + size, ptr);
 
         delete[] input_ptr;
     };
 }
 
+template <typename T>
+std::function<void(uintptr_t)> replace_with(std::initializer_list<T> input)
+{
+    return replace_with(input.begin(), input.end());
+}
+
+std::function<void(uintptr_t)> replace_with(std::string input);
+
 class Patch {
 public:
     virtual bool apply(MemoryScanner& scanner) = 0;
-    virtual ~Patch() {
-
+    virtual ~Patch()
+    {
     }
 };
 

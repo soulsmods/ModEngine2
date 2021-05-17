@@ -12,13 +12,12 @@ namespace modengine {
 
 namespace fs = std::filesystem;
 
-static std::wstring utf8_to_wide(const std::string& str)
-{
-    auto count = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.length(), NULL, 0);
-    std::wstring wstr(count, 0);
-    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.length(), &wstr[0], count);
-    return wstr;
-}
+template <typename T>
+concept IsSettingsObject = requires(T obj, toml::table& t) {
+    { obj.from_toml(t) } -> std::same_as<bool>;
+    { T::create_default() } -> std::same_as<T>;
+
+};
 
 struct ExtensionInfo {
     bool enabled;

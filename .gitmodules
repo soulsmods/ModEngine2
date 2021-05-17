@@ -14,3 +14,6 @@
 [submodule "third-party/sol2_ImGui_Bindings"]
 	path = third-party/sol2_ImGui_Bindings
 	url = https://github.com/MSeys/sol2_ImGui_Bindings
+[submodule "third-party/MINT"]
+	path = third-party/MINT
+	url = https://github.com/Chuyu-Team/MINT.git
