@@ -26,7 +26,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         message(FATAL_ERROR "Clang frontend must be MSVC. Current frontend '${CMAKE_CXX_SIMULATE_ID}' is unsupported")
     endif ()
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/utf-8;/experimental:external;/external:anglebrackets;/external:W0;/W4;/bigobj>")
+    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/experimental:external;/external:anglebrackets;/external:W0;/W4;/bigobj>")
     add_compile_definitions(_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS _CRT_SECURE_NO_WARNINGS)
 endif ()
 

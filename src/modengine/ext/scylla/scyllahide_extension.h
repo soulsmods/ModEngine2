@@ -17,7 +17,7 @@ private:
     void on_attach() override;
     void on_detach() override;
 
-    std::string id() override
+    const char* id() override
     {
         return "scylla_hide";
     }

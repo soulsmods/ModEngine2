@@ -55,7 +55,7 @@ public:
 
     virtual void on_attach() = 0;
     virtual void on_detach() = 0;
-    virtual std::string id() = 0;
+    virtual const char* id() = 0;
 
 protected:
     void reapply()
