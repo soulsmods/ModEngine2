@@ -69,6 +69,7 @@ find_library(LUAJIT_LIBRARY lua51 REQUIRED)
 target_compile_features(modengine2 PUBLIC cxx_std_20)
 target_compile_options(modengine2 PUBLIC /utf-8)
 target_compile_definitions(modengine2 PUBLIC SPDLOG_WCHAR_TO_UTF8_SUPPORT)
+target_compile_definitions(modengine2 INTERFACE FMT_HEADER_ONLY)
 
 target_include_directories(modengine2 PUBLIC
         "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"

@@ -8,6 +8,8 @@
 #include <string>
 #include <functional>
 
+#include <spdlog/spdlog.h>
+
 namespace modengine {
 
 class ModEngine;
@@ -36,6 +38,7 @@ public:
     virtual void register_patch(GameType type, uint64_t addr, std::function<void(uintptr_t)> replace_callback);
 
     virtual Settings& get_settings();
+    virtual std::shared_ptr<spdlog::logger> get_logger();
 };
 
 using ModEngineExtensionConnector = ModEngineExtensionConnectorV1;
@@ -45,6 +48,12 @@ public:
     ModEngineExtension(ModEngineExtensionConnector* connector)
         : m_ext_connector(connector)
     {
+        auto core_logger = connector->get_logger();
+        auto curr_logger = spdlog::default_logger();
+
+        if (core_logger != nullptr && core_logger != curr_logger) {
+            spdlog::set_default_logger(core_logger);
+        }
     }
 
     ModEngineExtension(const ModEngineExtension&) = delete;

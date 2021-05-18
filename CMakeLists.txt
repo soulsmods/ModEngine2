@@ -68,6 +68,8 @@ install(TARGETS modengine2_launcher
 install(DIRECTORY
         "${VCPKG_INCLUDE_DIR}/toml++"
         "${VCPKG_INCLUDE_DIR}/sol"
+        "${VCPKG_INCLUDE_DIR}/fmt"
+        "${VCPKG_INCLUDE_DIR}/spdlog"
         "${VCPKG_INCLUDE_DIR}/luajit"
         DESTINATION include)
 

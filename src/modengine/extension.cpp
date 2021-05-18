@@ -49,4 +49,9 @@ std::shared_ptr<Hook<GenericFunctionPointer>> ModEngineExtensionConnectorV1::reg
     return hook;
 }
 
+std::shared_ptr<spdlog::logger> ModEngineExtensionConnectorV1::get_logger()
+{
+    return spdlog::default_logger();
+}
+
 }
