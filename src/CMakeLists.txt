@@ -68,12 +68,12 @@ find_library(LUAJIT_LIBRARY lua51 REQUIRED)
 
 target_compile_features(modengine2 PUBLIC cxx_std_20)
 target_compile_options(modengine2 PUBLIC /utf-8)
-target_compile_definitions(modengine2 PUBLIC SPDLOG_WCHAR_TO_UTF8_SUPPORT)
-target_compile_definitions(modengine2 INTERFACE FMT_HEADER_ONLY)
+target_compile_definitions(modengine2 PUBLIC FMT_HEADER_ONLY SPDLOG_WCHAR_TO_UTF8_SUPPORT)
+target_compile_definitions(modengine2 INTERFACE FMT_HEADER_ONLY MODENGINE_EXTERNAL)
 
 target_include_directories(modengine2 PUBLIC
         "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
-        "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>")
+        "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include;$<INSTALL_PREFIX>/include/luajit>")
 
 target_link_libraries(modengine2 PUBLIC
         "$<BUILD_INTERFACE:${LUAJIT_LIBRARY}>"
@@ -96,11 +96,18 @@ target_include_directories(modengine2 PRIVATE
 
 target_link_libraries(modengine2 PRIVATE
         ${DETOURS_LIBRARY}
-        fmt::fmt-header-only
         spdlog::spdlog_header_only
         ImTerm
         sol2::sol2
         crashpad)
 
+target_precompile_headers(modengine2 PUBLIC
+        "$<$<COMPILE_LANGUAGE:CXX>:<MINT.h$<ANGLE-R>>"
+        "$<$<COMPILE_LANGUAGE:CXX>:<sol/sol.hpp$<ANGLE-R>>"
+        "$<$<COMPILE_LANGUAGE:CXX>:<fmt/format.h$<ANGLE-R>>"
+        "$<$<COMPILE_LANGUAGE:CXX>:<spdlog/spdlog.h$<ANGLE-R>>"
+        "$<$<COMPILE_LANGUAGE:CXX>:<toml++/toml.h$<ANGLE-R>>"
+        "$<$<COMPILE_LANGUAGE:CXX>:<luajit/lua.h$<ANGLE-R>>")
+
 target_precompile_headers(modengine2 PRIVATE
-        "$<$<COMPILE_LANGUAGE:CXX>:<MINT.h$<ANGLE-R>;<modengine/util/memory_scanner.h$<ANGLE-R>>")
+        "$<$<COMPILE_LANGUAGE:CXX>:<imgui.h$<ANGLE-R>>")

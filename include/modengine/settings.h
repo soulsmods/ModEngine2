@@ -54,7 +54,7 @@ public:
 
     const ExtensionInfo extension(const std::string& name);
 
-    std::vector<std::string> script_roots();
+    std::vector<fs::path> script_roots();
 
     std::vector<ModInfo> mods();
 

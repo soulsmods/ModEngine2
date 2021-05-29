@@ -38,8 +38,6 @@ void Overlay::init(HWND window, ID3D11Device* device, ID3D11DeviceContext* devic
     ImGui_ImplDX11_Init(device, device_context);
 
     m_device_context = device_context;
-
-    spdlog::default_logger()->sinks().push_back(m_terminal.get_terminal_helper());
 }
 
 void Overlay::render(IDXGISwapChain* swap_chain)
@@ -66,10 +64,12 @@ void Overlay::render(IDXGISwapChain* swap_chain)
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
-
+    if (ImGui::IsKeyPressed(VK_F4)) {
+        m_visible = !m_visible;
+    }
 
     if (m_visible) {
-        m_on_render.fire();
+        mod_engine_global->script_host().run_callbacks("on_gui");
     }
 
     ImGui::Render();

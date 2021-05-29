@@ -153,9 +153,36 @@ void Settings::set_modengine_data_path(const fs::path& data_path)
     m_modengine_data_path = data_path;
 }
 
-std::vector<std::string> Settings::script_roots()
+std::vector<fs::path> Settings::script_roots()
 {
-    return {};
+    std::vector<fs::path> paths;
+
+    auto node = node_at_path(m_config, {"modengine", "script_roots"});
+    if (!node || !(*node)->is_array()) {
+        return paths;
+    }
+
+    auto array = (*node)->as_array();
+    for (auto& root : *array) {
+        if (!root.is_string()) {
+            continue;
+        }
+
+        auto root_path = fs::path(root.as_string()->get());
+
+        // if we don't have an absolute path, relativize it to the path we loaded configuration from
+        if (!root_path.is_absolute()) {
+            root_path = m_modengine_local_path / root_path;
+        }
+
+        if (!fs::exists(root_path)) {
+            warn("Script root '{}' doesn't exist", root_path.string());
+        }
+
+        paths.push_back(root_path);
+    }
+
+    return paths;
 }
 
 std::vector<fs::path> Settings::get_external_dlls()

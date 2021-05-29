@@ -8,6 +8,7 @@
 #include <string>
 #include <functional>
 
+#include <sol/sol.hpp>
 #include <spdlog/spdlog.h>
 
 namespace modengine {
@@ -39,6 +40,7 @@ public:
 
     virtual Settings& get_settings();
     virtual std::shared_ptr<spdlog::logger> get_logger();
+    virtual lua_State* get_lua_state();
 };
 
 using ModEngineExtensionConnector = ModEngineExtensionConnectorV1;
@@ -48,12 +50,10 @@ public:
     ModEngineExtension(ModEngineExtensionConnector* connector)
         : m_ext_connector(connector)
     {
+#ifdef MODENGINE_EXTERNAL
         auto core_logger = connector->get_logger();
-        auto curr_logger = spdlog::default_logger();
-
-        if (core_logger != nullptr && core_logger != curr_logger) {
-            spdlog::set_default_logger(core_logger);
-        }
+        spdlog::set_default_logger(core_logger);
+#endif
     }
 
     ModEngineExtension(const ModEngineExtension&) = delete;
@@ -103,6 +103,11 @@ protected:
     Settings& get_settings()
     {
         return m_ext_connector->get_settings();
+    }
+
+    sol::state_view get_lua_state()
+    {
+        return sol::state_view(m_ext_connector->get_lua_state());
     }
 
     ModEngineExtensionConnector* m_ext_connector;

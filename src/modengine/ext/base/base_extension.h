@@ -45,7 +45,7 @@ private:
     }
 
     std::function<void(IDXGISwapChain* swap_chain, UINT, UINT)> m_render_overlay_cb = [&](IDXGISwapChain* swap_chain, UINT, UINT) {
-//        m_mod_engine->get_overlay().render(swap_chain);
+        mod_engine_global->get_overlay().render(swap_chain);
     };
 };
 

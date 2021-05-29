@@ -1,7 +1,6 @@
 
 #include <modengine/extension.h>
 
-#include "modengine/extension.h"
 #include "modengine/mod_engine.h"
 
 namespace modengine {
@@ -40,7 +39,7 @@ std::shared_ptr<Hook<GenericFunctionPointer>> ModEngineExtensionConnectorV1::reg
 {
     auto original = DetourFindFunction(module.c_str(), symbol.c_str());
     if (original == nullptr) {
-        throw std::runtime_error("Unable to find a function named " + symbol + " in " + module);
+        throw std::runtime_error("Unable to find a function named " + symbol + " in library " + module);
     }
 
     auto hook = std::make_shared<Hook<GenericFunctionPointer>>(reinterpret_cast<GenericFunctionPointer>(original), (GenericFunctionPointer)detour);
@@ -51,7 +50,13 @@ std::shared_ptr<Hook<GenericFunctionPointer>> ModEngineExtensionConnectorV1::reg
 
 std::shared_ptr<spdlog::logger> ModEngineExtensionConnectorV1::get_logger()
 {
-    return spdlog::default_logger();
+    return spdlog::get("modengine");
+}
+
+lua_State* ModEngineExtensionConnectorV1::get_lua_state()
+{
+    auto state_view = m_mod_engine->m_script_host.get_state();
+    return state_view.lua_state();
 }
 
 }

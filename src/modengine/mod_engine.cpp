@@ -54,6 +54,7 @@ void ModEngine::attach()
     sol_ImGui::Init(lua);
 
     m_script_host.load_scripts(m_settings.script_roots(), true);
+    m_script_host.start_reload();
     m_worker = std::thread(&ModEngine::run_worker, this);
 }
 
