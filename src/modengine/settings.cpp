@@ -8,29 +8,6 @@ using namespace spdlog;
 
 namespace modengine {
 
-static std::optional<toml::node*> node_at_path(toml::table& root, std::initializer_list<std::string> path)
-{
-    std::vector<std::string> keys = path;
-    toml::table* container = root.as_table();
-
-    while (!keys.empty()) {
-        auto key = keys[0];
-        keys.erase(keys.begin());
-
-        if (!container->contains(key)) {
-            return {};
-        }
-
-        auto value = container->get(key);
-        if (keys.empty()) {
-            return value;
-        }
-
-        container = value->as_table();
-    }
-
-    return {};
-}
 
 template <typename T>
 static std::optional<T> value_at_path(toml::table& root, std::initializer_list<std::string> path)
@@ -88,24 +65,9 @@ const ExtensionInfo Settings::extension(const std::string& name)
     };
 }
 
-std::vector<ModInfo> Settings::mods()
+ConfigReader Settings::get_config_reader()
 {
-    std::vector<ModInfo> mods;
-    // @todo: should be part of the ModLoaderExtension configuration
-    auto node = node_at_path(m_config, { "extension", "mod_loader", "mods" });
-    if (!node || !(*node)->is_array_of_tables()) {
-        return mods;
-    }
-
-    auto array = (*node)->as_array();
-    for (auto& mod : *array) {
-        ModInfo mod_info;
-        mod_info.from_toml(*mod.as_table());
-
-        mods.push_back(mod_info);
-    }
-
-    return mods;
+    return ConfigReader(&m_config, m_modengine_local_path);
 }
 
 const std::vector<fs::path> Settings::config_folders() const
@@ -216,10 +178,4 @@ std::vector<fs::path> Settings::get_external_dlls()
     return paths;
 }
 
-void ModInfo::from_toml(const toml::table& v)
-{
-    this->name = v["name"].value_or(L"Unknown");
-    this->location = v["path"].value_exact<std::wstring>().value();
-    this->enabled = v["enabled"].value_or(false);
-}
 }

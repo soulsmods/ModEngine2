@@ -1,4 +1,3 @@
-#include "optick.h"
 #include "modengine/ext/profiling/profiling_extension.h"
 #include "modengine/ext/profiling/main_loop.h"
 #include "modengine/ext/profiling/thread_hooks.h"
@@ -140,13 +139,13 @@ void ProfilingExtension::install_profiler_zone(uintptr_t function_address, const
 
 extern "C" void __cdecl __profiler_end(void*)
 {
-    OPTICK_POP();
+//    OPTICK_POP();
 }
 
 extern "C" void* __cdecl __profiler_begin(const char* name, void * /*ctx*/)
 {
     //spdlog::info("t:{}  {}", GetCurrentThreadId(), ((modengine::ext::ProfilerPreludeData*)ctx)->original_return_address);
     //OPTICK_EVENT(name);
-    OPTICK_PUSH_DYNAMIC(name);
+//    OPTICK_PUSH_DYNAMIC(name);
     return nullptr;
 }

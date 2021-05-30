@@ -3,9 +3,9 @@
 #include <spdlog/spdlog.h>
 #include <fstream>
 
-#include <sol/sol.hpp>
-
 using namespace spdlog;
+
+namespace fs = std::filesystem;
 
 namespace modengine {
 
@@ -37,8 +37,9 @@ void ScriptHost::evaluate(const std::string_view& text)
     state.script(text);
 }
 
-void ScriptHost::load_script(fs::path path)
+void ScriptHost::load_script(const fs::path& path)
 {
+    std::unique_lock writer(m_script_lock);
     std::erase_if(m_script_callbacks, [&path](const auto& item) {
         auto const& [_, cb] = item;
         return cb.script == path;
@@ -68,7 +69,7 @@ void ScriptHost::load_script(fs::path path)
     m_script_update_times[path] = fs::last_write_time(path);
 }
 
-void ScriptHost::load_scripts(std::vector<fs::path> script_roots, bool)
+void ScriptHost::load_scripts(const std::vector<fs::path>& script_roots)
 {
     for (auto& root : script_roots) {
         info("Searching for scripts in root: {}", root.string());
@@ -91,9 +92,10 @@ void ScriptHost::reload()
 
     while (m_reloading) {
         for (const auto& [path, time] : m_script_update_times) {
-            debug("Checking if {} needs updated", path.string());
             auto last_update = fs::last_write_time(path);
             if ((last_update - time) > 2s) {
+                debug("{} has changed, reloading", path.string());
+
                 load_script(path);
             }
         }
@@ -101,19 +103,29 @@ void ScriptHost::reload()
         std::this_thread::sleep_for(1000ms);
     }
 }
-void ScriptHost::run_callbacks(std::string name)
+
+void ScriptHost::run_callbacks(const std::string& name)
 {
+    std::shared_lock reader(m_script_lock);
+
     for (auto itr = m_script_callbacks.begin(); itr != m_script_callbacks.end(); itr++) {
         if (itr->first == name) {
             itr->second.fn();
         }
     }
 }
+
 void ScriptHost::start_reload()
 {
+    if (m_reloading) {
+        warn("Already reloading scripts");
+        return;
+    }
+
     m_reloading = true;
     m_reload_thread = std::thread(&ScriptHost::reload, this);
 }
+
 void ScriptHost::stop_reload()
 {
     m_reloading = false;

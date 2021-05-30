@@ -64,8 +64,9 @@ void ModLoaderExtension::on_attach()
     hooked_CreateFileW = register_hook(ALL, "C:\\windows\\system32\\kernel32.dll", "CreateFileW", tCreateFileW);
     hooked_virtual_to_archive_path_ds3 = register_hook(DS3, 0x14007d5e0, virtual_to_archive_path_ds3);
 
-    for (const auto& mod : get_settings().mods()) {
-        info(L"Installing mod location {}", mod.location);
+    auto config = get_config<ModLoaderConfig>();
+    for (const auto& mod : config.mods) {
+        info("Installing mod location {}", mod.location);
 
         auto mod_path = resolve_mod_path(mod);
         if (mod_path) {

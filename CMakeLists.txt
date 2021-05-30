@@ -7,7 +7,6 @@ get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 
 set(version "2.0.1")
 
-
 # Detours currently has no CMake manifests: https://github.com/microsoft/Detours/pull/48.
 find_path(VCPKG_INCLUDE_DIR NAMES detours/detver.h)
 find_library(DETOURS_LIBRARY detours REQUIRED)
@@ -43,8 +42,7 @@ set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/dist/wix/resources/
 set(CPACK_WIX_LIGHT_EXTRA_FLAGS "-loc" "${CMAKE_SOURCE_DIR}/dist/wix/resources/messages.wxl")
 set(CPACK_WIX_CANDLE_EXTRA_FLAGS
         "-dConfigWithCrashTelemetry.Path=${CMAKE_CURRENT_SOURCE_DIR}/dist/config/config-with-telemetry.toml"
-        "-dConfig.Path=${CMAKE_CURRENT_SOURCE_DIR}/dist/config/config.toml"
-        )
+        "-dConfig.Path=${CMAKE_CURRENT_SOURCE_DIR}/dist/config/config.toml")
 set(CPACK_WIX_PATCH_FILE "${CMAKE_CURRENT_SOURCE_DIR}/dist/wix/patch.xml")
 set(CPACK_WIX_EXTRA_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/dist/wix/fragments/ui.wxs" "${CMAKE_CURRENT_SOURCE_DIR}/dist/wix/fragments/modengine-settings.wxs")
 set(CPACK_WIX_UI_REF "ModEngineUI_Custom")
@@ -59,8 +57,7 @@ install(TARGETS modengine2 EXPORT ModEngineTargets
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
-        INCLUDES DESTINATION include
-)
+        INCLUDES DESTINATION include)
 
 install(TARGETS modengine2_launcher
         RUNTIME DESTINATION bin)
@@ -102,25 +99,21 @@ install(EXPORT ModEngineTargets DESTINATION share/cmake/modengine)
 
 configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
         "${CMAKE_CURRENT_BINARY_DIR}/ModEngineConfig.cmake"
-        INSTALL_DESTINATION share/cmake/modengine
-)
+        INSTALL_DESTINATION share/cmake/modengine)
 set_property(TARGET modengine2 PROPERTY VERSION ${version})
 set_property(TARGET modengine2 PROPERTY SOVERSION 3)
 set_property(TARGET modengine2 PROPERTY
         INTERFACE_modengine2_MAJOR_VERSION 3)
 set_property(TARGET modengine2 APPEND PROPERTY
-        COMPATIBLE_modengine2_STRING ModEngine_MAJOR_VERSION
-        )
+        COMPATIBLE_modengine2_STRING ModEngine_MAJOR_VERSION)
 
-# generate the version file for the config file
+
 write_basic_package_version_file(
         "${CMAKE_CURRENT_BINARY_DIR}/ModEngineConfigVersion.cmake"
         VERSION "${version}"
-        COMPATIBILITY AnyNewerVersion
-)
+        COMPATIBILITY AnyNewerVersion)
 
 install(FILES
         "${CMAKE_CURRENT_BINARY_DIR}/ModEngineConfig.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/ModEngineConfigVersion.cmake"
-        DESTINATION share/cmake/ModEngine
-)
+        DESTINATION share/cmake/ModEngine)

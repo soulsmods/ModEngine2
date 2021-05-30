@@ -1,8 +1,9 @@
 #pragma once
 
 #include "modengine/hook_set.h"
-#include <concurrent_unordered_set.h>
 #include "gametypes/dantelion/dlstring.h"
+
+#include <set>
 
 namespace modengine::ext {
 
@@ -32,7 +33,7 @@ extern std::shared_ptr<Hook<fpCreateFileW>> hooked_CreateFileW;
 extern std::shared_ptr<Hook<decltype(&virtual_to_archive_path_ds3)>> hooked_virtual_to_archive_path_ds3;
 extern std::shared_ptr<Hook<decltype(&virtual_to_archive_path_ds2)>> hooked_virtual_to_archive_path_ds2;
 extern std::shared_ptr<Hook<decltype(&virtual_to_archive_path_sekiro)>> hooked_virtual_to_archive_path_sekiro;
-extern concurrency::concurrent_unordered_set<std::wstring> hooked_file_roots;
+extern std::set<std::wstring> hooked_file_roots;
 
 HANDLE WINAPI tCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode,
     LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes,

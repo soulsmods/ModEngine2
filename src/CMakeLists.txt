@@ -4,9 +4,6 @@ enable_testing()
 
 configure_file("modengine/version.cpp" "${CMAKE_CURRENT_BINARY_DIR}/version.cpp" @ONLY)
 
-# Optick source
-file(GLOB OPTICK_SRC "../dependencies/optick/*.cpp")
-
 source_group(
         TREE "${PROJECT_SOURCE_DIR}/include"
         PREFIX "Header Files"
@@ -59,7 +56,6 @@ add_library(modengine2 SHARED
         modengine/ext/profiling/thread_hooks.cpp
         modengine/ext/scylla/scyllahide_extension.cpp
         modengine/util/hex_string.cpp
-        ${OPTICK_SRC}
         ${IMGUI_SRC}
         ${KIERO_SRC} modengine/extension_set.cpp modengine/extension_set.h)
 
@@ -79,8 +75,7 @@ target_link_libraries(modengine2 PUBLIC
         "$<BUILD_INTERFACE:${LUAJIT_LIBRARY}>"
         "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/lib/lua51.lib>")
 
-# Disable optick GPU for now until D3D11 backend
-target_compile_definitions(modengine2 PRIVATE OPTICK_ENABLE_GPU=0 KIERO_USE_DETOURS=1 KIERO_INCLUDE_D3D11=1)
+target_compile_definitions(modengine2 PRIVATE KIERO_USE_DETOURS=1 KIERO_INCLUDE_D3D11=1)
 
 target_include_directories(modengine2 PRIVATE
         "${VCPKG_INCLUDE_DIR}/luajit"

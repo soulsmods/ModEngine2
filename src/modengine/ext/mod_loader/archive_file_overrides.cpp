@@ -6,9 +6,8 @@
 #include <string_view>
 #include <optional>
 #include <regex>
-#include <concurrent_unordered_set.h>
-#include <concurrent_unordered_map.h>
-#include <concurrent_vector.h>
+#include <mutex>
+#include <shared_mutex>
 
 #include <spdlog/spdlog.h>
 
@@ -42,15 +41,17 @@ namespace modengine::ext {
 // the easiest and most robust way to do this. It also has the bonus of allowing files that don't go through the asset system
 // (like the data archives and some of the sounds) to be overridable.
 
-concurrency::concurrent_unordered_map<std::wstring, std::optional<std::filesystem::path>> archive_override_paths;
-concurrency::concurrent_unordered_map<std::wstring_view, std::optional<std::filesystem::path>> file_override_paths;
+std::map<std::wstring, std::optional<std::filesystem::path>> archive_override_paths;
+std::map<std::wstring_view, std::optional<std::filesystem::path>> file_override_paths;
 
 std::shared_ptr<Hook<fpCreateFileW>> hooked_CreateFileW;
 
 std::shared_ptr<Hook<decltype(&virtual_to_archive_path_ds3)>> hooked_virtual_to_archive_path_ds3;
 std::shared_ptr<Hook<decltype(&virtual_to_archive_path_ds2)>> hooked_virtual_to_archive_path_ds2;
 std::shared_ptr<Hook<decltype(&virtual_to_archive_path_sekiro)>> hooked_virtual_to_archive_path_sekiro;
-concurrency::concurrent_unordered_set<std::wstring> hooked_file_roots;
+std::set<std::wstring> hooked_file_roots;
+std::shared_mutex file_override_mutex;
+std::shared_mutex archive_override_mutex;
 
 using namespace spdlog;
 
@@ -86,7 +87,7 @@ void process_archive_path(wchar_t* raw_path, size_t raw_path_len)
     /* clang-format on */
 
     std::wstring path(raw_path, raw_path_len);
-    debug(L"Checking archive path {}", path);
+    trace(L"Checking archive path {}", path);
 
     std::wsmatch matches;
     std::regex_match(path, matches, archive_file_pattern);
@@ -94,6 +95,8 @@ void process_archive_path(wchar_t* raw_path, size_t raw_path_len)
     if (matches.empty()) {
         return;
     }
+
+    std::unique_lock writer(archive_override_mutex);
 
     const auto prefix_len = matches[1].length();
     const auto archive_file = L"./" + path.substr(prefix_len);
@@ -144,26 +147,37 @@ HANDLE WINAPI tCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwSh
     LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes,
     HANDLE hTemplateFile)
 {
+
     if (lpFileName != nullptr) {
         trace(L"Looking for {}", std::wstring(lpFileName));
 
-        auto override_file_opt = file_override_paths.find(std::wstring_view(lpFileName));
         std::optional<fs::path> override_path = {};
-        if (override_file_opt != file_override_paths.end()) {
-            override_path = override_file_opt->second;
-        } else {
-            auto root = fs::current_path();
-            auto filepath = fs::path(lpFileName);
+        bool just_in_time_lookup = false;
 
-            if (path_contains(root, filepath)) {
-                auto relpath = fs::path(filepath.wstring().substr(root.wstring().length() + 1));
-                override_path = find_override_file(relpath);
+        {
+            std::shared_lock reader(file_override_mutex);
+            auto override_file_opt = file_override_paths.find(std::wstring_view(lpFileName));
+            if (override_file_opt != file_override_paths.end()) {
+                override_path = override_file_opt->second;
+            } else {
+                auto root = fs::current_path();
+                auto filepath = fs::path(lpFileName);
+
+                if (path_contains(root, filepath)) {
+                    auto relpath = fs::path(filepath.wstring().substr(root.wstring().length() + 1));
+                    override_path = find_override_file(relpath);
+                }
+
+                just_in_time_lookup = true;
             }
-
-            file_override_paths[std::wstring_view(lpFileName)] = override_path;
         }
 
         if (override_path) {
+            if (just_in_time_lookup) {
+                std::unique_lock writer(file_override_mutex);
+                file_override_paths[std::wstring_view(lpFileName)] = override_path;
+            }
+
             const auto override = override_path->native().c_str();
             trace(L"Loading overriden path {}", override);
 

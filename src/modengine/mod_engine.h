@@ -14,6 +14,19 @@
 
 namespace modengine {
 
+struct ModEngineConfig {
+    bool crash_reporting;
+    bool debug;
+
+    std::vector<std::filesystem::path> external_dlls;
+    bool external_dll_enumeration;
+
+    std::vector<std::filesystem::path> script_roots;
+    bool script_reloading;
+
+    bool from_toml(ConfigReader &reader);
+};
+
 class ModEngine {
     friend class ModEngineExtensionConnectorV1;
 
@@ -46,13 +59,13 @@ public:
     [[noreturn]] void run_worker();
 private:
     GameInfo m_game;
+    ExtensionSet m_extensions;
     HookSet m_hooks;
     Overlay m_overlay;
     Settings m_settings;
     ScriptHost m_script_host;
 
     std::vector<std::unique_ptr<Patch>> m_patches;
-    ExtensionSet m_extensions;
     std::map<std::string, ExtensionInfo> m_extension_info;
     std::thread m_worker;
 };

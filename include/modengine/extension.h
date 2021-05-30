@@ -31,7 +31,7 @@ public:
         return 1;
     }
 
-    virtual std::shared_ptr<Hook<GenericFunctionPointer>> register_hook(GameType type, const std::string &module, const std::string &symbol, uintptr_t detour);
+    virtual std::shared_ptr<Hook<GenericFunctionPointer>> register_hook(GameType type, const std::string& module, const std::string& symbol, uintptr_t detour);
     virtual void register_hook(GameType type, std::shared_ptr<Hook<GenericFunctionPointer>> hook);
     virtual void install_hooks();
 
@@ -111,6 +111,16 @@ protected:
     }
 
     ModEngineExtensionConnector* m_ext_connector;
+
+    template <ConfigObject T>
+    T get_config()
+    {
+        auto settings = get_settings();
+        auto config_reader = settings.get_config_reader();
+        auto config = config_reader.read_config_object<T>({ "extension", id() });
+
+        return config;
+    }
 };
 
 }

@@ -53,7 +53,7 @@ void ModEngine::attach()
     auto lua = m_script_host.get_state();
     sol_ImGui::Init(lua);
 
-    m_script_host.load_scripts(m_settings.script_roots(), true);
+    m_script_host.load_scripts(m_settings.script_roots());
     m_script_host.start_reload();
     m_worker = std::thread(&ModEngine::run_worker, this);
 }
@@ -73,4 +73,16 @@ void ModEngine::detach()
     }
 }
 
+bool ModEngineConfig::from_toml(ConfigReader& reader)
+{
+    crash_reporting = reader.read_config_option<bool>({"crash_reporting"}).value_or(true);
+    debug = reader.read_config_option<bool>({"debug"}).value_or(false);
+
+    external_dll_enumeration = reader.read_config_option<bool>({"external_dll_discovery"}).value_or(true);
+    external_dlls = reader.read_config_options<fs::path>({"external_dlls"});
+
+    script_reloading = reader.read_config_option<bool>({"script_reloading"}).value_or(false);
+    script_roots = reader.read_config_options<fs::path>({"script_roots"});
+    return true;
+}
 }
