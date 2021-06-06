@@ -2,6 +2,6 @@
 
 namespace modengine::lifecycle {
 
-Signal<void(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags)> on_frame;
+Nano::Signal<void(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags)> on_frame;
 
 }

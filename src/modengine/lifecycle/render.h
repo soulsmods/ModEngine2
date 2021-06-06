@@ -1,11 +1,10 @@
 #pragma once
 
-#include "modengine/lifecycle.h"
-
+#include <nano_signal_slot.hpp>
 #include <d3d11.h>
 
 namespace modengine::lifecycle {
 
-extern Signal<void(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags)> on_frame;
+extern Nano::Signal<void(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags)> on_frame;
 
 }

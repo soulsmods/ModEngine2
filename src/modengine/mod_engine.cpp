@@ -1,29 +1,45 @@
 #include "modengine/mod_engine.h"
+#include "modengine/crash_handler.h"
 
+#include "modengine/ext/base/base_extension.h"
+#include "modengine/ext/debug_menu/ds3/debug_menu_ds3.h"
+#include "modengine/ext/mod_loader/mod_loader_extension.h"
+#include "modengine/ext/profiling/profiling_extension.h"
+#include "modengine/ext/scylla/scyllahide_extension.h"
+
+#include <sol_ImGui.h>
 #include <fstream>
+#include <chrono>
+
+using namespace spdlog;
+using namespace std::literals::chrono_literals;
+using namespace modengine::ext;
 
 namespace modengine {
 
-using namespace spdlog;
+ModEngine::ModEngine(GameInfo game, Settings settings, ModEngineConfig config)
+    : m_config(config)
+    , m_game(game)
+    , m_hooks()
+    , m_settings(settings)
+    , m_extensions(new ModEngineExtensionConnectorV1(this))
+{
+    m_extensions.register_builtin_extension<ModEngineBaseExtension>();
+    m_extensions.register_builtin_extension<DebugMenuDS3Extension>();
+    m_extensions.register_builtin_extension<ModLoaderExtension>();
+    m_extensions.register_builtin_extension<ProfilingExtension>();
+    m_extensions.register_builtin_extension<ScyllaHideExtension>();
+}
 
 void ModEngine::attach()
 {
-    info("Registering anti-debug and DirectInput hooks");
+    if (m_config.crash_reporting) {
+        start_crash_report_uploads();
+    }
 
     MemoryScanner memory_scanner;
-
-    for (auto& extension : m_extensions) {
-        const auto extension_id = extension->id();
-        const auto extension_settings = m_settings.extension(extension_id);
-
-        if (extension_settings.enabled || extension_id == "base") {
-            info("Enabling extension {}", extension_id);
-            extension->on_attach();
-            info("Enabled extension {}", extension_id);
-        }
-
-        m_extension_info[extension_id] = extension_settings;
-    }
+    m_extensions.load_extensions(m_config.external_dlls, m_config.external_dll_enumeration);
+    m_extensions.attach_all(m_settings);
 
     for (auto& patch : m_patches) {
         if (!patch->apply(memory_scanner)) {
@@ -34,6 +50,16 @@ void ModEngine::attach()
     if (!m_hooks.hook_all()) {
         error("Failed to register all hooks");
     }
+
+    auto lua = m_script_host.get_state();
+    sol_ImGui::Init(lua);
+
+    m_script_host.load_scripts(m_config.script_roots);
+    if (m_config.script_reloading) {
+        m_script_host.start_reload();
+    }
+
+    m_worker = std::thread(&ModEngine::run_worker, this);
 }
 
 void ModEngine::detach()
@@ -41,9 +67,26 @@ void ModEngine::detach()
     m_hooks.unhook_all();
 }
 
-void ModEngine::register_extension(std::unique_ptr<ModEngineExtension> extension)
+[[noreturn]] void ModEngine::run_worker()
 {
-    m_extensions.push_back(std::move(extension));
+    info("Starting worker thread");
+
+    while (true) {
+        std::this_thread::yield();
+        std::this_thread::sleep_for(16ms);
+    }
 }
 
+bool ModEngineConfig::from_toml(ConfigReader& reader)
+{
+    crash_reporting = reader.read_config_option<bool>({"crash_reporting"}).value_or(true);
+    debug = reader.read_config_option<bool>({"debug"}).value_or(false);
+
+    external_dll_enumeration = reader.read_config_option<bool>({"external_dll_discovery"}).value_or(true);
+    external_dlls = reader.read_config_options<fs::path>({"external_dlls"});
+
+    script_reloading = reader.read_config_option<bool>({"script_reloading"}).value_or(false);
+    script_roots = reader.read_config_options<fs::path>({"script_roots"});
+    return true;
+}
 }

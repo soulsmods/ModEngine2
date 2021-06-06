@@ -13,7 +13,7 @@ namespace modengine::ext {
 
 class ProfilingExtension : public ModEngineExtension {
 public:
-    ProfilingExtension(const std::shared_ptr<ModEngine>& instance)
+    ProfilingExtension(ModEngineExtensionConnector* instance)
         : ModEngineExtension(instance)
     {
     }
@@ -24,7 +24,7 @@ private:
     void on_attach() override;
     void on_detach() override;
 
-    std::string id() override {
+    const char* id() override {
         return "profiling";
     }
 

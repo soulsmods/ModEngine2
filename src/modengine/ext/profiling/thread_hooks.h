@@ -7,7 +7,7 @@ namespace modengine::ext {
 
 typedef INT (*fnDLThreadHandler)(DLThread*);
 
-extern std::shared_ptr<Hook<fnDLThreadHandler>> hooked_DLThreadHandler;
+extern Hook<fnDLThreadHandler> hooked_DLThreadHandler;
 
 INT __cdecl tDLThreadHandler(DLThread *thread);
 

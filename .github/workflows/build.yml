@@ -17,7 +17,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: true
-    - uses: ilammy/msvc-dev-cmd@v1
+    - uses: ilammy/msvc-dev-cmd@v1.8.0
     - uses: lukka/get-cmake@latest
     - name: Restore from cache and install vcpkg
       # Download and build vcpkg, without installing any port. If content is cached already, it is a no-op.
@@ -42,8 +42,9 @@ jobs:
         -DMODENGINE_DIST_SCYLLA=1
         -DCMAKE_BUILD_TYPE=Release
         -DMODENGINE_CRASH_REPORT_URL=${{ secrets.MODENGINE_CRASH_REPORT_URL }}
-        -DCPACK_GENERATOR=WIX
-        -DVCPKG_OVERLAY_PORTS=${{ github.workspace }}/third-party/vcpkg-overlays'
+        -DCPACK_GENERATOR=WIX;ZIP
+        -DVCPKG_OVERLAY_PORTS=${{ github.workspace }}/third-party/vcpkg-overlays
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo'
         useVcpkgToolchainFile: true
         buildDirectory: '${{ runner.workspace }}/build/modengine'
         buildWithCMakeArgs: '--target package -- -v'
@@ -52,6 +53,6 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: 'modengine-${{ github.sha }}'
-        path: '${{ runner.workspace }}/build/modengine/ModEngine-2.0.0.1-win64.msi' # FIXME gtierney: run-cmake isn't respecting CMAKE_INSTALL_PREFIX
+        path: '${{ runner.workspace }}/build/modengine/ModEngine-*-win64.*' # FIXME gtierney: run-cmake isn't respecting CMAKE_INSTALL_PREFIX
 
 

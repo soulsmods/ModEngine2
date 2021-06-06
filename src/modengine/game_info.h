@@ -1,20 +1,12 @@
 #pragma once
 
+#include "modengine/game_type.h"
+
 #include <cstdint>
 #include <string>
 #include <optional>
 
 namespace modengine {
-
-enum GameType : std::uint32_t {
-    DS_REMASTERED = 1,
-    DS2 = 1 << 1,
-    DS3 = 1 << 2,
-    SEKIRO = 1 << 3,
-    ALL = 0xFFFFFFFF
-};
-
-GameType operator |(GameType lhs, GameType rhs);
 
 struct GameInfo {
 public:

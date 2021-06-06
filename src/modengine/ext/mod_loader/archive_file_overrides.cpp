@@ -42,24 +42,25 @@ namespace modengine::ext {
 // the easiest and most robust way to do this. It also has the bonus of allowing files that don't go through the asset system
 // (like the data archives and some of the sounds) to be overridable.
 
+namespace fs = std::filesystem;
+
 concurrency::concurrent_unordered_map<std::wstring, std::optional<std::filesystem::path>> archive_override_paths;
-concurrency::concurrent_unordered_map<std::wstring_view, std::optional<std::filesystem::path>> file_override_paths;
+concurrency::concurrent_unordered_map<std::wstring, std::optional<std::filesystem::path>> file_override_paths;
 
-std::shared_ptr<Hook<fpCreateFileW>> hooked_CreateFileW;
+Hook<fpCreateFileW> hooked_CreateFileW;
 
-std::shared_ptr<Hook<decltype(&virtual_to_archive_path_ds3)>> hooked_virtual_to_archive_path_ds3;
-std::shared_ptr<Hook<decltype(&virtual_to_archive_path_ds2)>> hooked_virtual_to_archive_path_ds2;
-std::shared_ptr<Hook<decltype(&virtual_to_archive_path_sekiro)>> hooked_virtual_to_archive_path_sekiro;
-concurrency::concurrent_unordered_set<std::wstring> hooked_file_roots;
+Hook<decltype(&virtual_to_archive_path_ds3)> hooked_virtual_to_archive_path_ds3;
+Hook<decltype(&virtual_to_archive_path_ds2)> hooked_virtual_to_archive_path_ds2;
+Hook<decltype(&virtual_to_archive_path_sekiro)> hooked_virtual_to_archive_path_sekiro;
+concurrency::concurrent_vector<std::wstring> hooked_file_roots;
 
 using namespace spdlog;
 
-namespace fs = std::filesystem;
 
 std::optional<fs::path> find_override_file(const fs::path& game_path)
 {
     for (const auto& root : hooked_file_roots) {
-        debug(L"Searching for {} in {}", game_path.wstring(), root);
+        trace(L"Searching for {} in {}", game_path.wstring(), root);
 
         auto file_path = root / fs::path(game_path);
         if (fs::exists(file_path)) {
@@ -79,14 +80,14 @@ void process_archive_path(wchar_t* raw_path, size_t raw_path_len)
     /* clang-format off */
     static auto archive_file_pattern = std::wregex(
         L"("
-            "data.:\\/"   // References to main data archives (data1:/ etc)
-            "|gamedata."  // References to DS2 data archives
-            "|game_....." // References to DS3 DLC archives
+        "data.:\\/"   // References to main data archives (data1:/ etc)
+        "|gamedata."  // References to DS2 data archives
+        "|game_....." // References to DS3 DLC archives
         ").+");
     /* clang-format on */
 
     std::wstring path(raw_path, raw_path_len);
-    info(L"Checking archive path {}", path);
+    debug(L"Checking archive path {}", path);
 
     std::wsmatch matches;
     std::regex_match(path, matches, archive_file_pattern);
@@ -141,13 +142,13 @@ bool path_contains(const fs::path& root, const fs::path& filepath)
 }
 
 HANDLE WINAPI tCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode,
-    LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes,
-    HANDLE hTemplateFile)
+                           LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes,
+                           HANDLE hTemplateFile)
 {
     if (lpFileName != nullptr) {
-        debug(L"Looking for {}", std::wstring(lpFileName));
+        trace(L"Looking for {}", std::wstring(lpFileName));
 
-        auto override_file_opt = file_override_paths.find(std::wstring_view(lpFileName));
+        auto override_file_opt = file_override_paths.find(std::wstring(lpFileName));
         std::optional<fs::path> override_path = {};
         if (override_file_opt != file_override_paths.end()) {
             override_path = override_file_opt->second;
@@ -160,15 +161,15 @@ HANDLE WINAPI tCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwSh
                 override_path = find_override_file(relpath);
             }
 
-            file_override_paths[std::wstring_view(lpFileName)] = override_path;
+            file_override_paths[std::wstring(lpFileName)] = override_path;
         }
 
         if (override_path) {
             const auto override = override_path->native().c_str();
-            debug(L"Loading overriden path {}", override);
+            trace(L"Loading overriden path {}", override);
 
             for (int i = 0; i < 10; i++) {
-                HANDLE res = hooked_CreateFileW->original(
+                HANDLE res = hooked_CreateFileW.original(
                     override,
                     dwDesiredAccess,
                     dwShareMode,
@@ -186,7 +187,7 @@ HANDLE WINAPI tCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwSh
         }
     }
 
-    return hooked_CreateFileW->original(
+    return hooked_CreateFileW.original(
         lpFileName,
         dwDesiredAccess,
         dwShareMode,
@@ -198,7 +199,7 @@ HANDLE WINAPI tCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwSh
 
 void* __cdecl virtual_to_archive_path_ds3(DLString<modengine::GameType::DS3, wchar_t>* path, UINT64 p2, UINT64 p3, DLString<modengine::GameType::DS3, wchar_t>* p4, UINT64 p5, UINT64 p6)
 {
-    auto res = static_cast<DLString<modengine::GameType::DS3, wchar_t>*>(hooked_virtual_to_archive_path_ds3->original(path, p2, p3, p4, p5, p6));
+    auto res = static_cast<DLString<modengine::GameType::DS3, wchar_t>*>(hooked_virtual_to_archive_path_ds3.original(path, p2, p3, p4, p5, p6));
 
     if (res != nullptr) {
         process_archive_path(res->str(), res->length);
@@ -209,12 +210,12 @@ void* __cdecl virtual_to_archive_path_ds3(DLString<modengine::GameType::DS3, wch
 
 void* __cdecl virtual_to_archive_path_ds2(LPVOID p1, dlstring_t* path)
 {
-    return hooked_virtual_to_archive_path_ds2->original(p1, path);
+    return hooked_virtual_to_archive_path_ds2.original(p1, path);
 }
 
 void* __cdecl virtual_to_archive_path_sekiro(dlstring_sekiro_t* path, UINT64 p2, UINT64 p3, dlstring_sekiro_t* p4, UINT64 p5, UINT64 p6)
 {
-    return hooked_virtual_to_archive_path_sekiro->original(path, p2, p3, p4, p5, p6);
+    return hooked_virtual_to_archive_path_sekiro.original(path, p2, p3, p4, p5, p6);
 }
 
 }

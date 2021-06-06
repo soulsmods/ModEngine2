@@ -1,0 +1,272 @@
+﻿<mah:MetroWindow x:Class="ModEngine2.MainWindow"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                 xmlns:local="clr-namespace:ModEngine2"
+                 mc:Ignorable="d"
+                 Title="Mod Engine 2" Height="450" Width="800"
+                 SaveWindowPosition="True"
+                 TitleAlignment="Left"
+                 TitleCharacterCasing="Normal"
+                 ShowTitleBar="True"
+                 ResizeMode="CanResizeWithGrip"
+                 xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
+                 xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+                 xmlns:System="clr-namespace:System;assembly=System.Runtime"
+                 Style="{DynamicResource MahApps.Styles.MetroWindow.Clean}">
+
+    <Window.Resources>
+        <DataTemplate x:Key="GameBoxTemplate">
+            <TextBlock Text="{Binding Path=Name}" />
+        </DataTemplate>
+        <XmlDataProvider x:Key="Employees" XPath="/Mods/*">
+            <x:XData>
+                <Mod xmlns="">
+                    <Mod Name="Terry Adams" Enabled="false" EmployeeNumber="1" />
+                </Mod>
+            </x:XData>
+        </XmlDataProvider>
+
+        <DataTemplate x:Key="EmployeeItemTemplate">
+            <TextBlock Text="{Binding XPath=@Name}" />
+        </DataTemplate>
+        <DataTemplate x:Key="HamburgerMenuItem" DataType="{x:Type mah:HamburgerMenuGlyphItem}">
+            <Grid Height="48">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="48" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+
+                    <Border Grid.Column="0" Grid.Row="0" Opacity="1.0"
+                            Background="Green" Margin="10" />
+
+                    <Border Grid.Column="0" Grid.Row="0" Opacity="0.1"
+                            Background="WhiteSmoke" Margin="5" BorderThickness="1" CornerRadius="4" />
+                </Grid>
+                <TextBlock Grid.Column="1"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Left"
+                           FontSize="16"
+                           Text="{Binding Label}" />
+            </Grid>
+        </DataTemplate>
+        <DataTemplate x:Key="HamburgerOptionsMenuItem" DataType="{x:Type mah:HamburgerMenuItem}">
+            <Grid Height="48">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="48" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <ContentControl Grid.Column="0"
+                                Content="{Binding Tag}"
+                                Focusable="False"
+                                IsTabStop="False" />
+                <TextBlock Grid.Column="1"
+                           VerticalAlignment="Center"
+                           FontSize="16"
+                           Text="{Binding Label}" />
+            </Grid>
+        </DataTemplate>
+        <CollectionViewSource
+            Source="{Binding Source={x:Static Application.Current}, Path=Games}"
+            x:Key="GamesDataView" />
+
+    </Window.Resources>
+
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_New" />
+                <MenuItem Header="_Open" />
+                <MenuItem Header="_Save" />
+                <Separator />
+                <MenuItem Header="_Exit" />
+            </MenuItem>
+        </Menu>
+        <mah:HamburgerMenu x:Name="HamburgerMenuControl"
+                           HamburgerVisibility="Collapsed"
+                           HamburgerWidth="48"
+                           IsPaneOpen="True"
+                           SelectedIndex="1"
+                           ItemTemplate="{StaticResource HamburgerMenuItem}"
+                           OptionsItemTemplate="{StaticResource HamburgerOptionsMenuItem}"
+
+                           BorderBrush="Gray"
+                           BorderThickness="1"
+                           Style="{StaticResource MahApps.Styles.HamburgerMenu.CreatorsUpdate}"
+                           VerticalScrollBarOnLeftSide="False">
+            <!--  Items  -->
+            <mah:HamburgerMenu.ItemsSource>
+                <mah:HamburgerMenuItemCollection>
+                    <mah:HamburgerMenuHeaderItem AutomationProperties.Name="The Pictures Header" Label="Dark Souls 3" />
+                    <mah:HamburgerMenuGlyphItem Glyph="/Assets/Photos/BigFourSummerHeat.png" Label="Champion's Ashes" />
+                    <mah:HamburgerMenuGlyphItem Glyph="/Assets/Photos/BisonBadlandsChillin.png"
+                                                Label="Cinders" />
+                    <mah:HamburgerMenuSeparatorItem />
+                    <mah:HamburgerMenuHeaderItem AutomationProperties.Name="The Pictures Header"
+                                                 Label="Dark Souls 2: SOTF" />
+
+                    <mah:HamburgerMenuGlyphItem Glyph="/Assets/Photos/GiantSlabInOregon.png" Label="Stayd please" />
+
+                    <mah:HamburgerMenuSeparatorItem />
+                    <mah:HamburgerMenuHeaderItem AutomationProperties.Name="The Pictures Header"
+                                                 Label="Dark Souls: Remastered" />
+                    <mah:HamburgerMenuGlyphItem Glyph="/Assets/Photos/GiantSlabInOregon.png" Label="Nightfall" />
+
+                </mah:HamburgerMenuItemCollection>
+            </mah:HamburgerMenu.ItemsSource>
+
+            <!--  Options  -->
+            <mah:HamburgerMenu.OptionsItemsSource>
+                <mah:HamburgerMenuItemCollection>
+                    <mah:HamburgerMenuGlyphItem Label="Settings">
+                        <mah:HamburgerMenuGlyphItem.Tag>
+                            <iconPacks:PackIconFontAwesome Width="22"
+                                                           Height="22"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           Kind="CogSolid" />
+                        </mah:HamburgerMenuGlyphItem.Tag>
+                    </mah:HamburgerMenuGlyphItem>
+                </mah:HamburgerMenuItemCollection>
+            </mah:HamburgerMenu.OptionsItemsSource>
+
+            <!--  Content  -->
+            <mah:HamburgerMenu.ContentTemplate>
+                <DataTemplate>
+                    <Grid Margin="10 0 10 0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="8*" />
+                        </Grid.RowDefinitions>
+                        <StackPanel>
+                            <StackPanel Grid.Row="0" Grid.ColumnSpan="3" Orientation="Horizontal">
+                                <TextBlock
+                                    FontSize="30">
+                                    Champion's Ashes
+                                </TextBlock>
+                                <iconPacks:PackIconModern Kind="Checkmark" Margin="15" Foreground="Green" />
+                            </StackPanel>
+                            <mah:SplitButton Grid.ColumnSpan="2" Grid.Column="0" Grid.Row="3" Margin="0 5 0 5"
+                                             Text="Launch game"
+                                             Orientation="Horizontal"
+                                             HorizontalContentAlignment="Left"
+
+                                             SelectedIndex="1">
+                                <mah:SplitButton.Icon>
+                                    <iconPacks:PackIconModern Margin="6" Kind="ControlPlay" />
+                                </mah:SplitButton.Icon>
+                                <mah:SplitButton.ItemsSource>
+                                    <x:Array Type="System:String">
+                                        <System:String>Launch game</System:String>
+                                        <System:String>Launch game with custom configuration</System:String>
+                                    </x:Array>
+
+                                </mah:SplitButton.ItemsSource>
+                            </mah:SplitButton>
+                        </StackPanel>
+                        <mah:MetroAnimatedSingleRowTabControl Grid.Column="0" Grid.Row="1"
+                                                              mah:TabControlHelper.Underlined="TabPanel"
+                                                              HorizontalAlignment="Stretch"
+                                                              mah:TabControlHelper.Transition="Right">
+
+                            <mah:MetroTabItem Header="Mods" HorizontalAlignment="Left">
+                                <StackPanel Margin="0 20">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition MaxWidth="250" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <Label FontSize="16">Mod compatibility</Label>
+                                        <Label Foreground="Green" Grid.Row="0" Grid.Column="1" FontSize="16"
+                                               HorizontalAlignment="Left">
+                                            <Bold>OK</Bold>
+                                        </Label>
+                                        <Separator Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="0" Margin="0 0 0 20" />
+                                        <DataGrid Grid.ColumnSpan="2" Grid.Column="0" Grid.Row="2"
+                                                  ItemsSource="{Binding Source={StaticResource Employees}}"
+                                                  ItemTemplate="{StaticResource EmployeeItemTemplate}"
+                                                  Style="{DynamicResource MahApps.Styles.DataGrid.Azure}"
+                                                  AutoGenerateColumns="False">
+                                            <DataGrid.Columns>
+                                                <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding Enabled}" />
+                                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                        <mah:SplitButton Grid.Column="1" Grid.Row="3"
+                                                         Margin="0 5 0 5"
+                                                         Text="Launch game"
+                                                         Orientation="Horizontal"
+                                                         HorizontalAlignment="Right"
+                                                         SelectedIndex="0">
+                                            <mah:SplitButton.Icon>
+                                                <iconPacks:PackIconModern Margin="6" Kind="Add" />
+                                            </mah:SplitButton.Icon>
+                                            <mah:SplitButton.ItemsSource>
+                                                <x:Array Type="System:String">
+                                                    <System:String>Install mod</System:String>
+                                                </x:Array>
+
+                                            </mah:SplitButton.ItemsSource>
+                                        </mah:SplitButton>
+                                    </Grid>
+
+                                </StackPanel>
+                            </mah:MetroTabItem>
+                            <mah:MetroTabItem Header="Options" HorizontalAlignment="Left">
+                                <StackPanel Margin="0 20">
+                                    <GroupBox Header="Settings for debugging" BorderThickness="1">
+                                        <Grid Margin="5">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition />
+                                                <RowDefinition />
+                                                <RowDefinition />
+                                                <RowDefinition />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition MaxWidth="500" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Label Grid.Row="0" HorizontalAlignment="Left" Padding="0">Mod Engine log file location</Label>
+                                            <TextBox Margin="0 5 0 15" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                                     mah:TextBoxHelper.ClearTextButton="True"
+                                                     mah:TextBoxHelper.UseFloatingWatermark="True"
+                                                     mah:TextBoxHelper.Watermark="Select path to modengine.log">
+                                                <mah:TextBoxHelper.ButtonContent>
+                                                    <iconPacks:PackIconModern Kind="Folder" />
+                                                </mah:TextBoxHelper.ButtonContent>
+                                            </TextBox>
+
+
+                                            <CheckBox Padding="5" Grid.Row="2" Grid.Column="0">Enable debug menu</CheckBox>
+                                            <CheckBox Padding="5" Grid.Row="3" Grid.Column="0">Enable console logging</CheckBox>
+
+                                        </Grid>
+                                    </GroupBox>
+                                </StackPanel>
+                            </mah:MetroTabItem>
+                        </mah:MetroAnimatedSingleRowTabControl>
+                    </Grid>
+
+                </DataTemplate>
+            </mah:HamburgerMenu.ContentTemplate>
+        </mah:HamburgerMenu>
+    </DockPanel>
+
+</mah:MetroWindow>

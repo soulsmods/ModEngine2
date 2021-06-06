@@ -1,19 +1,12 @@
+#include "modengine/crash_handler.h"
+#include "modengine/logging.h"
 #include "modengine/mod_engine.h"
-#include "modengine/ext/base/base_extension.h"
-#include "modengine/ext/debug_menu/ds3/debug_menu_ds3.h"
-#include "modengine/ext/crash_handler/crash_handler_extension.h"
-#include "modengine/ext/mod_loader/mod_loader_extension.h"
-#include "modengine/ext/profiling/profiling_extension.h"
-#include "modengine/ext/scylla/scyllahide_extension.h"
 #include "modengine/version.h"
 
 #include <optional>
 #include <windows.h>
 #include <iostream>
-
-#include <spdlog/sinks/basic_file_sink.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/sinks/daily_file_sink.h>
+#include <modengine/settings_loader.h>
 
 using namespace modengine;
 using namespace spdlog;
@@ -26,64 +19,33 @@ static fs::path game_path;
 typedef int(WINAPI* fnEntry)(void);
 
 std::shared_ptr<ModEngine> modengine::mod_engine_global;
-std::shared_ptr<Hook<fnEntry>> hooked_entrypoint;
+Hook<fnEntry> hooked_entrypoint;
 HookSet entry_hook_set;
-
-static std::shared_ptr<spdlog::logger> configure_logger(Settings& settings)
-{
-    auto logger = std::make_shared<spdlog::logger>("modengine");
-    auto log_file_path = settings.modengine_local_path() / "modengine.log";
-    auto log_file_sink = new spdlog::sinks::daily_file_sink_mt(log_file_path.string(), 0, 30, false, 5);
-
-    logger->sinks().push_back(std::shared_ptr<spdlog::sinks::daily_file_sink_mt>(log_file_sink));
-    logger->set_level(spdlog::level::info);
-    logger->flush_on(spdlog::level::info);
-
-    if (settings.is_debug_enabled()) {
-        // Create debug console
-        AllocConsole();
-        FILE* stream;
-        freopen_s(&stream, "CONOUT$", "w", stdout);
-        freopen_s(&stream, "CONIN$", "r", stdin);
-
-        logger->sinks().push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
-        logger->set_level(spdlog::level::debug);
-    }
-
-    return logger;
-}
 
 int WINAPI modengine_entrypoint(void)
 {
+    start_crash_handler(modengine_path, game_path);
+
+    auto is_debugger_enabled = std::getenv("MODENGINE_DEBUG_GAME");
+    if (is_debugger_enabled != nullptr) {
+        while (!IsDebuggerPresent()) {
+            Sleep(100);
+        }
+
+        DebugBreak();
+    }
+
     /* We need to restore any changes to entrypoint code.
      * Steam checks the signature of this */
     entry_hook_set.unhook_all();
 
-    fs::path appdata_path(getenv("APPDATA"));
-
+    SettingsLoader settings_loader(modengine_path, game_path);
     Settings settings;
-    settings.set_modengine_data_path(appdata_path / "modengine");
-    settings.set_modengine_install_path(modengine_path);
-    settings.set_game_path(game_path);
 
-    const auto global_settings_path = modengine_path / "config.toml";
-    auto global_settings_found = false;
-
-    if (fs::exists(global_settings_path)) {
-        global_settings_found = settings.load_from(global_settings_path);
-    }
-
-    const auto settings_path_env = std::getenv("MODENGINE_CONFIG");
-    auto settings_found = false;
-    if (settings_path_env != nullptr) {
-        auto path = fs::path(settings_path_env);
-        auto local_modengine_path = path.parent_path();
-
-        settings.set_modengine_local_path(local_modengine_path);
-        settings_found = settings.load_from(path);
-    }
-
-    spdlog::set_default_logger(configure_logger(settings));
+    auto settings_status = settings_loader.load(settings);
+    auto config = settings.get_config_reader().read_config_object<ModEngineConfig>({ "modengine" });
+    auto logger = logging::setup_logger(settings.modengine_local_path(), config.debug);
+    spdlog::set_default_logger(logger);
 
     const auto game_info = GameInfo::from_current_module();
     if (!game_info) {
@@ -91,16 +53,13 @@ int WINAPI modengine_entrypoint(void)
         return false;
     }
 
+    info("Local settings loaded: {}, Global settings loaded: {}",
+        settings_status.found_local_config,
+        settings_status.found_global_config);
     info("Main thread ID: {}", GetCurrentThreadId());
-    info("ModEngine initializing for {}, version {}", game_info->description(), game_info->version);
-    info("Local settings: {} (loaded: {}), Global settings: {} (loaded: {})", std::string(settings_path_env), settings_found, global_settings_path.string(), global_settings_found);
-    mod_engine_global.reset(new ModEngine { *game_info, settings });
-    mod_engine_global->register_extension(std::make_unique<ext::ModEngineBaseExtension>(mod_engine_global));
-    mod_engine_global->register_extension(std::make_unique<ext::CrashHandlerExtension>(mod_engine_global));
-    mod_engine_global->register_extension(std::make_unique<ext::DebugMenuDS3Extension>(mod_engine_global));
-    mod_engine_global->register_extension(std::make_unique<ext::ModLoaderExtension>(mod_engine_global));
-    mod_engine_global->register_extension(std::make_unique<ext::ProfilingExtension>(mod_engine_global));
-    mod_engine_global->register_extension(std::make_unique<ext::ScyllaHideExtension>(mod_engine_global));
+    info("ModEngine version initializing for {} {}", modengine::g_version, game_info->description(), game_info->version);
+
+    mod_engine_global.reset(new ModEngine { *game_info, settings, config });
 
     try {
         mod_engine_global->attach();
@@ -108,7 +67,7 @@ int WINAPI modengine_entrypoint(void)
         error("Failed to attach modengine {}", e.what());
     }
 
-    return hooked_entrypoint->original();
+    return hooked_entrypoint.original();
 }
 
 static bool attach(HMODULE module)
@@ -136,8 +95,9 @@ static bool attach(HMODULE module)
 
     game_path = fs::path(game_filename).parent_path();
 
-    hooked_entrypoint = std::make_shared<Hook<fnEntry>>(reinterpret_cast<fnEntry>(DetourGetEntryPoint(nullptr)), modengine_entrypoint);
-    entry_hook_set.install(std::reinterpret_pointer_cast<Hook<GenericFunctionPointer>>(hooked_entrypoint));
+    hooked_entrypoint.original = reinterpret_cast<fnEntry>(DetourGetEntryPoint(nullptr));
+    hooked_entrypoint.replacement = modengine_entrypoint;
+    entry_hook_set.install(reinterpret_cast<Hook<modengine::GenericFunctionPointer>*>(&hooked_entrypoint));
     entry_hook_set.hook_all();
 
     return true;
