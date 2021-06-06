@@ -6,9 +6,6 @@ include(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 
 set(version "2.0.1")
-if(NOT MSVC_VERSION EQUAL 1929)
-    message(FATAL_ERROR "Version 1929 of the v142 MSVC toolset is required to build Mod Engine")
-endif()
 
 # Detours currently has no CMake manifests: https://github.com/microsoft/Detours/pull/48.
 find_path(VCPKG_INCLUDE_DIR NAMES detours/detver.h)
