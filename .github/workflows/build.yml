@@ -28,6 +28,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
+          path: src_repo
 
       - uses: actions/checkout@v2
         with:
@@ -64,7 +65,7 @@ jobs:
       # Run CMake to generate Ninja project files, using the vcpkg's toolchain file to resolve and install the dependencies as specified in vcpkg.json.
       - name: Install dependencies and generate project files
         run: |
-          cmake -S "${{ github.workspace }}" -B "${{ env.CMAKE_BUILD_DIR }}" -GNinja \
+          cmake -S "${{ github.workspace }}/src_repo" -B "${{ env.CMAKE_BUILD_DIR }}" -GNinja \
             -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" \
             -DMODENGINE_DIST_SCYLLA=1 \
             -DMODENGINE_CRASH_REPORT_URL=${{ secrets.MODENGINE_CRASH_REPORT_URL }} \
