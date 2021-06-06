@@ -31,7 +31,7 @@ class ModEngine {
     friend class ModEngineExtensionConnectorV1;
 
 public:
-    ModEngine(GameInfo game, Settings settings);
+    ModEngine(GameInfo game, Settings settings, ModEngineConfig config);
 
     void attach();
     void detach();
@@ -58,6 +58,7 @@ public:
 
     [[noreturn]] void run_worker();
 private:
+    ModEngineConfig m_config;
     GameInfo m_game;
     ExtensionSet m_extensions;
     HookSet m_hooks;
@@ -66,7 +67,6 @@ private:
     ScriptHost m_script_host;
 
     std::vector<std::unique_ptr<Patch>> m_patches;
-    std::map<std::string, ExtensionInfo> m_extension_info;
     std::thread m_worker;
 };
 

@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <unordered_set>
+#include <concurrent_vector.h>
 
 #include <windows.h>
 #include <detours/detours.h>
@@ -14,10 +15,10 @@ namespace modengine {
 
 class HookSet {
 private:
-    std::vector<std::shared_ptr<Hook<GenericFunctionPointer>>> hooks;
-
+    concurrency::concurrent_vector<std::unique_ptr<Hook<GenericFunctionPointer>>> hooks;
+    std::mutex mutex;
 public:
-    void install(std::shared_ptr<Hook<GenericFunctionPointer>> hook);
+    void install(Hook<GenericFunctionPointer>* hook);
 
     bool hook_all();
     bool unhook_all();

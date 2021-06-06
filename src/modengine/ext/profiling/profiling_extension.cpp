@@ -38,10 +38,10 @@ void ProfilingExtension::on_attach()
     }
 
     // Hooks main loop to install Optick main loop event
-    hooked_MainLoop = register_hook(DS3, 0x140eccb30, tMainLoop);
+    register_hook(DS3, &hooked_MainLoop);
 
     // Registers engine created DLThreads with Optick
-    hooked_DLThreadHandler = register_hook(DS3, 0x1417ef4b0, tDLThreadHandler);
+    register_hook(DS3, &hooked_DLThreadHandler);
 
     // Zones for functions called by the main loop tick
     install_profiler_zone(0x140ee4d10, "fun_140ee4d10");
@@ -96,56 +96,56 @@ void ProfilingExtension::on_detach()
 
 void ProfilingExtension::install_profiler_zone(uintptr_t function_address, const char* zone)
 {
-    unsigned char prelude_code[] = {
-        0x53,                                     // push rbx
-        0x48, 0x8D, 0x1D, 0xC8, 0xFF, 0xFF, 0xFF, // lea rbx, [rip-56]
-        0xFF, 0x63, 0x10,                         // jmp [rbx+16]
-    };
-
-    unsigned char prologue_code[] = {
-        0x48, 0x8D, 0x1D, 0xBE, 0xFF, 0xFF, 0xFF, // lea rbx, [rip-66]
-        0xFF, 0x63, 0x18                          // jmp [rbx+24]
-    };
-
-    const auto prelude_data_len = sizeof(struct ProfilerPreludeData);
-    const auto prelude_code_len = sizeof(prelude_code);
-    const auto prologue_code_len = sizeof(prologue_code);
-
-    void* prelude = VirtualAlloc(0, prelude_data_len + prelude_code_len + prologue_code_len, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-    void* prelude_trampoline = (void*)((uintptr_t)prelude + prelude_data_len);
-    void* prologue_trampoline = (void*)((uintptr_t)prelude_trampoline + prelude_code_len);
-
-    auto hook = register_hook(ALL, function_address, prelude_trampoline);
-    reapply();
-
-    struct ProfilerPreludeData prelude_data = {
-        //nullptr,
-        zone,
-        (uintptr_t)hook->original,
-        //0,
-        (uintptr_t)&profiler_zone,
-        (uintptr_t)&profiler_zone_exit,
-        (uintptr_t)prologue_trampoline,
-        m_tls_idx,
-        0
-    };
-
-    memcpy(prologue_trampoline, prologue_code, prologue_code_len);
-    memcpy(prelude, &prelude_data, prelude_data_len);
-    memcpy(prelude_trampoline, prelude_code, prelude_code_len);
+//    unsigned char prelude_code[] = {
+//        0x53, // push rbx
+//        0x48, 0x8D, 0x1D, 0xC8, 0xFF, 0xFF, 0xFF, // lea rbx, [rip-56]
+//        0xFF, 0x63, 0x10, // jmp [rbx+16]
+//    };
+//
+//    unsigned char prologue_code[] = {
+//        0x48, 0x8D, 0x1D, 0xBE, 0xFF, 0xFF, 0xFF, // lea rbx, [rip-66]
+//        0xFF, 0x63, 0x18 // jmp [rbx+24]
+//    };
+//
+//    const auto prelude_data_len = sizeof(struct ProfilerPreludeData);
+//    const auto prelude_code_len = sizeof(prelude_code);
+//    const auto prologue_code_len = sizeof(prologue_code);
+//
+//    void* prelude = VirtualAlloc(0, prelude_data_len + prelude_code_len + prologue_code_len, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+//    void* prelude_trampoline = (void*)((uintptr_t)prelude + prelude_data_len);
+//    void* prologue_trampoline = (void*)((uintptr_t)prelude_trampoline + prelude_code_len);
+//
+//    auto hook = register_hook(ALL, function_address, prelude_trampoline);
+//    reapply();
+//
+//    struct ProfilerPreludeData prelude_data = {
+//        //nullptr,
+//        zone,
+//        (uintptr_t)hook->original,
+//        //0,
+//        (uintptr_t)&profiler_zone,
+//        (uintptr_t)&profiler_zone_exit,
+//        (uintptr_t)prologue_trampoline,
+//        m_tls_idx,
+//        0
+//    };
+//
+//    memcpy(prologue_trampoline, prologue_code, prologue_code_len);
+//    memcpy(prelude, &prelude_data, prelude_data_len);
+//    memcpy(prelude_trampoline, prelude_code, prelude_code_len);
 }
 
 }
 
 extern "C" void __cdecl __profiler_end(void*)
 {
-//    OPTICK_POP();
+    //    OPTICK_POP();
 }
 
-extern "C" void* __cdecl __profiler_begin(const char* name, void * /*ctx*/)
+extern "C" void* __cdecl __profiler_begin(const char* name, void* /*ctx*/)
 {
     //spdlog::info("t:{}  {}", GetCurrentThreadId(), ((modengine::ext::ProfilerPreludeData*)ctx)->original_return_address);
     //OPTICK_EVENT(name);
-//    OPTICK_PUSH_DYNAMIC(name);
+    //    OPTICK_PUSH_DYNAMIC(name);
     return nullptr;
 }

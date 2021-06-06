@@ -13,6 +13,16 @@ extern "C" bool modengine_ext_init(ModEngineExtensionConnector* connector, ModEn
 using ModEngineExtensionInitializer = decltype(&modengine_ext_init);
 static const char* const modengine_ext_init_name = "modengine_ext_init";
 
+struct ExtensionInfo {
+    bool enabled;
+
+    bool from_toml(ConfigReader& v)
+    {
+        enabled = v.read_config_option<bool>({ "enabled" }).value_or(false);
+        return true;
+    }
+};
+
 void ExtensionSet::load_extensions(std::vector<fs::path> dlls, bool enumerate_modules)
 {
     if (enumerate_modules) {
@@ -70,9 +80,8 @@ bool ExtensionSet::load_extension(HMODULE module)
 
 void ExtensionSet::attach_all(Settings& settings)
 {
-
     for (const auto &[id, _v] : m_extensions) {
-        const auto ext_settings = settings.extension(id);
+        const auto ext_settings = settings.get_config_reader().read_config_object<ExtensionInfo>({"extension", id});
 
         if (ext_settings.enabled || id == "base") {
             info("Enabling extension {}", id);

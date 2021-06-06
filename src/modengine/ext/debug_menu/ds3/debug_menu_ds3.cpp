@@ -129,11 +129,11 @@ void DebugMenuDS3Extension::ExtraDelayedPatches()
     WriteProtected(0x140EC365F, systemPropertiesValue);
 
     //Enable game.properties
-    Hook((LPVOID)0x14080905B, 7, &tLoadGameProperties, &bLoadGameProperties);
+    InstallHook((LPVOID)0x14080905B, 7, &tLoadGameProperties, &bLoadGameProperties);
 
-    Hook((LPVOID)0x1422ED2FC, 6, &decWindowCounter, &bDecWindowCounter);
-    //Hook((LPVOID)0x14045399C, 6, &incWindowCounter, &bIncWindowCounter);
-    Hook((LPVOID)0x1422F0522, 7, &incWindowCounter, &bIncWindowCounter);
+    InstallHook((LPVOID)0x1422ED2FC, 6, &decWindowCounter, &bDecWindowCounter);
+    //InstallHook((LPVOID)0x14045399C, 6, &incWindowCounter, &bIncWindowCounter);
+    InstallHook((LPVOID)0x1422F0522, 7, &incWindowCounter, &bIncWindowCounter);
 
     //Pav patch for sfx GUI menus
     MemcpyProtected(0x140250A5F, 16, sfxGUIPatch1);
@@ -145,19 +145,19 @@ void DebugMenuDS3Extension::DelayedPatches()
     //Boot Menu
     int size = 0x230;
     WriteProtected(0x140ED13F1, size);
-    Hook((LPVOID)0x140ED1457, 5, &tInitDebugBootMenuStep, &bInitDebugBootMenuStep);
+    InstallHook((LPVOID)0x140ED1457, 5, &tInitDebugBootMenuStep, &bInitDebugBootMenuStep);
     //size = 0x155;
     //WriteProtected(0x1408FDC4B, size);
 
     MemcpyProtected(0x1408E7E2C, 18, moveMapListStepPatch);
 
     //Quick and Dirty
-    //Hook((LPVOID)0x1408FDC61, 5, &tInitMoveMapListStep, &bInitMoveMapListStep);
+    //InstallHook((LPVOID)0x1408FDC61, 5, &tInitMoveMapListStep, &bInitMoveMapListStep);
 
     //Proper
-    Hook((LPVOID)0x1408FDC13, 7, &tGameStepSelection, &bGameStepSelection);
+    InstallHook((LPVOID)0x1408FDC13, 7, &tGameStepSelection, &bGameStepSelection);
 
-    Hook((LPVOID)0x140D4E027, 7, &tLoadDbgFont, &bLoadDbgFont);
+    InstallHook((LPVOID)0x140D4E027, 7, &tLoadDbgFont, &bLoadDbgFont);
 
     //Fix WindWorld option
     MemcpyProtected(0x140CDC43F, 2, nopBytes);
@@ -182,16 +182,16 @@ void DebugMenuDS3Extension::DelayedPatches()
 
     //Temporarily patch anti-tamper
     DWORD64 lol = 0;
-    Hook((LPVOID)0x1408E7897, 5, &patchMoveMapFinishAntiTamper, &lol);
+    InstallHook((LPVOID)0x1408E7897, 5, &patchMoveMapFinishAntiTamper, &lol);
 
     MemcpyProtected(0x140B33BCD, 2, jmpBytes);
 
-    Hook((LPVOID)0x1408D475E, 5, &tCheckDebugDashSwitch, &bCheckDebugDashSwitch);
+    InstallHook((LPVOID)0x1408D475E, 5, &tCheckDebugDashSwitch, &bCheckDebugDashSwitch);
 
     //why am I calling this twice
-    Hook((LPVOID)0x14080905B, 7, &tLoadGameProperties, &bLoadGameProperties);
+    InstallHook((LPVOID)0x14080905B, 7, &tLoadGameProperties, &bLoadGameProperties);
 
-    //Sleep(4000);
+    Sleep(4000);
 
     //Enable ChrDbgDraw
     //MemcpyProtected(0x1408D8049, 5, mov1ToAlBytes);
@@ -231,27 +231,26 @@ static void setup_vtables()
 static DWORD WINAPI ExtraDelayedPatchesStart(void* Param)
 {
     DebugMenuDS3Extension* This = (DebugMenuDS3Extension*)Param;
+    Sleep(4000);
     This->ExtraDelayedPatches();
     return 0;
 }
-
 static DWORD WINAPI DelayedPatchesStart(void* Param)
 {
     DebugMenuDS3Extension* This = (DebugMenuDS3Extension*)Param;
     This->DelayedPatches();
     return 0;
 }
-
 void DebugMenuDS3Extension::on_attach()
 {
-    auto debug_menu_assets_path = get_settings().modengine_install_path() / "assets" / "debug_menu";
-    hooked_file_roots.insert(debug_menu_assets_path.native());
+    auto debug_menu_assets_path = mod_engine_global->get_settings().modengine_install_path() / "assets" / "debug_menu";
+    hooked_file_roots.push_back(debug_menu_assets_path.native());
 
     spdlog::info(L"Applying debug menu patches");
 
     MemcpyProtected(0x140ECDCE4, 5, mov1ToAlBytes);
-
-    //Boot Menu
+//
+//    //Boot Menu
     WriteProtected(0x142720800, (long long)&initDebugBootMenuStepFunctions);
 
     setup_vtables();

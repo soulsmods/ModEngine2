@@ -17,8 +17,9 @@ using namespace modengine::ext;
 
 namespace modengine {
 
-ModEngine::ModEngine(GameInfo game, Settings settings)
-    : m_game(game)
+ModEngine::ModEngine(GameInfo game, Settings settings, ModEngineConfig config)
+    : m_config(config)
+    , m_game(game)
     , m_hooks()
     , m_settings(settings)
     , m_extensions(new ModEngineExtensionConnectorV1(this))
@@ -32,12 +33,12 @@ ModEngine::ModEngine(GameInfo game, Settings settings)
 
 void ModEngine::attach()
 {
-    if (m_settings.is_crash_reporting_enabled()) {
-        start_crash_handler(m_settings.modengine_install_path(), m_settings.modengine_data_path());
+    if (m_config.crash_reporting) {
+        start_crash_report_uploads();
     }
 
     MemoryScanner memory_scanner;
-    m_extensions.load_extensions(m_settings.get_external_dlls(), m_settings.is_external_dll_enumeration_enabled());
+    m_extensions.load_extensions(m_config.external_dlls, m_config.external_dll_enumeration);
     m_extensions.attach_all(m_settings);
 
     for (auto& patch : m_patches) {
@@ -53,8 +54,11 @@ void ModEngine::attach()
     auto lua = m_script_host.get_state();
     sol_ImGui::Init(lua);
 
-    m_script_host.load_scripts(m_settings.script_roots());
-    m_script_host.start_reload();
+    m_script_host.load_scripts(m_config.script_roots);
+    if (m_config.script_reloading) {
+        m_script_host.start_reload();
+    }
+
     m_worker = std::thread(&ModEngine::run_worker, this);
 }
 

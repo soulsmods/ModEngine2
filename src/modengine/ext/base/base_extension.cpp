@@ -8,7 +8,7 @@
 using namespace spdlog;
 namespace modengine::ext {
 
-static std::shared_ptr<Hook<fnDirectInput8Create>> hooked_DirectInput8Create;
+static Hook<fnDirectInput8Create> hooked_DirectInput8Create;
 static long(__stdcall* original_D3D11Present)(IDXGISwapChain*, UINT, UINT) = nullptr;
 
 /** This hook is exported as a symbol, so we need to make sure it's not mangled */
@@ -19,7 +19,7 @@ extern "C" __declspec(dllexport) HRESULT __cdecl DirectInput8Create(
     LPVOID* ppvOut,
     LPUNKNOWN punkOuter)
 {
-    return hooked_DirectInput8Create->original(hinst, dwVersion, riidltf, ppvOut, punkOuter);
+    return hooked_DirectInput8Create.original(hinst, dwVersion, riidltf, ppvOut, punkOuter);
 }
 
 long __stdcall hooked_D3D11Present(IDXGISwapChain* swap_chain, UINT sync_interval, UINT flags)
@@ -63,7 +63,7 @@ void ModEngineBaseExtension::on_attach()
         info("Failed to initialize overlay hooks");
     }
 
-    hooked_DirectInput8Create = register_hook(ALL, "C:\\windows\\system32\\dinput8.dll", "DirectInput8Create", DirectInput8Create);
+    register_hook(ALL, &hooked_DirectInput8Create, "C:\\windows\\system32\\dinput8.dll", "DirectInput8Create", DirectInput8Create);
 
     lifecycle::on_frame.connect(m_render_overlay_cb);
 }

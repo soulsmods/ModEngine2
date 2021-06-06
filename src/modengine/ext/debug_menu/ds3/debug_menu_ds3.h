@@ -47,10 +47,10 @@ public:
 
 private:
     template <typename T>
-    void Hook(LPVOID address, int numBytes, T pFunction, DWORD64* returnPoint)
+    void InstallHook(LPVOID address, int numBytes, T pFunction, DWORD64* returnPoint)
     {
         *returnPoint = (DWORD64)address + numBytes;
-        register_hook(DS3, (uintptr_t)address, pFunction);
+        register_hook<T>(DS3, new Hook<T>((uintptr_t)address, pFunction));
     }
 
     void on_attach() override;

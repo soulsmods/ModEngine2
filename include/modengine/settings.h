@@ -14,6 +14,10 @@ namespace fs = std::filesystem;
 
 static std::optional<toml::node*> node_at_path(toml::table& root, std::initializer_list<std::string> path)
 {
+    if (path.size() == 0) {
+        return (toml::node*)&root;
+    }
+
     std::vector<std::string> keys = path;
     toml::table* container = root.as_table();
 
@@ -40,9 +44,10 @@ class ConfigReader;
 template <typename T>
 concept ConfigObject = requires(T obj, ConfigReader t)
 {
-    { obj.from_toml(t) } -> std::same_as<bool>;
+    {
+        obj.from_toml(t)
+        } -> std::same_as<bool>;
 };
-
 
 class ConfigReader {
 private:
@@ -97,7 +102,7 @@ public:
             return options;
         }
 
-        for (auto &el : *(*node)->as_array()) {
+        for (auto& el : *(*node)->as_array()) {
             auto el_value = node_to_val<T>(&el);
             if (el_value) {
                 options.push_back(*el_value);
@@ -151,56 +156,41 @@ private:
     std::filesystem::path m_relative_path;
 };
 
-struct ExtensionInfo {
-    bool enabled;
-    toml::table other;
-
-    void from_toml(const toml::table& v)
-    {
-        this->enabled = v["enabled"].value_or(false);
-        this->other = v;
-    }
-};
-
 class Settings {
+    friend class SettingsLoader;
+    friend class ModEngineExtensionConnectorV1;
 public:
     Settings()
         : m_config()
     {
     }
 
-    bool load_from(const fs::path& path);
+    inline const fs::path& modengine_install_path() const
+    {
+        return m_modengine_install_path;
+    }
 
-    bool is_debug_enabled();
+    inline const fs::path& modengine_local_path() const
+    {
+        return m_modengine_local_path;
+    }
 
-    bool is_crash_reporting_enabled();
+    inline const fs::path& game_path() const
+    {
+        return m_game_path;
+    }
 
-    const ExtensionInfo extension(const std::string& name);
+    inline const fs::path& modengine_data_path() const
+    {
+        return m_modengine_data_path;
+    }
 
-    std::vector<fs::path> script_roots();
-
-    const std::vector<fs::path> config_folders() const;
-
-    const fs::path& modengine_install_path() const;
-    void set_modengine_install_path(const fs::path& install_path);
-
-    const fs::path& modengine_local_path() const;
-    void set_modengine_local_path(const fs::path& local_path);
-
-    const fs::path& game_path() const;
-    void set_game_path(const fs::path& game_path);
-
-    const fs::path& modengine_data_path() const;
-    void set_modengine_data_path(const fs::path& data_path);
-
-    bool is_external_dll_enumeration_enabled();
-
-    std::vector<fs::path> get_external_dlls();
-
-    ConfigReader get_config_reader();
+    inline ConfigReader get_config_reader()
+    {
+        return ConfigReader(&m_config, m_modengine_local_path);
+    }
 
 private:
-    std::vector<fs::path> m_config_parent_paths;
     toml::table m_config;
     fs::path m_modengine_data_path;
     fs::path m_modengine_install_path;

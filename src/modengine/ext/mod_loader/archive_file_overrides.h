@@ -4,6 +4,7 @@
 #include "gametypes/dantelion/dlstring.h"
 
 #include <set>
+#include <concurrent_vector.h>
 
 namespace modengine::ext {
 
@@ -29,11 +30,12 @@ void* __cdecl virtual_to_archive_path_ds3(DLString<modengine::GameType::DS3, wch
 void* __cdecl virtual_to_archive_path_ds2(LPVOID p1, dlstring_t* path);
 void* __cdecl virtual_to_archive_path_sekiro(dlstring_sekiro_t* path, UINT64 p2, UINT64 p3, dlstring_sekiro_t* p4, UINT64 p5, UINT64 p6);
 
-extern std::shared_ptr<Hook<fpCreateFileW>> hooked_CreateFileW;
-extern std::shared_ptr<Hook<decltype(&virtual_to_archive_path_ds3)>> hooked_virtual_to_archive_path_ds3;
-extern std::shared_ptr<Hook<decltype(&virtual_to_archive_path_ds2)>> hooked_virtual_to_archive_path_ds2;
-extern std::shared_ptr<Hook<decltype(&virtual_to_archive_path_sekiro)>> hooked_virtual_to_archive_path_sekiro;
-extern std::set<std::wstring> hooked_file_roots;
+extern Hook<fpCreateFileW> hooked_CreateFileW;
+extern Hook<decltype(&virtual_to_archive_path_ds3)> hooked_virtual_to_archive_path_ds3;
+extern Hook<decltype(&virtual_to_archive_path_ds2)> hooked_virtual_to_archive_path_ds2;
+extern Hook<decltype(&virtual_to_archive_path_sekiro)> hooked_virtual_to_archive_path_sekiro;
+extern concurrency::concurrent_vector<std::wstring> hooked_file_roots;
+
 
 HANDLE WINAPI tCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode,
     LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes,

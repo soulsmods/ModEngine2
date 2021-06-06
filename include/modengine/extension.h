@@ -1,5 +1,6 @@
 #pragma once
 
+#include "modengine/extension_logger.h"
 #include "modengine/hook.h"
 #include "modengine/game_type.h"
 #include "settings.h"
@@ -31,16 +32,15 @@ public:
         return 1;
     }
 
-    virtual std::shared_ptr<Hook<GenericFunctionPointer>> register_hook(GameType type, const std::string& module, const std::string& symbol, uintptr_t detour);
-    virtual void register_hook(GameType type, std::shared_ptr<Hook<GenericFunctionPointer>> hook);
+    virtual void register_hook(GameType type, Hook<GenericFunctionPointer>* hook);
     virtual void install_hooks();
 
     virtual void register_patch(GameType type, const std::string_view& signature, std::function<void(uintptr_t)> replace_callback);
     virtual void register_patch(GameType type, uint64_t addr, std::function<void(uintptr_t)> replace_callback);
 
-    virtual Settings& get_settings();
-    virtual std::shared_ptr<spdlog::logger> get_logger();
-    virtual lua_State* get_lua_state();
+    virtual ConfigReader create_config_reader(const char** names, size_t names_len);
+    virtual ExtensionLogger* logger();
+    virtual lua_State* lua();
 };
 
 using ModEngineExtensionConnector = ModEngineExtensionConnectorV1;
@@ -51,8 +51,9 @@ public:
         : m_ext_connector(connector)
     {
 #ifdef MODENGINE_EXTERNAL
-        auto core_logger = connector->get_logger();
-        spdlog::set_default_logger(core_logger);
+        auto sink = std::make_shared<detail::ExtensionLoggerSink>(connector->logger());
+        auto logger = std::make_shared<spdlog::logger>("modengine", sink);
+        spdlog::set_default_logger(logger);
 #endif
     }
 
@@ -73,54 +74,66 @@ protected:
     }
 
     template <typename T>
-    std::shared_ptr<Hook<T>> register_hook(GameType type, const std::string& module, const std::string& function, T detour)
+    void register_hook(GameType type, Hook<T> *hook, const std::string& module, const std::string& function, T detour)
     {
-        return std::reinterpret_pointer_cast<Hook<T>>(m_ext_connector->register_hook(type, module, function, (uintptr_t)detour));
+        auto mod = GetModuleHandleA(module.c_str());
+        if (mod == nullptr) {
+            return;
+        }
+
+        auto addr = (uintptr_t)GetProcAddress(mod, function.c_str());
+        if (addr == 0) {
+            return;
+        }
+
+        hook->original = (T)addr;
+        hook->replacement = detour;
+
+        m_ext_connector->register_hook(type, (Hook<GenericFunctionPointer>*)hook);
     }
 
     template <typename T>
     // TODO: ABI compatibility, std::shared_ptr
-    std::shared_ptr<Hook<T>> register_hook(GameType type, uintptr_t location, T detour)
+    void register_hook(GameType type, Hook<T> *hook, uintptr_t location, T detour)
     {
-        auto hook = std::make_shared<Hook<T>>(reinterpret_cast<T>(location), detour);
-        m_ext_connector->register_hook(type, std::reinterpret_pointer_cast<Hook<GenericFunctionPointer>>(hook));
+        hook->original = reinterpret_cast<T>(location);
+        hook->replacement = detour;
 
-        return hook;
+        m_ext_connector->register_hook(type, (Hook<GenericFunctionPointer>*) hook);
+    }
+
+    template <typename T>
+    void register_hook(GameType type, Hook<T> *hook)
+    {
+        m_ext_connector->register_hook(type, (Hook<GenericFunctionPointer>*)hook);
     }
 
     // TODO: ABI compatibility, std::string_view, std::function
-    void register_patch(GameType type, const std::string_view& signature, std::function<void(uintptr_t)> replace_callback)
+    inline void register_patch(GameType type, const std::string_view& signature, std::function<void(uintptr_t)> replace_callback)
     {
         m_ext_connector->register_patch(type, signature, replace_callback);
     }
 
+    template <ConfigObject T>
+    T get_config()
+    {
+        std::vector<const char*> paths { "extension", id() };
+
+        return m_ext_connector->create_config_reader(paths.data(), paths.size()).read_config_object<T>({});
+    };
+
     // TODO: ABI compatibility, std::function
-    void register_patch(GameType type, uint64_t addr, std::function<void(uintptr_t)> replace_callback)
+    inline void register_patch(GameType type, uint64_t addr, std::function<void(uintptr_t)> replace_callback)
     {
         m_ext_connector->register_patch(type, addr, replace_callback);
     }
 
-    Settings& get_settings()
+    inline sol::state_view lua()
     {
-        return m_ext_connector->get_settings();
+        return sol::state_view(m_ext_connector->lua());
     }
 
-    sol::state_view get_lua_state()
-    {
-        return sol::state_view(m_ext_connector->get_lua_state());
-    }
-
+private:
     ModEngineExtensionConnector* m_ext_connector;
-
-    template <ConfigObject T>
-    T get_config()
-    {
-        auto settings = get_settings();
-        auto config_reader = settings.get_config_reader();
-        auto config = config_reader.read_config_object<T>({ "extension", id() });
-
-        return config;
-    }
 };
-
 }

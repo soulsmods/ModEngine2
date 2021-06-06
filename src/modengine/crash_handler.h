@@ -9,6 +9,7 @@
 
 namespace modengine {
 
+void start_crash_report_uploads();
 void start_crash_handler(const fs::path &install_root, const fs::path &data_root);
 
 }

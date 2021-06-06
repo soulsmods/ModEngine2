@@ -11,7 +11,7 @@ bool ScyllaHideExtension::inject_scyllahide_external()
 {
     using std::filesystem::exists;
 
-    const auto installation_path = get_settings().modengine_install_path();
+    const auto installation_path = mod_engine_global->get_settings().modengine_install_path();
     const auto scylla_path = installation_path / "tools" / "scyllahide";
     const auto injector_path = scylla_path / "InjectorCLIx64.exe";
 

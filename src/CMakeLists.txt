@@ -23,7 +23,6 @@ set(KIERO_SRC "../third-party/kiero/kiero.cpp")
 set_source_files_properties(
         ${KIERO_SRC}
         ${IMGUI_SRC}
-        ${OPTICK_SRC}
         PROPERTIES
         COMPILE_FLAGS "-w"
 )
@@ -33,6 +32,7 @@ add_library(modengine2 SHARED
         ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
         modengine/crash_handler.cpp
         modengine/extension.cpp
+        modengine/extension_set.cpp
         modengine/mod_engine.cpp
         modengine/game_info.cpp
         modengine/hook_set.cpp
@@ -57,7 +57,7 @@ add_library(modengine2 SHARED
         modengine/ext/scylla/scyllahide_extension.cpp
         modengine/util/hex_string.cpp
         ${IMGUI_SRC}
-        ${KIERO_SRC} modengine/extension_set.cpp modengine/extension_set.h)
+        ${KIERO_SRC} modengine/logging.cpp modengine/logging.h modengine/settings_loader.cpp modengine/settings_loader.h modengine/logger.cpp)
 
 find_path(VCPKG_TOOLS NAMES tools/crashpad_handler.exe)
 find_library(LUAJIT_LIBRARY lua51 REQUIRED)
@@ -69,16 +69,15 @@ target_compile_definitions(modengine2 INTERFACE FMT_HEADER_ONLY MODENGINE_EXTERN
 
 target_include_directories(modengine2 PUBLIC
         "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
-        "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include;$<INSTALL_PREFIX>/include/luajit>")
+        "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>")
 
 target_link_libraries(modengine2 PUBLIC
-        "$<BUILD_INTERFACE:${LUAJIT_LIBRARY}>"
-        "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/lib/lua51.lib>")
+        "$<BUILD_INTERFACE:${LUA_LIBRARIES}>"
+        "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/lib/lua.lib>")
 
 target_compile_definitions(modengine2 PRIVATE KIERO_USE_DETOURS=1 KIERO_INCLUDE_D3D11=1)
 
 target_include_directories(modengine2 PRIVATE
-        "${VCPKG_INCLUDE_DIR}/luajit"
         ${DETOURS_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
         "../third-party/kiero"
@@ -86,23 +85,20 @@ target_include_directories(modengine2 PRIVATE
         "../third-party/imgui/backends"
         "../third-party/MINT"
         "../third-party/ImTerm/include"
-        "../third-party/sol2_ImGui_Bindings"
-        "../dependencies/optick")
+        "../third-party/sol2_ImGui_Bindings")
 
 target_link_libraries(modengine2 PRIVATE
         ${DETOURS_LIBRARY}
         spdlog::spdlog_header_only
-        ImTerm
         sol2::sol2
-        crashpad)
+        crashpad::crashpad)
 
 target_precompile_headers(modengine2 PUBLIC
         "$<$<COMPILE_LANGUAGE:CXX>:<MINT.h$<ANGLE-R>>"
         "$<$<COMPILE_LANGUAGE:CXX>:<sol/sol.hpp$<ANGLE-R>>"
         "$<$<COMPILE_LANGUAGE:CXX>:<fmt/format.h$<ANGLE-R>>"
         "$<$<COMPILE_LANGUAGE:CXX>:<spdlog/spdlog.h$<ANGLE-R>>"
-        "$<$<COMPILE_LANGUAGE:CXX>:<toml++/toml.h$<ANGLE-R>>"
-        "$<$<COMPILE_LANGUAGE:CXX>:<luajit/lua.h$<ANGLE-R>>")
+        "$<$<COMPILE_LANGUAGE:CXX>:<toml++/toml.h$<ANGLE-R>>")
 
 target_precompile_headers(modengine2 PRIVATE
         "$<$<COMPILE_LANGUAGE:CXX>:<imgui.h$<ANGLE-R>>")

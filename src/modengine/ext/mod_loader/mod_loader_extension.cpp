@@ -34,21 +34,11 @@ std::optional<fs::path> ModLoaderExtension::resolve_mod_path(const ModInfo& mod)
         return mod_path;
     }
 
-    const auto& settings = get_settings();
-    const auto primary_search_path = primary_mod_path(settings);
+    const auto primary_search_path = mod_engine_global->get_settings().modengine_local_path();
     const auto primary_mod_path = primary_search_path / mod_path;
 
     if (fs::exists(primary_search_path / mod_path)) {
         return primary_mod_path;
-    }
-
-    const auto secondary_base_paths = secondary_mod_paths(settings);
-    for (const auto& base_path : secondary_base_paths) {
-        auto secondary_mod_path = base_path / mod_path;
-
-        if (fs::exists(secondary_mod_path)) {
-            return secondary_mod_path;
-        }
     }
 
     return std::nullopt;
@@ -61,8 +51,8 @@ void ModLoaderExtension::on_attach()
     register_patch(DS3, loose_params_aob_3, replace_with<uint8_t>({ 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }));
 
     // TODO: AOB scan this?
-    hooked_CreateFileW = register_hook(ALL, "C:\\windows\\system32\\kernel32.dll", "CreateFileW", tCreateFileW);
-    hooked_virtual_to_archive_path_ds3 = register_hook(DS3, 0x14007d5e0, virtual_to_archive_path_ds3);
+    register_hook(ALL, &hooked_CreateFileW, "C:\\windows\\system32\\kernel32.dll", "CreateFileW", tCreateFileW);
+    register_hook(DS3, &hooked_virtual_to_archive_path_ds3, 0x14007d5e0, virtual_to_archive_path_ds3);
 
     auto config = get_config<ModLoaderConfig>();
     for (const auto& mod : config.mods) {
@@ -71,7 +61,7 @@ void ModLoaderExtension::on_attach()
         auto mod_path = resolve_mod_path(mod);
         if (mod_path) {
             info(L"Resolved mod path to {}", mod_path->wstring());
-            hooked_file_roots.insert(mod_path->wstring());
+            hooked_file_roots.push_back(mod_path->wstring());
         } else {
             warn(L"Unable to resolve mod path");
         }
