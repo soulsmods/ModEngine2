@@ -70,6 +70,7 @@ jobs:
             -DCPACK_GENERATOR=WIX;ZIP \
             -DVCPKG_OVERLAY_PORTS=${{ github.workspace }}/third-party/vcpkg-overlays \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        shell: bash
 
       - name: Build
         run: |
