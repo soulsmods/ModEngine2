@@ -69,7 +69,7 @@ jobs:
             -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" \
             -DMODENGINE_DIST_SCYLLA=1 \
             -DMODENGINE_CRASH_REPORT_URL=${{ secrets.MODENGINE_CRASH_REPORT_URL }} \
-            -DCPACK_GENERATOR=WIX;ZIP \
+            -DCPACK_GENERATOR=ZIP \
             -DVCPKG_OVERLAY_PORTS=${{ github.workspace }}/third-party/vcpkg-overlays \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo
         shell: bash
