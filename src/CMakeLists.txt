@@ -60,7 +60,6 @@ add_library(modengine2 SHARED
         ${KIERO_SRC} modengine/logging.cpp modengine/logging.h modengine/settings_loader.cpp modengine/settings_loader.h modengine/logger.cpp)
 
 find_path(VCPKG_TOOLS NAMES tools/crashpad_handler.exe)
-find_library(LUAJIT_LIBRARY lua51 REQUIRED)
 
 target_compile_features(modengine2 PUBLIC cxx_std_20)
 target_compile_options(modengine2 PUBLIC /utf-8)
