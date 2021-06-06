@@ -54,7 +54,7 @@ jobs:
           # The key includes: hash of the vcpkg.json file, the hash of the vcpkg Git commit id, and the used vcpkg's triplet. The vcpkg's commit id would suffice, but computing an hash out it does not harm.
           # Note: given a key, the cache content is immutable. If a cache entry has been created improperly, in order the recreate the right content the key must be changed as well, and it must be brand new (i.e. not existing already).
           key: |
-            ${{ hashFiles( 'vcpkg.json' ) }}-${{ hashFiles( '.git/modules/vcpkg/HEAD' )}}-${{ matrix.triplet }}-invalidate
+            ${{ hashFiles( 'vcpkg.json' ) }}-${{ matrix.triplet }}-invalidate
       - name: Show content of workspace after cache has been restored
         run: find $RUNNER_WORKSPACE
         shell: bash
@@ -64,12 +64,12 @@ jobs:
       - name: Install dependencies and generate project files
         run: |
           cmake -S "${{ github.workspace }}/vcpkg_manifest" -B "${{ env.CMAKE_BUILD_DIR }}" -GNinja \
-          -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake \
-          -DMODENGINE_DIST_SCYLLA=1 \
-          -DMODENGINE_CRASH_REPORT_URL=${{ secrets.MODENGINE_CRASH_REPORT_URL }} \
-          -DCPACK_GENERATOR=WIX;ZIP \
-          -DVCPKG_OVERLAY_PORTS=${{ github.workspace }}/third-party/vcpkg-overlays \
-          -DCMAKE_BUILD_TYPE=RelWithDebInfo"
+            -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" \
+            -DMODENGINE_DIST_SCYLLA=1 \
+            -DMODENGINE_CRASH_REPORT_URL=${{ secrets.MODENGINE_CRASH_REPORT_URL }} \
+            -DCPACK_GENERATOR=WIX;ZIP \
+            -DVCPKG_OVERLAY_PORTS=${{ github.workspace }}/third-party/vcpkg-overlays \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
       - name: Build
         run: |
