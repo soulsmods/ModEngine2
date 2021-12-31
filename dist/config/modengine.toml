@@ -3,9 +3,9 @@ debug = true
 
 [mod_loader]
 enabled = true
-loose_params = true
+loose_params = false
 
-[scylla]
+[scylla_hide]
 enabled = true
 
 [debug_menu]
@@ -13,4 +13,10 @@ enabled = true
 boot_menu = true
 
 [profiler]
+enabled = true
+
+[grpc_server]
+enabled = true
+
+[crash_reporter]
 enabled = true

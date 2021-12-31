@@ -8,6 +8,8 @@
     "toml11",
     "crashpad",
     "winreg",
-    "cli11"
+    "cli11",
+    "protobuf",
+    "grpc"
   ]
 }

@@ -16,6 +16,7 @@ bool ScyllaHideExtension::inject_scyllahide_external()
     const auto injector_path = scylla_path / "InjectorCLIx64.exe";
 
     if (!exists(injector_path)) {
+        error("Could not find ScyllaHide injector.");
         return false;
     }
 

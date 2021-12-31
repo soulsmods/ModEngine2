@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
+#set(VCPKG_TARGET_TRIPLET "x64-windows-static")
+#set(VCPKG_LIBRARY_LINKAGE "static")
+#set(Protobuf_USE_STATIC_LIBS ON)
 project(modengine2)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
@@ -6,12 +9,29 @@ include(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 
 find_library(DETOURS_LIBRARY detours REQUIRED)
+message(STATUS "Trying ${DETOURS_LIBRARY}")
 find_package(spdlog CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(crashpad CONFIG REQUIRED)
 
 set(MODENGINE_CRASH_REPORT_URL "http://localhost/" CACHE STRING "URL that minidump crash records are uploaded to")
 add_compile_definitions(MODENGINE_CRASH_REPORT_URL="${MODENGINE_CRASH_REPORT_URL}")
+
+# protobuf
+set(protobuf_MODULE_COMPATIBLE TRUE)
+find_package(Protobuf CONFIG REQUIRED)
+message(STATUS "Using protobuf ${protobuf_VERSION}")
+
+# Protobuf-compiler
+set(_PROTOBUF_PROTOC $<TARGET_FILE:protobuf::protoc>)
+
+# gRPC
+find_package(gRPC CONFIG REQUIRED)
+message(STATUS "Using gRPC ${gRPC_VERSION}")
+set(_GRPC_GRPCPP gRPC::grpc++)
+set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:gRPC::grpc_cpp_plugin>)
+
+message(STATUS "Trying ${_PROTOBUF_PROTOC} ${_GRPC_CPP_PLUGIN_EXECUTABLE}")
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     if (CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")

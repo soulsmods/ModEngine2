@@ -19,3 +19,6 @@ target_link_libraries(modengine2_launcher PRIVATE
         fmt::fmt-header-only
         spdlog::spdlog_header_only
         crashpad)
+
+target_compile_definitions(modengine2_launcher PRIVATE
+        -DSPDLOG_WCHAR_TO_UTF8_SUPPORT)

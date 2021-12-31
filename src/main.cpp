@@ -5,6 +5,7 @@
 #include "modengine/ext/mod_loader/mod_loader_extension.h"
 #include "modengine/ext/profiling/profiling_extension.h"
 #include "modengine/ext/scylla/scyllahide_extension.h"
+#include "modengine/ext/grpc_server/grpc_server_extension.h"
 #include "modengine/version.h"
 
 #include <optional>
@@ -39,7 +40,7 @@ static std::shared_ptr<spdlog::logger> configure_logger(Settings& settings)
     logger->set_level(spdlog::level::info);
     logger->flush_on(spdlog::level::info);
 
-    if (settings.is_debug_enabled()) {
+    //if (settings.is_debug_enabled()) {
         // Create debug console
         AllocConsole();
         FILE* stream;
@@ -48,7 +49,7 @@ static std::shared_ptr<spdlog::logger> configure_logger(Settings& settings)
 
         logger->sinks().push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
         logger->set_level(spdlog::level::debug);
-    }
+    //}
 
     return logger;
 }
@@ -91,9 +92,15 @@ int WINAPI modengine_entrypoint(void)
         return false;
     }
 
-    info("Main thread ID: {}", GetCurrentThreadId());
     info("ModEngine initializing for {}, version {}", game_info->description(), game_info->version);
-    info("Local settings: {} (loaded: {}), Global settings: {} (loaded: {})", std::string(settings_path_env), settings_found, global_settings_path.string(), global_settings_found);
+    info("Main thread ID: {}", GetCurrentThreadId());
+    info("Installation path: {}", modengine_path.string());
+    if (settings_path_env != nullptr) {
+        info("Local settings: {} (loaded: {}), Global settings: {} (loaded: {})", std::string(settings_path_env), settings_found, global_settings_path.string(), global_settings_found);
+    }
+    else {
+        info("No local settings, Global settings: {} (loaded: {})", global_settings_path.string(), global_settings_found);
+    }
     mod_engine_global.reset(new ModEngine { *game_info, settings });
     mod_engine_global->register_extension(std::make_unique<ext::ModEngineBaseExtension>(mod_engine_global));
     mod_engine_global->register_extension(std::make_unique<ext::CrashHandlerExtension>(mod_engine_global));
@@ -101,6 +108,7 @@ int WINAPI modengine_entrypoint(void)
     mod_engine_global->register_extension(std::make_unique<ext::ModLoaderExtension>(mod_engine_global));
     mod_engine_global->register_extension(std::make_unique<ext::ProfilingExtension>(mod_engine_global));
     mod_engine_global->register_extension(std::make_unique<ext::ScyllaHideExtension>(mod_engine_global));
+    mod_engine_global->register_extension(std::make_unique<ext::GRPCServerExtension>(mod_engine_global));
 
     try {
         mod_engine_global->attach();

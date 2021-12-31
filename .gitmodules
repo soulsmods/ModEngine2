@@ -1,3 +1,6 @@
 [submodule "third-party/ValveFileVdf"]
 	path = third-party/ValveFileVdf
 	url = https://github.com/TinyTinni/ValveFileVDF
+[submodule "ModEngine2RPC"]
+	path = ModEngine2RPC
+	url = https://github.com/soulsmods/ModEngine2RPC

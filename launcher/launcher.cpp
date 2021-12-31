@@ -30,7 +30,7 @@ enum LaunchTarget {
 };
 
 static std::map<LaunchTarget, LaunchTargetParams> launch_targets {
-    { DS3, { L"374320", L"Game/DarkSoulsIII.exe" } }
+    { DS3, { L"374320", L"E:\\SteamLibrary\\steamapps\\common\\DARK SOULS III\\Game\\DarkSoulsIII.exe" } }
 };
 
 static std::map<std::string, LaunchTarget> launch_target_names {
@@ -73,14 +73,15 @@ int main(int argc, char* argv[])
     }
 
     auto launch_params = launch_targets[target];
-    auto app_path = get_game_path(launch_params.app_id);
+    //auto app_path = get_game_path(launch_params.app_id);
+    auto app_path = fs::path(launch_params.executable_path);
 
-    if (!app_path) {
-        logger->error("Couldn't find path to game");
-        return E_APP_NOT_FOUND;
-    }
+    //if (!app_path) {
+    //    logger->error("Couldn't find path to game");
+    //    return E_APP_NOT_FOUND;
+    //}
 
-    auto app_cmd = *app_path / launch_params.executable_path;
+    auto app_cmd = app_path;// / launch_params.executable_path;
     auto app_cwd = fs::absolute(app_cmd.parent_path());
 
     if (!fs::exists(modengine_dll_path)) {
@@ -101,7 +102,7 @@ int main(int argc, char* argv[])
     wchar_t cmd[MAX_PATH] = {};
     wcscpy_s(cmd, app_cmd.c_str());
 
-    bool success = DetourCreateProcessWithDllW(
+    bool success = DetourCreateProcessWithDllExW(
         cmd,
         nullptr,
         nullptr,
