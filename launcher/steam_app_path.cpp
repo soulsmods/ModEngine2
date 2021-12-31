@@ -43,8 +43,8 @@ auto get_steam_libraries()
     auto steam_path = get_steam_path();
     auto libraries = std::vector<fs::path> { steam_path };
     auto root = parse_vdf(steam_path / "SteamApps" / "libraryfolders.vdf");
-    for (size_t i = 1; i <= root.attribs.size() - 2; i++) {
-        libraries.emplace_back(root.attribs.at(std::to_string(i)));
+    for (size_t i = 0; i < root.childs.size(); i++) {
+        libraries.emplace_back(root.childs.at(std::to_string(i))->attribs[std::string("path")]);
     }
     return libraries;
 }
