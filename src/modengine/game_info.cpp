@@ -12,14 +12,16 @@ static std::unordered_map<std::wstring, GameType> game_type_executables {
     { L"DarkSoulsRemastered.exe", DS_REMASTERED },
     { L"DarkSoulsII.exe", DS2 },
     { L"DarkSoulsIII.exe", DS3 },
-    { L"sekiro.exe", SEKIRO }
+    { L"sekiro.exe", SEKIRO },
+    { L"eldenring.exe", ELDEN_RING }
 };
 
 static std::unordered_map<GameType, std::string> game_type_descriptions {
     { DS_REMASTERED, "Dark Souls Remastered" },
     { DS2, "Dark Souls 2: Scholar of The First Sin" },
     { DS3, "Dark Souls 3" },
-    { SEKIRO, "Sekiro" }
+    { SEKIRO, "Sekiro" },
+    { ELDEN_RING, "Elden Ring" }
 };
 
 static std::optional<GameType> game_type_for_exe(const std::wstring& exe_name)

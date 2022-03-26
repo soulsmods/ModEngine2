@@ -27,14 +27,17 @@ struct LaunchTargetParams {
 
 enum LaunchTarget {
     DS3,
+    ELDEN_RING,
 };
 
 static std::map<LaunchTarget, LaunchTargetParams> launch_targets {
-    { DS3, { L"374320", L"Game/DarkSoulsIII.exe" } }
+    { DS3, { L"374320", L"Game/DarkSoulsIII.exe" } },
+    { ELDEN_RING, { L"1245620", L"Game/eldenring.exe" } }
 };
 
 static std::map<std::string, LaunchTarget> launch_target_names {
     { "ds3", DS3 },
+    { "er", ELDEN_RING },
 };
 
 int main(int argc, char* argv[])

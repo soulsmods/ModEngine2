@@ -33,6 +33,7 @@ public:
     }
 
     virtual void register_hook(GameType type, Hook<GenericFunctionPointer>* hook);
+    virtual void register_hook(GameType type, ScannedHook<GenericFunctionPointer>* hook);
     virtual void install_hooks();
 
     virtual void register_patch(GameType type, const std::string_view& signature, std::function<void(uintptr_t)> replace_callback);
@@ -106,6 +107,22 @@ protected:
     void register_hook(GameType type, Hook<T> *hook)
     {
         m_ext_connector->register_hook(type, (Hook<GenericFunctionPointer>*)hook);
+    }
+
+    template <typename T>
+    void register_hook(GameType type, ScannedHook<T> *hook, const ScanPattern &signature, T detour, HookScanMode mode)
+    {
+        hook->mode = mode;
+        hook->pattern = signature;
+        hook->replacement = detour;
+
+        m_ext_connector->register_hook(type, (ScannedHook<GenericFunctionPointer>*) hook);
+    }
+
+    template <typename T>
+    void register_hook(GameType type, ScannedHook<T> *hook)
+    {
+        m_ext_connector->register_hook(type, (ScannedHook<GenericFunctionPointer>*)hook);
     }
 
     // TODO: ABI compatibility, std::string_view, std::function

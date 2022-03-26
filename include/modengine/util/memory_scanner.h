@@ -13,6 +13,11 @@
 
 namespace modengine {
 
+struct ScanPattern {
+    std::string pattern;
+    std::vector<short> wildcards;
+};
+
 class MemoryScanner {
 public:
     struct MemoryScannerRegion {
@@ -83,6 +88,36 @@ public:
         return std::nullopt;
     }
 
+    std::optional<uintptr_t> find(const ScanPattern& pattern)
+    {
+        // Fairly naive scanner for now. A regex based scanner would probably be faster down the line
+        for (const auto region_info : m_memory_regions) {
+            const auto region = MemoryScannerRegion { region_info };
+            const auto region_view = region.view();
+            std::string_view pattern_view = pattern.pattern;
+            for (int i = 0; i < region_view.length() - pattern_view.length(); i++) {
+                bool found = true;
+                int wildcard_index = 0;
+                size_t wildcard_length = pattern.wildcards.size();
+                for (int j = 0; j < pattern_view.length(); j++) {
+                    if (region_view[i + j] != pattern_view[j]) {
+                        if (wildcard_index < wildcard_length && pattern.wildcards[wildcard_index] == j) {
+                            wildcard_index++;
+                            continue;
+                        }
+                        found = false;
+                        break;
+                    }
+                }
+                if (found) {
+                    return reinterpret_cast<uintptr_t>(&(region_view[i]));
+                }
+            }
+        }
+
+        return std::nullopt;
+    }
+
     bool replace_at(uintptr_t location, std::function<void(uintptr_t)> replace_callback)
     {
         DWORD original_protection;
@@ -108,6 +143,37 @@ public:
                 replace_callback(reinterpret_cast<uintptr_t>(&(*iter)));
 
                 return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool replace(const ScanPattern& pattern, std::function<void(uintptr_t)> replace_callback)
+    {
+        for (const auto region_info : m_memory_regions) {
+            const auto region = MemoryScannerRegion { region_info };
+            const auto region_view = region.view();
+            std::string_view pattern_view = pattern.pattern;
+
+            for (int i = 0; i < region_view.length() - pattern_view.length(); i++) {
+                bool found = true;
+                int wildcard_index = 0;
+                size_t wildcard_length = pattern.wildcards.size();
+                for (int j = 0; j < pattern_view.length(); j++) {
+                    if (region_view[i + j] != pattern_view[j]) {
+                        if (wildcard_index < wildcard_length && pattern.wildcards[wildcard_index] == j) {
+                            wildcard_index++;
+                            continue;
+                        }
+                        found = false;
+                        break;
+                    }
+                }
+                if (found) {
+                    replace_callback(reinterpret_cast<uintptr_t>(&(region_view[i])));
+                    return true;
+                }
             }
         }
 

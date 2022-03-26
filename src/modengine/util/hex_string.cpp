@@ -37,4 +37,35 @@ std::string hex_string(const char* input)
     return output.str();
 }
 
+ScanPattern hex_aob(const char* input)
+{
+    ScanPattern result;
+    std::stringstream input_stream { input };
+    std::stringstream output;
+
+    short index = 0;
+    while (!input_stream.eof()) {
+        char lo;
+        char hi;
+
+        input_stream >> lo;
+        input_stream >> hi;
+
+        if (input_stream.eof()) {
+            break;
+        }
+
+        if (lo == '?' && hi == '?') {
+            output << (char)0;
+            result.wildcards.push_back(index);
+        } else {
+            output << (char) (16 * (hex2bin(lo)) + (hex2bin(hi)));
+        }
+        index++;
+    }
+
+    result.pattern = output.str();
+    return result;
+}
+
 }

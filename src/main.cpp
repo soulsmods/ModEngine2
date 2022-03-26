@@ -53,11 +53,11 @@ int WINAPI modengine_entrypoint(void)
         return false;
     }
 
+    info("ModEngine version {} initializing for {}", modengine::g_version, game_info->description(), game_info->version);
     info("Local settings loaded: {}, Global settings loaded: {}",
         settings_status.found_local_config,
         settings_status.found_global_config);
     info("Main thread ID: {}", GetCurrentThreadId());
-    info("ModEngine version initializing for {} {}", modengine::g_version, game_info->description(), game_info->version);
 
     mod_engine_global.reset(new ModEngine { *game_info, settings, config });
 

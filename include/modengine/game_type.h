@@ -9,6 +9,7 @@ enum GameType : std::uint32_t {
     DS2 = 1 << 1,
     DS3 = 1 << 2,
     SEKIRO = 1 << 3,
+    ELDEN_RING = 1 << 4,
     ALL = 0xFFFFFFFF
 };
 

@@ -21,4 +21,22 @@ struct DLString<modengine::GameType::DS3, T> {
     }
 };
 
+template <typename T>
+struct DLString<modengine::GameType::SEKIRO, T> {
+    void * unk;
+    T* string;
+    void* unk2;
+    UINT64 length;
+    UINT64 capacity;
+
+    T* str()
+    {
+        if (sizeof(T) * capacity >= 15) {
+            return string;
+        }
+
+        return (T*)&string;
+    }
+};
+
 using DLBasicString = DLString<modengine::GameType::DS3, char>;

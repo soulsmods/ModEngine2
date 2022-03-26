@@ -56,21 +56,27 @@ void ModEngineBaseExtension::on_attach()
     // change panic mode to RAISE_EXCEPTION_ON_PANIC
     register_patch(DS3, 0x1446418c8, replace_with<uint32_t>({ 0x02 }));
 
+// TODO: Make this a define based feature flag?
+#if 0
     if (kiero::init(kiero::RenderType::D3D11) == kiero::Status::Success) {
         info("Initialized overlay hooks");
         kiero::bind(8, (void**)&original_D3D11Present, (void*)hooked_D3D11Present);
     } else {
         info("Failed to initialize overlay hooks");
     }
-
+#endif
     register_hook(ALL, &hooked_DirectInput8Create, "C:\\windows\\system32\\dinput8.dll", "DirectInput8Create", DirectInput8Create);
 
+#if 0
     lifecycle::on_frame.connect(m_render_overlay_cb);
+#endif
 }
 
 void ModEngineBaseExtension::on_detach()
 {
+#if 0
     lifecycle::on_frame.disconnect(m_render_overlay_cb);
+#endif
 }
 
 }

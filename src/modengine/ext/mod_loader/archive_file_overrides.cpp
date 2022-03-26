@@ -52,6 +52,7 @@ Hook<fpCreateFileW> hooked_CreateFileW;
 Hook<decltype(&virtual_to_archive_path_ds3)> hooked_virtual_to_archive_path_ds3;
 Hook<decltype(&virtual_to_archive_path_ds2)> hooked_virtual_to_archive_path_ds2;
 Hook<decltype(&virtual_to_archive_path_sekiro)> hooked_virtual_to_archive_path_sekiro;
+ScannedHook<decltype(&virtual_to_archive_path_eldenring)> hooked_virtual_to_archive_path_eldenring;
 concurrency::concurrent_vector<std::wstring> hooked_file_roots;
 
 using namespace spdlog;
@@ -213,9 +214,26 @@ void* __cdecl virtual_to_archive_path_ds2(LPVOID p1, dlstring_t* path)
     return hooked_virtual_to_archive_path_ds2.original(p1, path);
 }
 
-void* __cdecl virtual_to_archive_path_sekiro(dlstring_sekiro_t* path, UINT64 p2, UINT64 p3, dlstring_sekiro_t* p4, UINT64 p5, UINT64 p6)
+void* __cdecl virtual_to_archive_path_sekiro(DLString<modengine::GameType::SEKIRO, wchar_t>* path, UINT64 p2, UINT64 p3, DLString<modengine::GameType::SEKIRO, wchar_t>* p4, UINT64 p5, UINT64 p6)
 {
-    return hooked_virtual_to_archive_path_sekiro.original(path, p2, p3, p4, p5, p6);
+    auto res = static_cast<DLString<modengine::GameType::SEKIRO, wchar_t>*>(hooked_virtual_to_archive_path_sekiro.original(path, p2, p3, p4, p5, p6));
+
+     if (res != nullptr) {
+        process_archive_path(res->str(), res->length);
+    }
+
+    return static_cast<void*>(res);
+}
+
+void* __cdecl virtual_to_archive_path_eldenring(DLString<modengine::GameType::SEKIRO, wchar_t>* path, UINT64 p2, UINT64 p3, UINT64 p4, UINT64 p5, UINT64 p6)
+{
+    auto res = hooked_virtual_to_archive_path_eldenring.original(path, p2, p3, p4, p5, p6);
+
+     if (path != nullptr) {
+        process_archive_path(path->str(), path->length);
+    }
+
+    return res;
 }
 
 }

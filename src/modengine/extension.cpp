@@ -12,6 +12,13 @@ void ModEngineExtensionConnectorV1::register_hook(GameType type, Hook<GenericFun
     }
 }
 
+void ModEngineExtensionConnectorV1::register_hook(GameType type, ScannedHook<GenericFunctionPointer>* hook)
+{
+    if (m_mod_engine->game_info().is_supported(type)) {
+        m_mod_engine->m_hooks.install(hook);
+    }
+}
+
 void ModEngineExtensionConnectorV1::register_patch(GameType type, const std::string_view& signature, std::function<void(uintptr_t)> replace_callback)
 {
     if (m_mod_engine->game_info().is_supported(type)) {
