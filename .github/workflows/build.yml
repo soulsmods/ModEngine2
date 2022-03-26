@@ -77,7 +77,7 @@ jobs:
             -DMODENGINE_CRASH_REPORT_URL=${{ secrets.MODENGINE_CRASH_REPORT_URL }} \
             -DCPACK_GENERATOR=ZIP \
             -DVCPKG_OVERLAY_PORTS=src_repo/third-party/vcpkg-overlays \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo
+            -DCMAKE_BUILD_TYPE=MinSizeRel
         shell: bash
 
       - name: Build
