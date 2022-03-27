@@ -6,6 +6,7 @@ include(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 
 set(version "2.0.1")
+set(VCPKG_TOOLS "${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows")
 
 # Detours currently has no CMake manifests: https://github.com/microsoft/Detours/pull/48.
 find_path(VCPKG_INCLUDE_DIR NAMES detours/detver.h)
