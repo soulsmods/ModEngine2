@@ -14,14 +14,14 @@ set(CPACK_COMPONENT_APPLICATION_INSTALL_TYPES Standard)
 
 install(TARGETS modengine2
         EXPORT ModEngineTargets
-        RUNTIME DESTINATION bin COMPONENT application
-        LIBRARY DESTINATION lib COMPONENT sdk
-        ARCHIVE DESTINATION lib COMPONENT sdk
-        INCLUDES DESTINATION include
+        RUNTIME DESTINATION modengine2/bin COMPONENT application
+        LIBRARY DESTINATION modengine2/lib COMPONENT sdk
+        ARCHIVE DESTINATION modengine2/lib COMPONENT sdk
+        INCLUDES DESTINATION modengine2/include
 )
 
 install(TARGETS modengine2_launcher
-        RUNTIME DESTINATION bin
+        RUNTIME DESTINATION .
         COMPONENT application)
 
 install(DIRECTORY
@@ -29,7 +29,7 @@ install(DIRECTORY
         "${VCPKG_INCLUDE_DIR}/sol"
         "${VCPKG_INCLUDE_DIR}/fmt"
         "${VCPKG_INCLUDE_DIR}/spdlog"
-        DESTINATION include
+        DESTINATION modengine2/include
         COMPONENT sdk)
 
 install(FILES
@@ -40,40 +40,49 @@ install(FILES
         "${VCPKG_INCLUDE_DIR}/luaconf.h"
         "${VCPKG_INCLUDE_DIR}/lualib.h"
 
-        DESTINATION include
+        DESTINATION modengine2/include
         COMPONENT sdk)
 
 install(FILES
         "${VCPKG_INCLUDE_DIR}/../lib/lua.lib"
-        DESTINATION lib
+        DESTINATION modengine2/lib
         COMPONENT sdk)
 
-install(DIRECTORY include DESTINATION . COMPONENT sdk)
-install(DIRECTORY installer/assets/debug_menu DESTINATION assets COMPONENT application)
+install(DIRECTORY include DESTINATION modengine2 COMPONENT sdk)
+install(DIRECTORY installer/assets/debug_menu DESTINATION modengine2/assets COMPONENT application)
 
 install(FILES
         "${VCPKG_TOOLS}/bin/lua.dll"
-        DESTINATION bin
+        DESTINATION modengine2/bin
         COMPONENT application)
 
 install(FILES
         "${VCPKG_TOOLS}/tools/crashpad_handler.exe"
         "${VCPKG_TOOLS}/bin/zlib1.dll"
-        DESTINATION crashpad
+        DESTINATION modengine2/crashpad
         COMPONENT application)
 
 install(FILES tools/scylla/InjectorCLIx64.exe
         tools/scylla/HookLibraryx64.dll
         installer/assets/scyllahide/scylla_hide.ini
-        DESTINATION tools/scyllahide
+        DESTINATION modengine2/tools/scyllahide
         COMPONENT application)
 
-install(EXPORT ModEngineTargets DESTINATION share/cmake/modengine COMPONENT sdk)
+install(FILES
+        installer/dist/config_darksouls3.toml
+        installer/dist/config_eldenring.toml
+        installer/dist/launchmod_darksouls3.bat
+        installer/dist/launchmod_eldenring.bat
+        DESTINATION .
+        COMPONENT application)
+install(DIRECTORY DESTINATION "mod")
+
+install(EXPORT ModEngineTargets DESTINATION modengine2/share/cmake/modengine COMPONENT sdk)
 
 install(FILES
         "${CMAKE_CURRENT_BINARY_DIR}/ModEngineConfig.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/ModEngineConfigVersion.cmake"
-        DESTINATION share/cmake/ModEngine
+        DESTINATION modengine2/share/cmake/ModEngine
         COMPONENT sdk)
 
 include(CPackComponent)

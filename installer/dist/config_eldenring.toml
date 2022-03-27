@@ -1,0 +1,12 @@
+[modengine]
+debug = false
+
+[extension.mod_loader]
+enabled = true
+loose_params = false
+mods = [
+    { enabled = true, name = "default", path = "mod" }
+]
+
+[extension.scylla_hide]
+enabled = true
