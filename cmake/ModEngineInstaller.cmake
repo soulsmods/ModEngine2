@@ -58,7 +58,7 @@ install(FILES
 
 install(FILES
         "${VCPKG_TOOLS}/tools/crashpad_handler.exe"
-        "${VCPKG_TOOLS}/bin/zlibd1.dll"
+        "${VCPKG_TOOLS}/bin/zlib1.dll"
         DESTINATION crashpad
         COMPONENT application)
 
