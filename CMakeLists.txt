@@ -10,7 +10,7 @@ set(version "2.0.1")
 # Detours currently has no CMake manifests: https://github.com/microsoft/Detours/pull/48.
 find_path(VCPKG_INCLUDE_DIR NAMES detours/detver.h)
 find_library(DETOURS_LIBRARY detours REQUIRED)
-find_package(Lua CONFIG REQUIRED)
+find_package(Lua REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(crashpad CONFIG REQUIRED)

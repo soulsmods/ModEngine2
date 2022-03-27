@@ -59,7 +59,7 @@ add_library(modengine2 SHARED
         ${IMGUI_SRC}
         ${KIERO_SRC} modengine/logging.cpp modengine/logging.h modengine/settings_loader.cpp modengine/settings_loader.h modengine/logger.cpp)
 
-find_path(VCPKG_TOOLS NAMES tools/crashpad_handler.exe)
+find_path(VCPKG_TOOLS NAMES x64-windows/tools/crashpad_handler.exe)
 
 target_compile_features(modengine2 PUBLIC cxx_std_20)
 target_compile_options(modengine2 PUBLIC /utf-8)
