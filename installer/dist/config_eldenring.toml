@@ -1,12 +1,37 @@
+# Global mod engine configuration
 [modengine]
+# If set to true the debug console will appear while the game is running
 debug = false
 
+# Mod loader configuration
 [extension.mod_loader]
 enabled = true
+
+# Not currently supported for Elden Ring
 loose_params = false
+
+# List of directories that contain modded files in order of prioritization. Inside each specified mod directory must have the game
+# assets in Fromsoft's asset structure. I.e. if you mod parts/something.partsbnd.dcx, the modded version must be at mod/parts/something.partsbnd.dcx.
+# Absolute paths to mods are supported but must use '\\' to separate path items. For example, if your mod is at E:\coolstuff\coolmod, you must enter
+# the path in the config as "E:\\coolstuff\\coolmod".
+# If there's no drive specifier (C:, D:, etc), the path is relative to where the launcher is located. For example, having the path as "mod" will tell
+# modengine 2 to look for the directory mod inside the mod engine 2 directory with the launcher.
+#
+# Multiple mods must be separated with commas. For example if you have 3 mods, you will have something like the following:
+# mods = [
+#    { enabled = true, name = "coolmod", path = "mod1" },
+#    { enabled = true, name = "nicemod", path = "mod2" },
+#    { enabled = true, name = "sosomod", path = "mod3" }
+# ]
+# Note that modengine 2 currently has no way to resolve conflicting files including regulation.bin, and thus the mod with the highest priority
+# will have the modded file be loaded in the case of conflict. Some support for merging of params and potentially other assets is considered for
+# a future release.
 mods = [
     { enabled = true, name = "default", path = "mod" }
 ]
 
+# When enabled, scylly hide will be injected into the game. This allows for antidebug measures in the game to be bypassed so that you can attach
+# debuggers such as Cheat Engine, x64dbg, windbg, etc to the game without as much trouble. If you're not reverse engineering the game, this option
+# is probably not for you.
 [extension.scylla_hide]
-enabled = true
+enabled = false
