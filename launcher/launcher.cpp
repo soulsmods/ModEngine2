@@ -65,6 +65,10 @@ int main(int argc, char* argv[])
     auto target_option = app.add_option("-t,--launch-target", target, "Launch target")
         ->transform(CLI::CheckedTransformer(launch_target_names, CLI::ignore_case));
 
+    fs::path target_path;
+    auto target_path_option = app.add_option("-p,--game-path", target_path, "Path to game executable. Will autodetect if not specified.")
+        ->transform(CLI::ExistingFile);
+
     fs::path config_path;
     auto config_option = app.add_option("-c,--config", config_path, "ModEngine configuration file path")
         ->transform(CLI::ExistingFile);
@@ -84,6 +88,16 @@ int main(int argc, char* argv[])
     }
 
     std::optional<fs::path> app_path = std::nullopt;
+
+    // First if the game path was specified, use that along with the specified target
+    if (!target_path_option->empty())
+    {
+        app_path = target_path.parent_path().parent_path();
+        if (target == AUTODETECT) {
+            logger->error("Game target must be specified when supplying a manual path");
+            return E_APP_NOT_FOUND;
+        }
+    }
 
     // If the game target was not set, try to find a game exe in the current directory and infer from that
     if (target_option->empty()) {
