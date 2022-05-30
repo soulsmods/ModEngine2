@@ -35,7 +35,7 @@ jobs:
           repository: 'microsoft/vcpkg'
           path: vcpkg
           submodules: true
-          ref: "2021.05.12"
+          ref: "2022.05.10"
 
       # Setup the build machine with the most recent versions of CMake and Ninja. Both are cached if not already: on subsequent runs both will be quickly restored from GitHub cache service.
       - uses: lukka/get-cmake@latest
