@@ -59,6 +59,10 @@ void ModLoaderExtension::on_attach()
 
     auto config = get_config<ModLoaderConfig>();
     for (const auto& mod : config.mods) {
+        if (!mod.enabled) {
+            continue;
+        }
+
         info("Installing mod location {}", mod.location);
 
         auto mod_path = resolve_mod_path(mod);
