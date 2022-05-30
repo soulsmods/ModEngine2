@@ -55,7 +55,7 @@ void ExtensionSet::load_extensions(std::vector<fs::path> dlls, bool enumerate_mo
         }
 
         if (!load_extension(module)) {
-            error("Unable to load extension {} at base address {p}", dll.string(), (void*)module);
+            error("Unable to load extension {} at base address {:p}", dll.string(), fmt::ptr((void*)module));
         }
     }
 }
