@@ -54,8 +54,10 @@ void ExtensionSet::load_extensions(std::vector<fs::path> dlls, bool enumerate_mo
             continue;
         }
 
+        info("Loaded external DLL {}", dll.string());
+
         if (!load_extension(module)) {
-            error("Unable to load extension {} at base address {:p}", dll.string(), fmt::ptr((void*)module));
+            warn("External dll {} at base address {:p} is not a modengine extension", dll.string(), fmt::ptr((void*)module));
         }
     }
 }
