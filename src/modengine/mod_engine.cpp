@@ -1,5 +1,6 @@
 #include "modengine/mod_engine.h"
 #include "modengine/crash_handler.h"
+#include "modengine/scripting/api.h"
 
 #include "modengine/ext/base/base_extension.h"
 #include "modengine/ext/debug_menu/ds3/debug_menu_ds3.h"
@@ -53,8 +54,10 @@ void ModEngine::attach()
 
     auto lua = m_script_host.get_state();
     sol_ImGui::Init(lua);
+    modengine::scripting::bind_patch_api(this, lua);
 
     m_script_host.load_scripts(m_config.script_roots);
+
     if (m_config.script_reloading) {
         m_script_host.start_reload();
     }
