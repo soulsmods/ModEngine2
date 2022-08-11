@@ -56,6 +56,7 @@ add_library(modengine2 SHARED
         modengine/ext/profiling/thread_hooks.cpp
         modengine/ext/scylla/scyllahide_extension.cpp
         modengine/util/hex_string.cpp
+        modengine/util/platform.cpp
         ${IMGUI_SRC}
         ${KIERO_SRC} modengine/logging.cpp modengine/logging.h modengine/settings_loader.cpp modengine/settings_loader.h modengine/logger.cpp)
 

@@ -2,6 +2,7 @@
 #include "base_extension.h"
 
 #include "modengine/util/hex_string.h"
+#include "modengine/util/platform.h"
 #include "modengine/lifecycle/render.h"
 #include <spdlog/spdlog.h>
 
@@ -65,7 +66,10 @@ void ModEngineBaseExtension::on_attach()
         info("Failed to initialize overlay hooks");
     }
 #endif
-    register_hook(ALL, &hooked_DirectInput8Create, "C:\\windows\\system32\\dinput8.dll", "DirectInput8Create", DirectInput8Create);
+
+    const auto dinput8_path = util::system_directory() / "dinput8.dll";
+
+    register_hook(ALL, &hooked_DirectInput8Create, dinput8_path.string(), "DirectInput8Create", DirectInput8Create);
 
 #if 0
     lifecycle::on_frame.connect(m_render_overlay_cb);
