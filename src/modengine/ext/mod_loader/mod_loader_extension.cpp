@@ -54,7 +54,7 @@ void ModLoaderExtension::on_attach()
 
     // TODO: AOB scan this?
     register_hook(ALL, &hooked_CreateFileW, "C:\\windows\\system32\\kernel32.dll", "CreateFileW", tCreateFileW);
-    register_hook(DS3, &hooked_virtual_to_archive_path_ds3, 0x14007d5e0, virtual_to_archive_path_ds3);
+    register_hook(DS3, &hooked_virtual_to_archive_path_ds3, 0x14007d660, virtual_to_archive_path_ds3);
     register_hook(ELDEN_RING, &hooked_virtual_to_archive_path_eldenring, virtual_to_archive_path_er_aob, virtual_to_archive_path_eldenring, SCAN_CALL_INST);
 
     auto config = get_config<ModLoaderConfig>();
