@@ -7,9 +7,9 @@ namespace fs = std::filesystem;
 
 namespace modengine::ext {
 
-auto loose_params_aob_1 = util::hex_string("74 68 48 8b cf 48 89 5c 24 30 e8 1c 6d 08");
-auto loose_params_aob_2 = util::hex_string("0F 85 C5 00 00 00 48 8D 4C 24 28 E8 17 F4");
-auto loose_params_aob_3 = util::hex_string("E8 78 08 F8 FF 90 E9 0E E9 08 05 53 E9 EF");
+auto loose_params_aob_1 = util::hex_string("74 68 48 8B CF 48 89 5C 24 30 E8");
+auto loose_params_aob_2 = util::hex_string("0F 85 C5 00 00 00 48 8D 4C 24 28");
+auto loose_params_aob_3 = util::hex_string("E8 C8 F7 F7 FF 90 E9 73 E3 1F 04");
 
 static fs::path primary_mod_path(const Settings& settings)
 {
