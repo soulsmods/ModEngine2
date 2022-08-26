@@ -2,6 +2,7 @@
 #include "archive_file_overrides.h"
 
 #include "modengine/util/hex_string.h"
+#include "modengine/util/platform.h"
 
 #include <spdlog/spdlog.h>
 
@@ -52,9 +53,10 @@ void ModLoaderExtension::on_attach()
     register_patch(DS3, loose_params_aob_2, replace_with<uint8_t>({ 0x0F, 0x84, 0xc5, 0x00, 0x00, 0x00 }));
     register_patch(DS3, loose_params_aob_3, replace_with<uint8_t>({ 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }));
 
-    // TODO: AOB scan this?
-    register_hook(ALL, &hooked_CreateFileW, "C:\\windows\\system32\\kernel32.dll", "CreateFileW", tCreateFileW);
-    register_hook(DS3, &hooked_virtual_to_archive_path_ds3, 0x14007d660, virtual_to_archive_path_ds3);
+    const auto kernel32_path = util::system_directory() / "kernel32.dll";
+
+    register_hook(ALL, &hooked_CreateFileW, kernel32_path.string(), "CreateFileW", tCreateFileW);
+    register_hook(DS3, &hooked_virtual_to_archive_path_ds3, util::rva2addr(0x7d660), virtual_to_archive_path_ds3);
     register_hook(ELDEN_RING, &hooked_virtual_to_archive_path_eldenring, virtual_to_archive_path_er_aob, virtual_to_archive_path_eldenring, SCAN_CALL_INST);
 
     auto config = get_config<ModLoaderConfig>();

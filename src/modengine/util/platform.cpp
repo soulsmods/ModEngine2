@@ -12,4 +12,9 @@ std::filesystem::path&& system_directory()
 
     return std::move(std::filesystem::path(system_folder));
 }
+
+uintptr_t rva2addr(ptrdiff_t offset)
+{
+    return (uintptr_t)GetModuleHandle(nullptr)+offset;
+}
 }
