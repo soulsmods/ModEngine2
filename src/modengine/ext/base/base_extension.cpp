@@ -52,10 +52,10 @@ void ModEngineBaseExtension::on_attach()
     register_patch(DS3 | SEKIRO, allocator_table_aob, increase_fmod_allocation_limits);
 
     // nop call to SetUnhandledExceptionFilter
-    register_patch(DS3, 0x141fe49c7, replace_with<unsigned char>({ 0x90, 0x90, 0x90, 0x90, 0x90 }));
+    register_patch(DS3, GetModuleHandle(nullptr)+0x1FF28FF, replace_with<unsigned char>({ 0x90, 0x90, 0x90, 0x90, 0x90 }));
 
     // change panic mode to RAISE_EXCEPTION_ON_PANIC
-    register_patch(DS3, 0x1446418c8, replace_with<uint32_t>({ 0x02 }));
+    register_patch(DS3, GetModuleHandle(nullptr)+0x4658A18, replace_with<uint32_t>({ 0x02 }));
 
 // TODO: Make this a define based feature flag?
 #if 0
