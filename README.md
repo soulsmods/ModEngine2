@@ -23,7 +23,7 @@ mods = [
 ```
 
 <details>
-  <summary>Folder structure example</summary>
+  <summary>Folder structure example (CLICK ME!)</summary>
 
   ![folder exmaple image](docs/media/mod-engine-mod-folder-example.png)
 
