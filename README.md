@@ -2,19 +2,44 @@
 
 Mod Engine 2 is a ground up rewrite of Mod Engine, a runtime code patching and injection library used for adding modding functionality to the Souls games by FROM Software.
 
-## Download
+# Table of Contents
+1. [Get started](#get-started-guide)
+2. [Supported games](#supported-games)
+2. [Differences](#what-are-the-differences)
+3. [Features](#features)
 
-> :construction: **UNDER CONSTRUCTION**
+## Get started guide
+
+1. Download the latest [release](https://github.com/soulsmods/ModEngine2/releases).
+2. Create a folder in the mod folder, I recommend the name of the mod for clarity.
+3. Unpack the mod into the just created folder.
+4. Edit the `eldenring_config.toml` (or your game of choice) to include the folder you just created.
+
+```toml
+mods = [
+  { enabled = true, name = "default", path = "mod\\testmodName" },
+  { enabled = false, name = "default", path = "mod\\disabledTestmodName" },
+]
+```
+
+<details>
+  <summary>Folder structure example (CLICK ME!)</summary>
+
+  ![folder exmaple image](docs/media/mod-engine-mod-folder-example.png)
+
+</details>
 
 ## Supported games
 
 See the list below for information on games that currently have support in Mod Engine 2.
 
 - [x] Dark Souls 3
+- [x] Elden Ring
 - [ ] Dark Souls 2: SOTF
 - [ ] Dark Souls Remastered
 - [ ] Sekiro: Shadows Die Twice
 - [ ] Bloodborne
+
 
 ## What are the differences?
 
