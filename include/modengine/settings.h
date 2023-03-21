@@ -60,7 +60,7 @@ private:
     template <>
     std::optional<fs::path> node_to_val(toml::node* node)
     {
-        auto fs_path = std::filesystem::path(node->as_string()->get());
+        auto fs_path = fs::path(node->value<std::wstring>().value());
 
         // if we don't have an absolute path, relativize it to the path we loaded configuration from
         if (!fs_path.is_absolute()) {

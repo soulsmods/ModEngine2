@@ -64,7 +64,7 @@ int WINAPI modengine_entrypoint(void)
     try {
         mod_engine_global->attach();
     } catch (std::exception& e) {
-        error("Failed to attach modengine {}", e.what());
+        error("Failed to attach modengine: {}", e.what());
     }
 
     return hooked_entrypoint.original();
