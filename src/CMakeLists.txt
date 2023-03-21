@@ -88,7 +88,7 @@ target_include_directories(modengine2 PRIVATE
 target_link_libraries(modengine2 PRIVATE
         ${DETOURS_LIBRARY}
         spdlog::spdlog_header_only
-        sol2::sol2
+        sol2
         crashpad::crashpad)
 
 target_precompile_headers(modengine2 PUBLIC
