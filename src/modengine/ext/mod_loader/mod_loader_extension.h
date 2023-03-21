@@ -9,18 +9,18 @@ namespace modengine::ext {
 
 struct ModInfo {
 public:
-    std::string name;
-    std::string location;
+    std::wstring name;
+    std::wstring location;
     bool enabled;
 
     bool from_toml(ConfigReader& v)
     {
-        auto loc = v.read_config_option<std::string>({ "path" });
+        auto loc = v.read_config_option<std::wstring>({ "path" });
         if (!loc) {
             return false;
         }
 
-        name = v.read_config_option<std::string>({ "name" }).value_or("Unknown");
+        name = v.read_config_option<std::wstring>({ "name" }).value_or(L"Unknown");
         enabled = v.read_config_option<bool>({ "enabled" }).value_or(true);
         location = loc.value();
 

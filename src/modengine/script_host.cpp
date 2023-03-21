@@ -48,15 +48,15 @@ void ScriptHost::load_script(const fs::path& path)
     sol::state_view state(m_state);
     sol::environment loader_env(state, sol::create, state.globals());
 
-    info("Loading script from {}", path.string());
+    info(L"Loading script from {}", path.wstring());
 
     loader_env["register_callback"] = [&](std::string name, sol::function fn) {
         const ScriptCallback& callback = ScriptCallback {
             fn,
-            path.string()
+            path.wstring()
         };
 
-        info("Registered {} callback for {}", name, path.string());
+        info(L"Registered {} callback for {}", std::wstring(name.begin(), name.end()), path.wstring());
 
         m_script_callbacks.insert({ name, callback });
     };
@@ -72,7 +72,7 @@ void ScriptHost::load_script(const fs::path& path)
 void ScriptHost::load_scripts(const std::vector<fs::path>& script_roots)
 {
     for (auto& root : script_roots) {
-        info("Searching for scripts in root: {}", root.string());
+        info(L"Searching for scripts in root: {}", root.wstring());
 
         for (auto& candidate : fs::recursive_directory_iterator(root)) {
             auto& candidate_path = candidate.path();
@@ -94,7 +94,7 @@ void ScriptHost::reload()
         for (const auto& [path, time] : m_script_update_times) {
             auto last_update = fs::last_write_time(path);
             if ((last_update - time) > 2s) {
-                debug("{} has changed, reloading", path.string());
+                debug(L"{} has changed, reloading", path.wstring());
 
                 load_script(path);
             }

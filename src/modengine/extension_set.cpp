@@ -50,14 +50,14 @@ void ExtensionSet::load_extensions(std::vector<fs::path> dlls, bool enumerate_mo
 
         auto module = LoadLibraryW(dll.c_str());
         if (module == nullptr) {
-            error("Failed to load DLL {}", dll.string());
+            error(L"Failed to load DLL {}", dll.wstring());
             continue;
         }
 
-        info("Loaded external DLL {}", dll.string());
+        info(L"Loaded external DLL {}", dll.wstring());
 
         if (!load_extension(module)) {
-            warn("External dll {} at base address {:p} is not a modengine extension", dll.string(), fmt::ptr((void*)module));
+            warn(L"External dll {} at base address {:p} is not a modengine extension", dll.wstring(), fmt::ptr((void*)module));
         }
     }
 }

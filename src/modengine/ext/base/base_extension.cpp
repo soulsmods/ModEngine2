@@ -67,9 +67,9 @@ void ModEngineBaseExtension::on_attach()
     }
 #endif
 
-    const auto dinput8_path = util::system_directory() / "dinput8.dll";
+    const auto dinput8_path = util::system_directory().string() + "dinput8.dll";
 
-    register_hook(ALL, &hooked_DirectInput8Create, dinput8_path.string(), "DirectInput8Create", DirectInput8Create);
+    register_hook(ALL, &hooked_DirectInput8Create, dinput8_path, "DirectInput8Create", DirectInput8Create);
 
 #if 0
     lifecycle::on_frame.connect(m_render_overlay_cb);

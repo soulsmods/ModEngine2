@@ -10,7 +10,7 @@ using namespace spdlog;
 bool SettingsLoader::load_toml_into(Settings& settings, const fs::path& path)
 {
     try {
-        auto config = toml::parse_file(path.string());
+        auto config = toml::parse_file(path.wstring());
         settings.m_config = config;
     } catch (const toml::parse_error& e) {
         error("Failed to load config {}", e.what());
