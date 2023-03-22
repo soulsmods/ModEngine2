@@ -47,7 +47,7 @@ static std::map<std::string, LaunchTarget> exe_names {
     { "eldenring.exe", ELDEN_RING },
 };
 
-int main(int argc, char* argv[])
+int main()
 {
     auto logger = spdlog::stderr_color_mt("stderr");
 
@@ -65,15 +65,13 @@ int main(int argc, char* argv[])
     auto target_option = app.add_option("-t,--launch-target", target, "Launch target")
         ->transform(CLI::CheckedTransformer(launch_target_names, CLI::ignore_case));
 
-    std::wstring target_path_string;
-    auto target_path_option = app.add_option("-p,--game-path", target_path_string, "Path to game executable. Will autodetect if not specified.")
+    fs::path target_path;
+    auto target_path_option = app.add_option("-p,--game-path", target_path, "Path to game executable. Will autodetect if not specified.")
         ->transform(CLI::ExistingFile);
-    fs::path target_path = fs::path(target_path_string);
 
-    std::wstring config_path_string;
-    auto config_option = app.add_option("-c,--config", config_path_string, "ModEngine configuration file path")
+    fs::path config_path;
+    auto config_option = app.add_option("-c,--config", config_path, "ModEngine configuration file path")
         ->transform(CLI::ExistingFile);
-    fs::path config_path = fs::path(config_path_string);
 
     bool suspend = false;
     app.add_option("-s,--suspend", suspend, "Start the game in a suspended state");
@@ -88,6 +86,9 @@ int main(int argc, char* argv[])
     } catch (const CLI::ParseError& e) {
         return app.exit(e);
     }
+
+    spdlog::info(target_path.string());
+    spdlog::info(config_path.string());
 
     std::optional<fs::path> app_path = std::nullopt;
 
@@ -158,12 +159,12 @@ int main(int argc, char* argv[])
     exec_path.append(modengine_dll_path.parent_path().native().c_str());
 
     // These are inherited by the game process we launch with Detours.
-    SetEnvironmentVariable(L"SteamAppId", launch_params.app_id.c_str());
-    SetEnvironmentVariable(L"MODENGINE_CONFIG", fs::absolute(config_path).c_str());
-    SetEnvironmentVariable(L"PATH", exec_path.c_str());
+    SetEnvironmentVariableW(L"SteamAppId", launch_params.app_id.c_str());
+    SetEnvironmentVariableW(L"MODENGINE_CONFIG", fs::absolute(config_path).c_str());
+    SetEnvironmentVariableW(L"PATH", exec_path.c_str());
 
     if (suspend || IsDebuggerPresent()) {
-        SetEnvironmentVariable(L"MODENGINE_DEBUG_GAME", L"1");
+        SetEnvironmentVariableW(L"MODENGINE_DEBUG_GAME", L"1");
     }
 
     wchar_t cmd[MAX_PATH] = {};

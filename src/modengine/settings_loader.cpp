@@ -2,6 +2,7 @@
 
 #include <spdlog/spdlog.h>
 #include <fstream>
+#include <CLI/Encoding.hpp>
 
 namespace modengine {
 
@@ -18,6 +19,17 @@ bool SettingsLoader::load_toml_into(Settings& settings, const fs::path& path)
     }
 
     return true;
+}
+
+std::wstring GetEnv(const std::wstring& varName)
+{
+    std::wstring str;
+    DWORD len = GetEnvironmentVariableW(varName.c_str(), NULL, 0);
+    if (len > 0) {
+        str.resize(len);
+        str.resize(GetEnvironmentVariableW(varName.c_str(), &str[0], len));
+    }
+    return str;
 }
 
 SettingsLoadResult SettingsLoader::load(modengine::Settings& settings)
