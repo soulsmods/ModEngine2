@@ -14,7 +14,7 @@ bool SettingsLoader::load_toml_into(Settings& settings, const fs::path& path)
         auto config = toml::parse_file(path.wstring());
         settings.m_config = config;
     } catch (const toml::parse_error& e) {
-        error("Failed to load config {}", e.what());
+        error("Failed to load config: {}", e.what());
         return false;
     }
 
@@ -50,14 +50,15 @@ SettingsLoadResult SettingsLoader::load(modengine::Settings& settings)
         }
     }
 
-    const auto settings_path_env = std::getenv("MODENGINE_CONFIG");
-    if (settings_path_env != nullptr) {
-        auto path = fs::path(settings_path_env);
-        auto local_modengine_path = path.parent_path();
+    const auto settings_path_env = GetEnv(L"MODENGINE_CONFIG");
 
-        result.found_local_config = load_toml_into(settings, path);
-        settings.m_modengine_local_path = local_modengine_path;
-    }
+    spdlog::debug(settings_path_env);
+
+    auto path = fs::path(settings_path_env);
+    auto local_modengine_path = path.parent_path();
+
+    result.found_local_config = load_toml_into(settings, path);
+    settings.m_modengine_local_path = local_modengine_path;
 
     return result;
 }
