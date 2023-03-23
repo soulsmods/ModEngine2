@@ -1,5 +1,6 @@
 [modengine]
 debug = false
+external_dlls = []
 
 [extension.mod_loader]
 enabled = true
