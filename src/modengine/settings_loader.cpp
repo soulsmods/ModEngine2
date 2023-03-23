@@ -2,7 +2,6 @@
 
 #include <spdlog/spdlog.h>
 #include <fstream>
-#include <CLI/Encoding.hpp>
 
 namespace modengine {
 
