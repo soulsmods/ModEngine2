@@ -11,7 +11,7 @@ using namespace spdlog;
 bool SettingsLoader::load_toml_into(Settings& settings, const fs::path& path)
 {
     try {
-        auto config = toml::parse_file(path.wstring());
+        auto config = toml::parse_file(path.string());
         settings.m_config = config;
     } catch (const toml::parse_error& e) {
         error("Failed to load config: {}", e.what());
@@ -21,27 +21,17 @@ bool SettingsLoader::load_toml_into(Settings& settings, const fs::path& path)
     return true;
 }
 
-std::wstring GetEnv(const std::wstring& varName)
-{
-    std::wstring str;
-    DWORD len = GetEnvironmentVariableW(varName.c_str(), NULL, 0);
-    if (len > 0) {
-        str.resize(len);
-        str.resize(GetEnvironmentVariableW(varName.c_str(), &str[0], len));
-    }
-    return str;
-}
-
 SettingsLoadResult SettingsLoader::load(modengine::Settings& settings)
 {
     SettingsLoadResult result;
 
     fs::path appdata_path(getenv("APPDATA"));
     settings.m_modengine_data_path = appdata_path / "modengine";
-    settings.m_modengine_install_path = m_installation ;
+    settings.m_modengine_install_path = m_installation;
     settings.m_game_path = m_game ;
 
     result.inline_install = m_installation == m_game;
+
     if (!result.inline_install) {
         const auto global_settings_path = m_installation / "config.toml";
 
@@ -50,9 +40,7 @@ SettingsLoadResult SettingsLoader::load(modengine::Settings& settings)
         }
     }
 
-    const auto settings_path_env = GetEnv(L"MODENGINE_CONFIG");
-
-    spdlog::debug(settings_path_env);
+    const auto settings_path_env = std::getenv("MODENGINE_CONFIG");
 
     auto path = fs::path(settings_path_env);
     auto local_modengine_path = path.parent_path();
