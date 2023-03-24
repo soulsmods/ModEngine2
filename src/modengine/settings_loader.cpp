@@ -13,7 +13,7 @@ bool SettingsLoader::load_toml_into(Settings& settings, const fs::path& path)
         auto config = toml::parse_file(path.string());
         settings.m_config = config;
     } catch (const toml::parse_error& e) {
-        error("Failed to load config: {}", e.what());
+        error("Failed to load config (from `{}`): {}", path.string(), e.what());
         return false;
     }
 

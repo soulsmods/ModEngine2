@@ -35,9 +35,6 @@ int WINAPI modengine_entrypoint(void)
         DebugBreak();
     }
 
-    auto logger = logging::setup_logger("", TRUE);
-    spdlog::set_default_logger(logger);
-
     /* We need to restore any changes to entrypoint code.
      * Steam checks the signature of this */
     entry_hook_set.unhook_all();
@@ -47,6 +44,8 @@ int WINAPI modengine_entrypoint(void)
 
     auto settings_status = settings_loader.load(settings);
     auto config = settings.get_config_reader().read_config_object<ModEngineConfig>({ "modengine" });
+    auto logger = logging::setup_logger("", TRUE);
+    spdlog::set_default_logger(logger);
 
     const auto game_info = GameInfo::from_current_module();
     if (!game_info) {

@@ -172,9 +172,9 @@ int main()
     }
 
     // These are inherited by the game process we launch with Detours.
-    SetEnvironmentVariableW(L"SteamAppId", launch_params.app_id.c_str());
-    SetEnvironmentVariableA("MODENGINE_CONFIG", config_path.string().c_str());
-    SetEnvironmentVariableW(L"PATH", exec_path.c_str());
+    SetEnvironmentVariable(L"SteamAppId", launch_params.app_id.c_str());
+    SetEnvironmentVariable(L"MODENGINE_CONFIG", config_path.c_str());
+    SetEnvironmentVariable(L"PATH", exec_path.c_str());
 
     if (suspend || IsDebuggerPresent()) {
         SetEnvironmentVariableW(L"MODENGINE_DEBUG_GAME", L"1");
