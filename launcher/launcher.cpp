@@ -47,6 +47,15 @@ static std::map<std::string, LaunchTarget> exe_names {
     { "eldenring.exe", ELDEN_RING },
 };
 
+std::string GetCurrentDirectory()
+{
+    char buffer[MAX_PATH];
+    GetModuleFileNameA(NULL, buffer, MAX_PATH);
+    std::string::size_type pos = std::string(buffer).find_last_of("\\/");
+
+    return std::string(buffer).substr(0, pos);
+}
+
 int main()
 {
     auto logger = spdlog::stderr_color_mt("stderr");
@@ -92,7 +101,7 @@ int main()
     // First if the game path was specified, use that along with the specified target
     if (!target_path_option->empty())
     {
-        app_path = CLI::to_path(target_path_string).parent_path().parent_path();
+        app_path = absolute(CLI::to_path(target_path_string)).parent_path().parent_path();
         if (target == AUTODETECT) {
             logger->error("Game target must be specified when supplying a manual path");
             return E_APP_NOT_FOUND;
@@ -120,11 +129,11 @@ int main()
 
     // If a config wasn't specified, try to load the default one for the game
     if (config_option->empty()) {
-        auto config_path = launcher_path.parent_path() / launch_params.default_config;
-        if (!fs::exists(config_path)) {
-            logger->error("Could not find default config file at {}", config_path.string());
+        auto default_config_path = launcher_path.parent_path() / launch_params.default_config;
+        if (!fs::exists(default_config_path)) {
+            logger->error("Could not find default config file at {}", default_config_path.string());
         }
-        config_path_string = config_path.string();
+        config_path_string = default_config_path.string();
     }
 
     // If path wasn't already set from detecting the game exe in the launcher directory, use the Steam DB to lookup game path
@@ -156,9 +165,15 @@ int main()
     exec_path.append(L";");
     exec_path.append(modengine_dll_path.parent_path().native());
 
+    auto config_path = CLI::to_path(config_path_string);
+    if (config_path.is_relative()) {
+        const auto search_path = GetCurrentDirectoryW() / config_path;
+        config_path = absolute(search_path);
+    }
+
     // These are inherited by the game process we launch with Detours.
     SetEnvironmentVariableW(L"SteamAppId", launch_params.app_id.c_str());
-    SetEnvironmentVariableA("MODENGINE_CONFIG", CLI::to_path(config_path_string).string().c_str());
+    SetEnvironmentVariableA("MODENGINE_CONFIG", config_path.string().c_str());
     SetEnvironmentVariableW(L"PATH", exec_path.c_str());
 
     if (suspend || IsDebuggerPresent()) {
