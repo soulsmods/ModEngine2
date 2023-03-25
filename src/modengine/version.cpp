@@ -1,4 +1,4 @@
-#define VERSION "2.0.0-preview3-@GIT_SHA1@"
+#define VERSION "2.0.0-preview5-@GIT_SHA1@"
 
 namespace modengine {
 
