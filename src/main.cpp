@@ -26,8 +26,8 @@ int WINAPI modengine_entrypoint(void)
 {
     start_crash_handler(modengine_path, game_path);
 
-    auto is_debugger_enabled = std::getenv("MODENGINE_DEBUG_GAME");
-    if (is_debugger_enabled != nullptr) {
+    auto is_debugger_enabled = std::getenv("MODENGINE_DEBUG_GAME") != nullptr;
+    if (is_debugger_enabled) {
         while (!IsDebuggerPresent()) {
             Sleep(100);
         }
@@ -42,10 +42,16 @@ int WINAPI modengine_entrypoint(void)
     SettingsLoader settings_loader(modengine_path, game_path);
     Settings settings;
 
+    auto logs_path = modengine_path / "logs";
+    if (!fs::exists(logs_path)) {
+        (void) fs::create_directory(logs_path);
+    }
+
+    auto logger = logging::setup_logger(logs_path, is_debugger_enabled);
+    spdlog::set_default_logger(logger);
+
     auto settings_status = settings_loader.load(settings);
     auto config = settings.get_config_reader().read_config_object<ModEngineConfig>({ "modengine" });
-    auto logger = logging::setup_logger(settings.modengine_local_path(), config.debug);
-    spdlog::set_default_logger(logger);
 
     const auto game_info = GameInfo::from_current_module();
     if (!game_info) {

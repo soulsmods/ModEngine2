@@ -47,7 +47,16 @@ static std::map<std::string, LaunchTarget> exe_names {
     { "eldenring.exe", ELDEN_RING },
 };
 
-int main(int argc, char* argv[])
+std::string GetCurrentDirectory()
+{
+    char buffer[MAX_PATH];
+    GetModuleFileNameA(NULL, buffer, MAX_PATH);
+    std::string::size_type pos = std::string(buffer).find_last_of("\\/");
+
+    return std::string(buffer).substr(0, pos);
+}
+
+int main()
 {
     auto logger = spdlog::stderr_color_mt("stderr");
 
@@ -65,12 +74,12 @@ int main(int argc, char* argv[])
     auto target_option = app.add_option("-t,--launch-target", target, "Launch target")
         ->transform(CLI::CheckedTransformer(launch_target_names, CLI::ignore_case));
 
-    fs::path target_path;
-    auto target_path_option = app.add_option("-p,--game-path", target_path, "Path to game executable. Will autodetect if not specified.")
+    std::string target_path_string;
+    auto target_path_option = app.add_option("-p,--game-path", target_path_string, "Path to game executable. Will autodetect if not specified.")
         ->transform(CLI::ExistingFile);
 
-    fs::path config_path;
-    auto config_option = app.add_option("-c,--config", config_path, "ModEngine configuration file path")
+    std::string config_path_string;
+    auto config_option = app.add_option("-c,--config", config_path_string, "ModEngine configuration file path")
         ->transform(CLI::ExistingFile);
 
     bool suspend = false;
@@ -82,7 +91,7 @@ int main(int argc, char* argv[])
     app.add_option("--modengine-dll", modengine_dll_path, "ModEngine DLL file path (modengine2.dll)");
 
     try {
-        app.parse(argc, argv);
+        app.parse();
     } catch (const CLI::ParseError& e) {
         return app.exit(e);
     }
@@ -92,7 +101,7 @@ int main(int argc, char* argv[])
     // First if the game path was specified, use that along with the specified target
     if (!target_path_option->empty())
     {
-        app_path = target_path.parent_path().parent_path();
+        app_path = absolute(CLI::to_path(target_path_string)).parent_path().parent_path();
         if (target == AUTODETECT) {
             logger->error("Game target must be specified when supplying a manual path");
             return E_APP_NOT_FOUND;
@@ -120,10 +129,11 @@ int main(int argc, char* argv[])
 
     // If a config wasn't specified, try to load the default one for the game
     if (config_option->empty()) {
-        config_path = launcher_path.parent_path() / launch_params.default_config;
-        if (!fs::exists(config_path)) {
-            logger->error("Could not find default config file at {}", config_path.string());
+        auto default_config_path = launcher_path.parent_path() / launch_params.default_config;
+        if (!fs::exists(default_config_path)) {
+            logger->error("Could not find default config file at {}", default_config_path.string());
         }
+        config_path_string = default_config_path.string();
     }
 
     // If path wasn't already set from detecting the game exe in the launcher directory, use the Steam DB to lookup game path
@@ -153,15 +163,21 @@ int main(int argc, char* argv[])
     auto exec_path_env = std::getenv("PATH");
     auto exec_path = std::wstring(exec_path_env, exec_path_env + wcslen(reinterpret_cast<const wchar_t*>(exec_path_env)));
     exec_path.append(L";");
-    exec_path.append(modengine_dll_path.parent_path().native().c_str());
+    exec_path.append(modengine_dll_path.parent_path().native());
+
+    auto config_path = CLI::to_path(config_path_string);
+    if (config_path.is_relative()) {
+        const auto search_path = GetCurrentDirectoryW() / config_path;
+        config_path = absolute(search_path);
+    }
 
     // These are inherited by the game process we launch with Detours.
     SetEnvironmentVariable(L"SteamAppId", launch_params.app_id.c_str());
-    SetEnvironmentVariable(L"MODENGINE_CONFIG", fs::absolute(config_path).c_str());
+    SetEnvironmentVariable(L"MODENGINE_CONFIG", config_path.c_str());
     SetEnvironmentVariable(L"PATH", exec_path.c_str());
 
     if (suspend || IsDebuggerPresent()) {
-        SetEnvironmentVariable(L"MODENGINE_DEBUG_GAME", L"1");
+        SetEnvironmentVariableW(L"MODENGINE_DEBUG_GAME", L"1");
     }
 
     wchar_t cmd[MAX_PATH] = {};
