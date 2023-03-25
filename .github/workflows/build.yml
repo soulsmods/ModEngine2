@@ -5,7 +5,13 @@
 # A GitHub workflow using CMake, Ninja and vcpkg.
 # It is called "pure" because it is an example which minimizes the usage of custom GitHub actions, but leverages directly the tools that could be easily run on your development machines (i.e. CMake, vcpkg, Ninja).
 name: hosted-pure-workflow
-on: [push]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   job:
@@ -93,3 +99,4 @@ jobs:
         with:
           name: 'modengine-${{ github.sha }}'
           path: '${{ env.CMAKE_BUILD_DIR }}/ModEngine-*-win64.*' # FIXME gtierney: run-cmake isn't respecting CMAKE_INSTALL_PREFIX
+        if: ${{ github.event_name == 'push' }}
