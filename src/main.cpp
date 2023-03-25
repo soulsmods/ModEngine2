@@ -47,7 +47,7 @@ int WINAPI modengine_entrypoint(void)
         (void) fs::create_directory(logs_path);
     }
 
-    auto logger = logging::setup_logger(".", is_debugger_enabled);
+    auto logger = logging::setup_logger(logs_path, is_debugger_enabled);
     spdlog::set_default_logger(logger);
 
     auto settings_status = settings_loader.load(settings);
