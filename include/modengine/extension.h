@@ -75,9 +75,9 @@ protected:
     }
 
     template <typename T>
-    void register_hook(GameType type, Hook<T> *hook, const std::string& module, const std::string& function, T detour)
+    void register_hook(GameType type, Hook<T> *hook, const std::wstring& module, const std::string& function, T detour)
     {
-        auto mod = GetModuleHandleA(module.c_str());
+        auto mod = GetModuleHandleW(module.c_str());
         if (mod == nullptr) {
             return;
         }
