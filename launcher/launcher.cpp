@@ -47,13 +47,13 @@ static std::map<std::string, LaunchTarget> exe_names {
     { "eldenring.exe", ELDEN_RING },
 };
 
-std::string GetCurrentDirectory()
+std::wstring GetCurrentDirectory()
 {
-    char buffer[MAX_PATH];
-    GetModuleFileNameA(NULL, buffer, MAX_PATH);
-    std::string::size_type pos = std::string(buffer).find_last_of("\\/");
+    wchar_t buffer[MAX_PATH];
+    GetModuleFileNameW(NULL, buffer, MAX_PATH);
+    std::string::size_type pos = std::wstring(buffer).find_last_of(L"\\/");
 
-    return std::string(buffer).substr(0, pos);
+    return std::wstring(buffer).substr(0, pos);
 }
 
 int main()
@@ -167,7 +167,7 @@ int main()
 
     auto config_path = CLI::to_path(config_path_string);
     if (config_path.is_relative()) {
-        const auto search_path = GetCurrentDirectoryW() / config_path;
+        const auto search_path = GetCurrentDirectory() / config_path;
         config_path = absolute(search_path);
     }
 
