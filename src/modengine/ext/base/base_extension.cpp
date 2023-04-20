@@ -52,7 +52,7 @@ void ModEngineBaseExtension::on_attach()
     register_patch(DS3 | SEKIRO, allocator_table_aob, increase_fmod_allocation_limits);
 
     // nop call to SetUnhandledExceptionFilter
-    register_patch(DS3, util::rva2addr(0x1FF28FF), replace_with<unsigned char>({ 0x90, 0x90, 0x90, 0x90, 0x90 }));
+    register_patch(DS3, util::rva2addr(0x1FF2A2F), replace_with<unsigned char>({ 0x90, 0x90, 0x90, 0x90, 0x90 }));
 
     // change panic mode to RAISE_EXCEPTION_ON_PANIC
     register_patch(DS3, util::rva2addr(0x4658A18), replace_with<uint32_t>({ 0x02 }));

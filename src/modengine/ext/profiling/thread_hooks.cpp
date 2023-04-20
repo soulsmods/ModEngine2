@@ -1,11 +1,12 @@
 #include "modengine/ext/profiling/thread_hooks.h"
+#include "modengine/util/platform.h"
 
 #include <spdlog/spdlog.h>
 
 namespace modengine::ext {
 
 using namespace spdlog;
-Hook<fnDLThreadHandler> hooked_DLThreadHandler { 0x1417ef4b0, tDLThreadHandler };
+Hook<fnDLThreadHandler> hooked_DLThreadHandler { util::rva2addr(0x17FD480), tDLThreadHandler };
 
 INT __cdecl tDLThreadHandler(DLThread* thread)
 {
