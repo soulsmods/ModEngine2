@@ -161,7 +161,7 @@ int main()
     auto create_process_addr = GetProcAddress(kernel32, "CreateProcessW");
 
     auto exec_path_env = std::getenv("PATH");
-    auto exec_path = std::wstring(exec_path_env, exec_path_env + wcslen(reinterpret_cast<const wchar_t*>(exec_path_env)));
+    auto exec_path = std::wstring(exec_path_env, exec_path_env + strlen(exec_path_env));
     exec_path.append(L";");
     exec_path.append(modengine_dll_path.parent_path().native());
 
