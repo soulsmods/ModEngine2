@@ -13,7 +13,7 @@ namespace modengine::ext {
 
 auto loose_params_aob_1 = util::hex_string("74 68 48 8B CF 48 89 5C 24 30 E8");
 auto loose_params_aob_2 = util::hex_string("0F 85 C5 00 00 00 48 8D 4C 24 28");
-auto loose_params_aob_3 = util::hex_string("E8 C8 F7 F7 FF 90 E9 73 E3 1F 04");
+//auto loose_params_aob_3 = util::hex_string("E8 C8 F7 F7 FF 90 E9 73 E3 1F 04");
 
 auto virtual_to_archive_path_er_aob = util::hex_aob("e8 ?? ?? ?? ?? 48 83 7b 20 08 48 8d 4b 08 72 03 48 8b 09 4c 8b 4b 18 41 b8 05 00 00 00 4d 3b c8");
 
@@ -51,7 +51,7 @@ void ModLoaderExtension::on_attach()
 {
     register_patch(DS3, loose_params_aob_1, replace_with<uint8_t>({ 0xEB, 0x68 }));
     register_patch(DS3, loose_params_aob_2, replace_with<uint8_t>({ 0x0F, 0x84, 0xc5, 0x00, 0x00, 0x00 }));
-    register_patch(DS3, loose_params_aob_3, replace_with<uint8_t>({ 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }));
+    register_patch(DS3, util::rva2addr(0xEA1B83), replace_with<unsigned char>({ 0x90, 0x90, 0x90, 0x90, 0x90 }));
 
     const auto kernel32_path = util::system_directory() / "kernel32.dll";
 

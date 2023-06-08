@@ -26,7 +26,7 @@ ModEngine::ModEngine(GameInfo game, Settings settings, ModEngineConfig config)
     , m_extensions(new ModEngineExtensionConnectorV1(this))
 {
     m_extensions.register_builtin_extension<ModEngineBaseExtension>();
-    m_extensions.register_builtin_extension<DebugMenuDS3Extension>();
+    //m_extensions.register_builtin_extension<DebugMenuDS3Extension>();
     m_extensions.register_builtin_extension<ModLoaderExtension>();
     m_extensions.register_builtin_extension<ProfilingExtension>();
     m_extensions.register_builtin_extension<ScyllaHideExtension>();
