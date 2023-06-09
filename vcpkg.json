@@ -12,5 +12,6 @@
     "lua",
     "sol2",
     "nano-signal-slot"
-  ]
+  ],
+  "builtin-baseline": "a7b6122f6b6504d16d96117336a0562693579933"
 }
