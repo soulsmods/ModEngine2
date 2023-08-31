@@ -33,9 +33,11 @@ SettingsLoadResult SettingsLoader::load(modengine::Settings& settings)
 
     if (!result.inline_install) {
         const auto global_settings_path = m_installation / "config.toml";
-
+        info("Attempting to load global config at {}", global_settings_path.string());
         if (fs::exists(global_settings_path)) {
             result.found_global_config = load_toml_into(settings, global_settings_path);
+            if (result.found_global_config)
+                info("Global config loaded");
         }
     }
 
@@ -44,9 +46,12 @@ SettingsLoadResult SettingsLoader::load(modengine::Settings& settings)
     if (settings_path_env != nullptr) {
         auto path = fs::path(settings_path_env);
         auto local_modengine_path = path.parent_path();
+        info("Attempting to load mod settings config at {}", path.string());
 
         result.found_local_config = load_toml_into(settings, path);
         settings.m_modengine_local_path = local_modengine_path;
+        if (result.found_local_config)
+            info("Local config loaded");
     }
 
     return result;

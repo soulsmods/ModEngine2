@@ -126,6 +126,11 @@ void process_archive_path(wchar_t* raw_path, size_t raw_path_len)
     for (auto i = 1; i < prefix_len && i < raw_path_len; i++) {
         raw_path[i] = '/';
     }
+
+    if (get_level() <= level::debug) {
+        std::wstring replaced(raw_path, raw_path_len);
+        debug(L"Replaced path with {}", replaced);
+    }
 }
 
 bool path_contains(const fs::path& root, const fs::path& filepath)

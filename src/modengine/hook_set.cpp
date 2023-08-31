@@ -53,6 +53,7 @@ bool HookSet::hook_all()
             error("Could not find pattern");
             continue;
         }
+        *addr = (uintptr_t)(((char*)*addr) + hook->offset);
         debug("Found address at 0x{0:08x}", *addr);
         if (hook->mode == SCAN_CALL_INST) {
             // Assume near call x64 instruction for now

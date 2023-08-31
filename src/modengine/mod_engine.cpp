@@ -53,7 +53,9 @@ void ModEngine::attach()
     }
 
     auto lua = m_script_host.get_state();
+#if 0
     sol_ImGui::Init(lua);
+#endif
     modengine::scripting::bind_patch_api(this, lua);
 
     m_script_host.load_scripts(m_config.script_roots);
