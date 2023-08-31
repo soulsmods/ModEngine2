@@ -110,10 +110,11 @@ protected:
     }
 
     template <typename T>
-    void register_hook(GameType type, ScannedHook<T> *hook, const ScanPattern &signature, T detour, HookScanMode mode)
+    void register_hook(GameType type, ScannedHook<T> *hook, const ScanPattern &signature, int64_t offset, T detour, HookScanMode mode)
     {
         hook->mode = mode;
         hook->pattern = signature;
+        hook->offset = offset;
         hook->replacement = detour;
 
         m_ext_connector->register_hook(type, (ScannedHook<GenericFunctionPointer>*) hook);

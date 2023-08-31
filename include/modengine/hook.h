@@ -52,15 +52,18 @@ template <typename T>
 struct ScannedHook {
     ScannedHook()
         : mode(SCAN_FUNCTION)
+        , pattern()
+        , offset(0)
         , original(nullptr)
         , replacement(nullptr)
         , applied(false)
     {
     }
 
-    ScannedHook(HookScanMode _mode, ScanPattern _pattern, T _replacement)
+    ScannedHook(HookScanMode _mode, ScanPattern _pattern, int64_t _offset, T _replacement)
         : mode(_mode)
         , pattern(_pattern)
+        , offset(_offset)
         , original(nullptr)
         , replacement(_replacement)
         , applied(false)
@@ -75,6 +78,7 @@ struct ScannedHook {
     bool applied;
     HookScanMode mode;
     ScanPattern pattern;
+    int64_t offset;
     T original;
     T replacement;
 };

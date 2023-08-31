@@ -3,14 +3,14 @@
 #include <windows.h>
 
 namespace modengine::util {
-std::filesystem::path&& system_directory()
+std::filesystem::path system_directory()
 {
-    TCHAR system_folder[MAX_PATH];
+    TCHAR system_folder[MAX_PATH + 1];
     if (!GetSystemDirectory(system_folder, MAX_PATH)) {
         throw std::runtime_error("GetSystemDirectory(..., MAX_PATH) failed");
     }
 
-    return std::move(std::filesystem::path(system_folder));
+    return { system_folder };
 }
 
 uintptr_t rva2addr(ptrdiff_t offset)

@@ -6,6 +6,7 @@
 #include <optional>
 #include <windows.h>
 #include <iostream>
+#include <spdlog/sinks/stdout_color_sinks.h>
 #include <modengine/settings_loader.h>
 
 using namespace modengine;
@@ -52,6 +53,17 @@ int WINAPI modengine_entrypoint(void)
 
     auto settings_status = settings_loader.load(settings);
     auto config = settings.get_config_reader().read_config_object<ModEngineConfig>({ "modengine" });
+
+    if (config.debug && !is_debugger_enabled) {
+        // Create debug console
+        AllocConsole();
+        FILE* stream;
+        freopen_s(&stream, "CONOUT$", "w", stdout);
+        freopen_s(&stream, "CONIN$", "r", stdin);
+
+        logger->set_level(spdlog::level::trace);
+        logger->sinks().push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
+    }
 
     const auto game_info = GameInfo::from_current_module();
     if (!game_info) {

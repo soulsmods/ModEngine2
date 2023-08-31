@@ -1,7 +1,7 @@
 set(CPACK_PACKAGE_NAME "ModEngine")
 set(CPACK_PACKAGE_VENDOR "https://github.com/soulsmods/modengine2")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Mod Engine 2 - Mod companion framework for Souls games")
-set(CPACK_PACKAGE_VERSION "2.0.0.1")
+set(CPACK_PACKAGE_VERSION "2.1.0.0")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "modengine2")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/installer/resources/LICENSE.txt")
 set(CPACK_WIX_UPGRADE_GUID "1bf93396-5829-4275-8e34-01e443d54a98")
@@ -71,8 +71,10 @@ install(FILES tools/scylla/InjectorCLIx64.exe
 install(FILES
         installer/dist/config_darksouls3.toml
         installer/dist/config_eldenring.toml
+        installer/dist/config_armoredcore6.toml
         installer/dist/launchmod_darksouls3.bat
         installer/dist/launchmod_eldenring.bat
+        installer/dist/launchmod_armoredcore6.bat
         installer/dist/README.txt
         DESTINATION .
         COMPONENT application)

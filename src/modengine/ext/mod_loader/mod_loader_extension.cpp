@@ -16,6 +16,7 @@ auto loose_params_aob_2 = util::hex_string("0F 85 C5 00 00 00 48 8D 4C 24 28");
 //auto loose_params_aob_3 = util::hex_string("E8 C8 F7 F7 FF 90 E9 73 E3 1F 04");
 
 auto virtual_to_archive_path_er_aob = util::hex_aob("e8 ?? ?? ?? ?? 48 83 7b 20 08 48 8d 4b 08 72 03 48 8b 09 4c 8b 4b 18 41 b8 05 00 00 00 4d 3b c8");
+auto virtual_to_archive_path_ac6_aob = util::hex_aob("cf e8 ?? ?? ?? ?? 48 83 7b 20 08 48 8d 4b 08 72 03 48 8b 09 4c 8b 4b 18 41 b8 05 00 00 00 4d 3b c8");
 
 static fs::path primary_mod_path(const Settings& settings)
 {
@@ -57,7 +58,8 @@ void ModLoaderExtension::on_attach()
 
     register_hook(ALL, &hooked_CreateFileW, kernel32_path.wstring(), "CreateFileW", tCreateFileW);
     register_hook(DS3, &hooked_virtual_to_archive_path_ds3, util::rva2addr(0x7d660), virtual_to_archive_path_ds3);
-    register_hook(ELDEN_RING, &hooked_virtual_to_archive_path_eldenring, virtual_to_archive_path_er_aob, virtual_to_archive_path_eldenring, SCAN_CALL_INST);
+    register_hook(ELDEN_RING, &hooked_virtual_to_archive_path_eldenring, virtual_to_archive_path_er_aob, 0x0, virtual_to_archive_path_eldenring, SCAN_CALL_INST);
+    register_hook(ARMORED_CORE_6, &hooked_virtual_to_archive_path_eldenring, virtual_to_archive_path_ac6_aob, 0x1, virtual_to_archive_path_eldenring, SCAN_CALL_INST);
 
     auto config = get_config<ModLoaderConfig>();
     for (const auto& mod : config.mods) {

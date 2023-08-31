@@ -1,10 +1,10 @@
 Mod Engine 2 Preview release:
 
-This is a preview release of Mod Engine 2 for Elden Ring. Mod Engine 2 is a utility for injecting various code into the game
-for the use of mods. Among other things, Mod Engine 2 allows the usage of mods that modify the game files without having to
-go through the hassle of unpacking the game archives and patching the game exe. Mod Engine 2 does this by injecting code into
-the game's asset system, and redirecting the game to load a modded file inside your mod folder if one exists instead of loading 
-the original file in the game's big archives.
+This is a preview release of Mod Engine 2 for Elden Ring and Armored Core 6. Mod Engine 2 is a utility for injecting various
+code into the game for the use of mods. Among other things, Mod Engine 2 allows the usage of mods that modify the game files
+without having to go through the hassle of unpacking the game archives and patching the game exe. Mod Engine 2 does this
+by injecting code into the game's asset system, and redirecting the game to load a modded file inside your mod folder if
+one exists instead of loading the original file in the game's big archives.
 
 Mod Engine 2 is a ground up rewrite of Mod Engine and is designed to improve over the existing user experience while also being
 more reliable and having more infrastructure to diagnose issues. This public release currently only supports modded file injection,

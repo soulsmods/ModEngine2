@@ -17,7 +17,7 @@ external_dlls = []
 [extension.mod_loader]
 enabled = true
 
-# Not currently supported for Elden Ring
+# Not applicable for Armored Core 6
 loose_params = false
 
 # List of directories that contain modded files in order of prioritization. Inside each specified mod directory must have the game
