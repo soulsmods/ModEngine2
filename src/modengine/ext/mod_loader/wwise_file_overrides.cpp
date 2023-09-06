@@ -50,8 +50,7 @@ const wchar_t* prefixes[3] = {
     L"sd/ja/",
 };
 
-std::optional<fs::path> find_override(const std::wstring filename)
-{
+std::optional<fs::path> check_paths(const std::wstring filename) {
     for (auto prefix: prefixes) {
         if (auto override = find_override_file(prefix+filename)) {
             return override;
@@ -59,6 +58,22 @@ std::optional<fs::path> find_override(const std::wstring filename)
     }
 
     return {};
+}
+
+std::optional<fs::path> find_override(const std::wstring filename)
+{
+    // TODO: can be based on game specified instead of always applied.
+    // Check wem/<first to digits of filename>/<filename> too since ER uses this format
+    if (filename.ends_with(L".wem")) {
+        auto wem_path = L"wem/" + filename.substr(0,2) + L"/" + filename;
+        auto wem_path_result = check_paths(wem_path);
+
+        if (wem_path_result.has_value()) {
+            return wem_path_result;
+        }
+    }
+
+    return check_paths(filename);
 }
 
 std::optional<std::wstring> normalize_filename(const std::wstring path) {
