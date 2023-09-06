@@ -12,7 +12,7 @@ namespace modengine::ext {
 // another invariant to AKOpenMode, dec 9, which will instead yield an EBLFileOperator, causing the reads to happen from
 // the bhd/bdt. This unfortunately happens without touching the usual virtual path lookup which ME2 already hooks.
 // In order to selectively make it read from disk again this checks if an override file exists and sets the openMode
-// back from 9 to Read. Then a relative path must be passed as a parameter.
+// back from 9 to Read. Then an absolute path must be passed as a parameter.
 //
 // This is a messy one though:
 // Figuring out if there is an override isn't straight forward. The hooked function gets invoked with a virtual path string
