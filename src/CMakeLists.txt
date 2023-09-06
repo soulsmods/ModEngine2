@@ -50,6 +50,7 @@ add_library(modengine2 SHARED
         modengine/ext/debug_menu/ds3/_DS3GameProperties.asm
         modengine/ext/mod_loader/archive_file_overrides.cpp
         modengine/ext/mod_loader/mod_loader_extension.cpp
+        modengine/ext/mod_loader/wwise_file_overrides.cpp
         modengine/ext/profiling/profiling_extension.cpp
         modengine/ext/profiling/profiler_trampoline.asm
         modengine/ext/profiling/main_loop.cpp
