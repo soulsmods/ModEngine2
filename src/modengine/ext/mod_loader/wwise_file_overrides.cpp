@@ -5,26 +5,37 @@
 
 namespace modengine::ext {
 
-// This hook the IAkFileLocationResolver::open() method. It takes in a path and a so-called openMode. This openMode parameter
-// is of type AkOpenMode which is an enum with 4 states: Read, Write, WriteOverwrite and ReadWrite. Based on this parameter
-// the IAkFileLocationResolver implementation might acquire the file bytes different. Passing in any of these 4 invariants
-// will cause this function to yield an FileOperator used for sourcing the file bytes. FromSoftware funnily enough added
-// another invariant to AKOpenMode, dec 9, which will instead yield an EBLFileOperator, causing the reads to happen from
-// the bhd/bdt. This unfortunately happens without touching the usual virtual path lookup which ME2 already hooks.
-// In order to selectively make it read from disk again this checks if an override file exists and sets the openMode
-// back from 9 to Read. Then an absolute path must be passed as a parameter.
+// This hook the IAkFileLocationResolver::open() method. It takes in a path 
+// and a so-called openMode. This openMode parameter is of type AkOpenMode 
+// which is an enum with 4 states: Read, Write, WriteOverwrite and ReadWrite.
+// Passing in any of these 4 invariants will cause this function to yield a 
+// FileOperator used for sourcing the file bytes. FromSoftware added another 
+// possible state to AKOpenMode, decimal 9. which will make this fn yield an 
+// EBLFileOperator, this implementation does all its fetching from the BDTs.
+// EBLFileOperator does not use the usual virtual path lookup that ME2 already 
+// hooks. Hence we need this hook here.
+//
+// In order to selectively make it read from disk again this hook checks if an 
+// override file exists and sets the openMode back from 9 to Read and replaces
+// the virtual path parameter string with an absolute path.
 //
 // This is a messy one though:
-// Figuring out if there is an override isn't straight forward. The hooked function gets invoked with a virtual path string
-// ex: `sd:/50846376.wem`. Wwise uses subdirectories for localized content, meaning that the WEM example makes Wwise look
-// in `/50846376.wem` but also in `enus/50846376.wem` (or `ja/50846376.wem` for AC6 which has `ja` as an extra locale
-// for some audio and BNKs). To make matters even worse, Elden Ring sorts the WEMs into a subdir (`wem/`) and then
-// another subdir based on the first two digits of the WEM. So above example will spawn lookups in `/wem/50/50846376.wem`
-// and `enus/wem/50/50846376.wem`. In order to figure out if there is an override we will need to look in multiple directories
-// per request. Luckily, aside from boot, it doesn't load a lot of files.
+// Figuring out if there is an override isn't straight forward. The hooked 
+// function gets invoked with a virtual path string ex: `sd:/50846376.wem`. 
+// Wwise uses subdirectories for localized content, meaning that the "simple"
+// WEM example makes Wwise look in `/50846376.wem` but also in 
+// `enus/50846376.wem` (or `ja/50846376.wem` for AC6 which has `ja` as an extra 
+// locale for some audio and BNKs). To make matters even worse, Elden Ring 
+// specifically sorts the WEMs into a subdir (`wem/`) and then another subdir 
+// based on the  first two digits of the WEM. So above example will spawn 
+// lookups in  `/wem/50/50846376.wem` and `enus/wem/50/50846376.wem`. In order 
+// to figure out if there is an override we will need to look in multiple 
+// directories per request. Luckily, aside from boot, this routine is called
+// quite infrequently.
 //
-// Also, worth pointing out that not all paths passed to this hook will have the `sd:/` prefix. So we cannot get away with the
-// usual prefix / rewrite trick and will have to allocate a completely new string.
+// Also, worth pointing out that not all paths passed to this hook will have 
+// the `sd:/` prefix. So we cannot get away with the usual prefix / rewrite 
+// trick and will have to allocate a completely new string.
 
 namespace fs = std::filesystem;
 
@@ -62,8 +73,8 @@ std::optional<fs::path> check_paths(const std::wstring filename) {
 
 std::optional<fs::path> find_override(const std::wstring filename)
 {
-    // TODO: can be based on game specified instead of always applied.
-    // Check wem/<first to digits of filename>/<filename> too since ER uses this format
+    // Check wem/<first to digits of filename>/<filename> too since ER uses 
+    // this format
     if (filename.ends_with(L".wem")) {
         auto wem_path = L"wem/" + filename.substr(0,2) + L"/" + filename;
         auto wem_path_result = check_paths(wem_path);
