@@ -97,7 +97,7 @@ std::optional<std::wstring> normalize_filename(const std::wstring path) {
 
 ScannedHook<decltype(&ak_file_location_resolver_open)> hooked_ak_file_location_resolver_open;
 
-void* __cdecl ak_file_location_resolver_open(UINT64 p1, wchar_t* path, UINT64 openMode, UINT64 p4, UINT64 p5, UINT64 p6)
+void* __cdecl ak_file_location_resolver_open(UINT64 p1, wchar_t* path, AKOpenMode openMode, UINT64 p4, UINT64 p5, UINT64 p6)
 {
     std::wstring lookup(path);
     debug(L"sd.bhd entry requested: {}", lookup);
@@ -114,7 +114,7 @@ void* __cdecl ak_file_location_resolver_open(UINT64 p1, wchar_t* path, UINT64 op
     }
 
     auto override_path_string = override.value().wstring();
-    return hooked_ak_file_location_resolver_open.original(p1, override_path_string.data(), 0, p4, p5, p6);
+    return hooked_ak_file_location_resolver_open.original(p1, override_path_string.data(), AKOpenMode::READ, p4, p5, p6);
 }
 
 }
