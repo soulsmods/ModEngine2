@@ -41,20 +41,6 @@ namespace fs = std::filesystem;
 
 using namespace spdlog;
 
-std::optional<fs::path> find_override_file(const fs::path game_path)
-{
-    for (const auto& root : hooked_file_roots) {
-        trace(L"Searching for {} in {}", game_path.wstring(), root);
-
-        auto file_path = root / fs::path(game_path);
-        if (fs::exists(file_path)) {
-            return file_path;
-        }
-    }
-
-    return {};
-}
-
 const wchar_t* prefixes[3] = {
     L"sd/",
     L"sd/enus/",
