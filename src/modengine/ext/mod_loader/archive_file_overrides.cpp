@@ -42,8 +42,6 @@ namespace modengine::ext {
 // the easiest and most robust way to do this. It also has the bonus of allowing files that don't go through the asset system
 // (like the data archives and some of the sounds) to be overridable.
 
-namespace fs = std::filesystem;
-
 concurrency::concurrent_unordered_map<std::wstring, std::optional<std::filesystem::path>> archive_override_paths;
 concurrency::concurrent_unordered_map<std::wstring, std::optional<std::filesystem::path>> file_override_paths;
 

@@ -4,9 +4,12 @@
 #include "gametypes/dantelion/dlstring.h"
 
 #include <set>
+#include <filesystem>
 #include <concurrent_vector.h>
 
 namespace modengine::ext {
+
+namespace fs = std::filesystem;
 
 // String type used in DS2/DS3
 typedef struct
@@ -42,5 +45,7 @@ extern concurrency::concurrent_vector<std::wstring> hooked_file_roots;
 HANDLE WINAPI tCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode,
     LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes,
     HANDLE hTemplateFile);
+
+std::optional<fs::path> find_override_file(const fs::path& game_path);
 
 }
