@@ -5,7 +5,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 include(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 
-set(version "2.1.0")
+set(version "2.2.0")
 set(VCPKG_TOOLS "${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows")
 
 # Detours currently has no CMake manifests: https://github.com/microsoft/Detours/pull/48.
