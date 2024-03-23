@@ -14,7 +14,7 @@ using namespace spdlog;
 
 namespace fs = std::filesystem;
 
-static HINSTANCE modengine_instance;
+static HMODULE modengine_instance;
 static fs::path modengine_path;
 static fs::path game_path;
 
@@ -30,7 +30,7 @@ int WINAPI modengine_entrypoint(void)
 
     // Grab the path to the modengine2.dll file, so we can locate the global
     // configuration from here if it exists.
-    if (!GetModuleFileNameW(module, dll_filename, MAX_PATH)) {
+    if (!GetModuleFileNameW(modengine_instance, dll_filename, MAX_PATH)) {
         return false;
     }
 
