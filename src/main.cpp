@@ -14,6 +14,7 @@ using namespace spdlog;
 
 namespace fs = std::filesystem;
 
+static HINSTANCE modengine_instance;
 static fs::path modengine_path;
 static fs::path game_path;
 
@@ -25,6 +26,29 @@ HookSet entry_hook_set;
 
 int WINAPI modengine_entrypoint(void)
 {
+    wchar_t dll_filename[MAX_PATH + 1];
+
+    // Grab the path to the modengine2.dll file, so we can locate the global
+    // configuration from here if it exists.
+    if (!GetModuleFileNameW(module, dll_filename, MAX_PATH)) {
+        return false;
+    }
+
+    modengine_path = fs::path(dll_filename).parent_path();
+    if (modengine_path.filename() == "bin") {
+        modengine_path = modengine_path.parent_path();
+    }
+
+    wchar_t game_filename[MAX_PATH + 1];
+
+    // Also get the path to the game executable, to support legacy use-cases of putting
+    // mods in the game folder.
+    if (!GetModuleFileNameW(nullptr, game_filename, MAX_PATH)) {
+        return false;
+    }
+
+    game_path = fs::path(game_filename).parent_path();
+
     start_crash_handler(modengine_path, game_path);
 
     auto is_debugger_enabled = std::getenv("MODENGINE_DEBUG_GAME") != nullptr;
@@ -90,29 +114,8 @@ int WINAPI modengine_entrypoint(void)
 
 static bool attach(HMODULE module)
 {
-    wchar_t dll_filename[MAX_PATH];
-
-    // Grab the path to the modengine2.dll file, so we can locate the global
-    // configuration from here if it exists.
-    if (!GetModuleFileNameW(module, dll_filename, MAX_PATH)) {
-        return false;
-    }
-
-    modengine_path = fs::path(dll_filename).parent_path();
-    if (modengine_path.filename() == "bin") {
-        modengine_path = modengine_path.parent_path();
-    }
-
-    wchar_t game_filename[MAX_PATH];
-
-    // Also get the path to the game executable, to support legacy use-cases of putting
-    // mods in the game folder.
-    if (!GetModuleFileNameW(nullptr, game_filename, MAX_PATH)) {
-        return false;
-    }
-
-    game_path = fs::path(game_filename).parent_path();
-
+    modengine_instance = module;
+    
     hooked_entrypoint.original = reinterpret_cast<fnEntry>(DetourGetEntryPoint(nullptr));
     hooked_entrypoint.replacement = modengine_entrypoint;
     entry_hook_set.install(reinterpret_cast<Hook<modengine::GenericFunctionPointer>*>(&hooked_entrypoint));
