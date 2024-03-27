@@ -187,7 +187,7 @@ int main()
     wchar_t cmd[MAX_PATH] = {};
     wcscpy_s(cmd, app_cmd.c_str());
 
-    auto proc_flags = CREATE_NEW_PROCESS_GROUP;
+    auto proc_flags = 0;
     bool success = DetourCreateProcessWithDllW(
         cmd,
         nullptr,
