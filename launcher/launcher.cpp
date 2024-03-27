@@ -214,8 +214,10 @@ int main()
     std::wstring cmd_str = app_cmd.native();
     size_t cmd_len = cmd_str.length();
 
-    wchar_t cmd[cmd_len + 1] = {};
-    wcsncpy_s(cmd, cmd_str.c_str(), cmd_len);
+    auto *cmd = new wchar_t[cmd_len + 1];
+    cmd[cmd_len] = 0;
+
+    wcscpy_s(cmd, cmd_len, cmd_str.c_str());
 
     auto proc_flags = 0;
     bool success = DetourCreateProcessWithDllW(
