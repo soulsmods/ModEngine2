@@ -231,7 +231,7 @@ int main()
         app_cwd.c_str(),
         &si,
         &pi,
-        fs::absolute(modengine_dll_path).native().c_str(),
+        fs::absolute(modengine_dll_path).string().c_str(),
         reinterpret_cast<PDETOUR_CREATE_PROCESS_ROUTINEW>(create_process_addr));
 
     auto status = E_OK;
