@@ -18,6 +18,7 @@ enum LauncherError : int {
     E_OS_ERROR = -1,
     E_APP_NOT_FOUND = -2,
     E_MODENGINE_NOT_FOUND = -3,
+    E_CREATE_PROCESS_FAILED = -4,
 };
 
 struct LaunchTargetParams {
@@ -55,7 +56,7 @@ namespace platform {
 std::wstring get_env_var(const std::wstring& name)
 {
     size_t buffer_size = GetEnvironmentVariableW(name.c_str(), nullptr, 0);
-    wchar_t buffer[buffer_size + 1];
+    auto* buffer = new wchar_t[buffer_size + 1];
 
     std::wstring value;
 
@@ -63,6 +64,8 @@ std::wstring get_env_var(const std::wstring& name)
         size_t len = GetEnvironmentVariableW(name.c_str(), &buffer[0], buffer_size + 1);
         value.append(buffer, len);
     }
+
+    delete buffer;
 
     return value;
 }
@@ -75,16 +78,20 @@ void set_env_var(const std::wstring& name, const std::wstring& value)
 fs::path get_launcher_directory()
 {
     size_t buffer_size = GetModuleFileNameW(nullptr, nullptr, 0);
-    wchar_t buffer[buffer_size + 1];
+    auto* buffer = new wchar_t[buffer_size + 1];
+
+    fs::path path = fs::current_path();
 
     if (buffer_size > 0) {
         size_t len = GetModuleFileNameW(nullptr, buffer, buffer_size + 1);
         fs::path launcher_path(std::wstring_view { buffer, len });
 
-        return launcher_path.parent_path();
+        path = launcher_path.parent_path();
     }
 
-    return fs::current_path();
+    delete buffer;
+
+    return path;
 }
 
 }
@@ -207,9 +214,7 @@ int main()
     std::wstring cmd_str = app_cmd.native();
     size_t cmd_len = cmd_str.length();
 
-    wchar_t cmd[cmd_len + 1];
-    cmd[cmd_len] = 0;
-
+    wchar_t cmd[cmd_len + 1] = {};
     wcsncpy_s(cmd, cmd_str.c_str(), cmd_len);
 
     auto proc_flags = 0;
@@ -227,12 +232,15 @@ int main()
         fs::absolute(modengine_dll_path).native().c_str(),
         reinterpret_cast<PDETOUR_CREATE_PROCESS_ROUTINEW>(create_process_addr));
 
+    auto status = E_OK;
+
     if (!success) {
         logger->error("Couldn't create process: {:x}", GetLastError());
+        status = E_CREATE_PROCESS_FAILED;
     }
 
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
 
-    return E_OK;
+    return status;
 }
