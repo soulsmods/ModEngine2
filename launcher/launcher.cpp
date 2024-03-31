@@ -77,19 +77,15 @@ void set_env_var(const std::wstring& name, const std::wstring& value)
 
 fs::path get_launcher_directory()
 {
-    size_t buffer_size = GetModuleFileNameW(nullptr, nullptr, 0);
-    auto* buffer = new wchar_t[buffer_size + 1];
+    wchar_t buffer[MAX_PATH];
+    size_t buffer_size = GetModuleFileNameW(nullptr, &buffer[0], NAX_PATH);
 
     fs::path path = fs::current_path();
 
     if (buffer_size > 0) {
-        size_t len = GetModuleFileNameW(nullptr, buffer, buffer_size + 1);
-        fs::path launcher_path(std::wstring_view { buffer, len });
-
+        fs::path launcher_path(std::wstring_view { &buffer[0], buffer_size });
         path = launcher_path.parent_path();
     }
-
-    delete buffer;
 
     return path;
 }
