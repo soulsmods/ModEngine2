@@ -13,7 +13,7 @@ Mod Engine 2 is a ground up rewrite of Mod Engine, a runtime code patching and i
 1. Download the latest [release](https://github.com/soulsmods/ModEngine2/releases).
 2. Create a folder in the mod folder, I recommend the name of the mod for clarity.
 3. Unpack the mod into the just created folder.
-4. Edit the `eldenring_config.toml` (or your game of choice) to include the folder you just created.
+4. Edit the `config_eldenring.toml` (or your game of choice) to include the folder you just created.
 
 ```toml
 mods = [
