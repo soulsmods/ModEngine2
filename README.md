@@ -17,8 +17,9 @@ Mod Engine 2 is a ground up rewrite of Mod Engine, a runtime code patching and i
 
 ```toml
 mods = [
-  { enabled = true, name = "default", path = "mod\\testmodName" },
-  { enabled = false, name = "default", path = "mod\\disabledTestmodName" },
+  { enabled = true, name = "BetterAshes ", path = "mod\\ashes" },
+  { enabled = true, name = "CleversMoveset", path = "mod\\moveset" },
+  { enabled = false, name = "EnemyRandomizer", path = "mod\\randomizer" },
 ]
 ```
 
