@@ -1,4 +1,8 @@
+
 # Mod Engine 2
+
+> [!IMPORTANT]
+> Development on Mod Engine 2 is discontinued. Any future work will be done on [me3](https://github.com/garyttierney/me3).
 
 Mod Engine 2 is a ground up rewrite of Mod Engine, a runtime code patching and injection library used for adding modding functionality to the Souls games by FROM Software.
 
